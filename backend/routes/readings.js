@@ -38,8 +38,8 @@ router.post('/:userId', (req, res) => {
       return res.status(400).json({ ok: false, error: 'birthDate not set. Call /api/users/init first.' });
     }
 
-    // Карта дня: кешуємо на добу
-    if (spreadType === 'daily' || spreadType === 'three_card') {
+    // Карта дня: кешуємо на добу (адмін не кешується — завжди свіжий розрахунок)
+    if ((spreadType === 'daily' || spreadType === 'three_card') && !isAdmin(req.params.userId)) {
       const cached = getTodayReading(req.params.userId, spreadType);
       if (cached) return res.json({ ok: true, reading: cached, cached: true });
     }
