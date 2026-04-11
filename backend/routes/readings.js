@@ -3,6 +3,7 @@ const express = require('express');
 const router = express.Router();
 const { createReading, getUserReadings, getTodayReading, SPREAD_TYPES } = require('../services/readingService');
 const { loadUsers } = require('./users');
+const { isAdmin } = require('../config/admins');
 
 // GET /api/readings/spreads
 router.get('/spreads', (req, res) => {
@@ -27,9 +28,9 @@ router.post('/:userId', (req, res) => {
     const spread = SPREAD_TYPES[spreadType];
     if (!spread) return res.status(400).json({ ok: false, error: 'Unknown spreadType' });
 
-    // Перевірка преміум
+    // Перевірка преміум (адмін має необмежений доступ)
     const user = loadUsers()[req.params.userId];
-    if (spread.premium && !user?.isPremium) {
+    if (spread.premium && !user?.isPremium && !isAdmin(req.params.userId)) {
       return res.status(403).json({ ok: false, error: 'premium_required' });
     }
 

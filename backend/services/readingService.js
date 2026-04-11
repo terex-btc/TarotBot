@@ -3,6 +3,7 @@ const fs = require('fs');
 const path = require('path');
 const { MAJOR_ARCANA } = require('../config/tarotCards');
 const algo = require('./algorithmService');
+const { isAdmin } = require('../config/admins');
 
 const STORAGE_PATH = path.join(__dirname, '../storage/readings.json');
 
@@ -73,7 +74,8 @@ function createReading(userId, birthDate, spreadType, targetDate, lang) {
   const today = targetDate || new Date().toISOString().split('T')[0];
 
   // Алгоритм підбору карт
-  const { cardIds, reversed, meta } = algo.selectCards(birthDate, today, spreadType, spread.count);
+  const adminMode = isAdmin(userId);
+  const { cardIds, reversed, meta } = algo.selectCards(birthDate, today, spreadType, spread.count, adminMode);
   const cards = cardIds.map((id, i) => ({ ...MAJOR_ARCANA[id], isReversed: reversed[i] }));
 
   // Персоналізована інтерпретація

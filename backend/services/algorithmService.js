@@ -1,4 +1,5 @@
 'use strict';
+const { POSITIVE_CARD_IDS } = require('../config/admins');
 
 // ── Нумерологія ────────────────────────────────────────────────────────────
 function reduceToSingleDigit(n) {
@@ -127,7 +128,7 @@ const LIFE_PATH_CARDS = {
 };
 
 // ── Основна функція вибору карт ────────────────────────────────────────────
-function selectCards(birthDate, targetDate, spreadType, count) {
+function selectCards(birthDate, targetDate, spreadType, count, isAdmin = false) {
   const lifePath = calcLifePath(birthDate);
   const zodiac = getZodiac(birthDate);
   const personalDay = calcPersonalDay(birthDate, targetDate);
@@ -143,20 +144,40 @@ function selectCards(birthDate, targetDate, spreadType, count) {
   // Ваги карт (0–21)
   const weights = new Array(22).fill(1.0);
 
-  // Підсилюємо карту зодіаку
-  weights[zodiac.tarotCard] += 3.0;
+  // Для адміна: виключаємо важкі карти та суттєво підсилюємо позитивні
+  if (isAdmin) {
+    for (let i = 0; i < 22; i++) {
+      if (!POSITIVE_CARD_IDS.has(i)) {
+        weights[i] = 0; // виключаємо Вежу, Смерть, Диявола, Повішеного, Місяць
+      } else {
+        weights[i] = 3.0; // базовий буст для всіх позитивних
+      }
+    }
+    // Особливий буст для найкращих карт
+    weights[19] += 5.0; // Сонце — найщасливіша карта
+    weights[21] += 4.0; // Світ — успіх та завершення
+    weights[17] += 4.0; // Зірка — надія та натхнення
+    weights[10] += 3.0; // Колесо Фортуни — удача
+    weights[1]  += 3.0; // Маг — майстерність
+    weights[3]  += 3.0; // Імператриця — достаток
+  }
 
-  // Підсилюємо карти шляху життя
+  // Підсилюємо карту зодіаку (тільки якщо вона позитивна для адміна)
+  if (!isAdmin || POSITIVE_CARD_IDS.has(zodiac.tarotCard)) weights[zodiac.tarotCard] += 3.0;
+
+  // Підсилюємо карти шляху життя (для адміна — тільки позитивні)
   const lpCards = LIFE_PATH_CARDS[lifePath] || LIFE_PATH_CARDS[lifePath % 9 || 9];
-  if (lpCards) lpCards.forEach(id => { if (id < 22) weights[id] += 2.0; });
+  if (lpCards) lpCards.forEach(id => {
+    if (id < 22 && (!isAdmin || POSITIVE_CARD_IDS.has(id))) weights[id] += 2.0;
+  });
 
-  // Карта особистого дня
+  // Карта особистого дня (для адміна — тільки позитивні)
   const pdCard = personalDay <= 9 ? personalDay : personalDay % 9 || 9;
-  if (pdCard < 22) weights[pdCard] += 1.5;
+  if (pdCard < 22 && (!isAdmin || POSITIVE_CARD_IDS.has(pdCard))) weights[pdCard] += 1.5;
 
-  // Карта особистого року
+  // Карта особистого року (для адміна — тільки позитивні)
   const pyCard = personalYear <= 9 ? personalYear : personalYear % 9;
-  if (pyCard < 22) weights[pyCard] += 1.0;
+  if (pyCard < 22 && (!isAdmin || POSITIVE_CARD_IDS.has(pyCard))) weights[pyCard] += 1.0;
 
   // Для розкладу "кохання" підсилюємо Закоханих і Зірку
   if (spreadType === 'love') {
@@ -197,13 +218,20 @@ function selectCards(birthDate, targetDate, spreadType, count) {
   }
 
   // Визначаємо перевернутість (фаза місяця + personalDay)
-  const baseReversalChance = 0.25 + moonPhase.reversalBonus;
-  const reversalSeed = hashSeed(`${seedStr}|reversed`);
-  const revRng = seededRandom(reversalSeed);
+  // Для адміна — ніколи не перевернуті
+  let reversed;
+  if (isAdmin) {
+    reversed = selected.map(() => false);
+  } else {
+    const baseReversalChance = 0.25 + moonPhase.reversalBonus;
+    const reversalSeed = hashSeed(`${seedStr}|reversed`);
+    const revRng = seededRandom(reversalSeed);
+    reversed = selected.map(() => revRng() < Math.max(0.05, Math.min(0.5, baseReversalChance)));
+  }
 
   return {
     cardIds: selected,
-    reversed: selected.map(() => revRng() < Math.max(0.05, Math.min(0.5, baseReversalChance))),
+    reversed,
     meta: { lifePath, zodiac, personalDay, personalYear, dayNumber, moonPhase }
   };
 }
