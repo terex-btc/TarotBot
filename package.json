@@ -1,0 +1,24 @@
+{
+  "name": "tarot-bot",
+  "version": "1.0.0",
+  "description": "Tarot Telegram Mini App Bot",
+  "main": "backend/server.js",
+  "scripts": {
+    "start": "node backend/server.js",
+    "dev": "nodemon backend/server.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "express": "^5.2.1",
+    "node-telegram-bot-api": "^0.66.0",
+    "dotenv": "^16.4.7",
+    "cors": "^2.8.5",
+    "multer": "^1.4.5-lts.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.11"
+  }
+}

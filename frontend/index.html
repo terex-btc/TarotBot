@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>🔮 Магический кабинет</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <canvas id="stars-canvas"></canvas>
+  <div id="app">
+
+    <!-- ══ ЗАГРУЗКА ══════════════════════════════════════════════════════════ -->
+    <div id="screen-loading" class="screen active">
+      <div class="loading-center">
+        <div class="orb-wrap">
+          <div class="orb"></div>
+          <div class="orb-ring r1"></div>
+          <div class="orb-ring r2"></div>
+          <div class="orb-ring r3"></div>
+        </div>
+        <p class="loading-text">Магический кабинет</p>
+      </div>
+    </div>
+
+    <!-- ══ INTRO ══════════════════════════════════════════════════════════════ -->
+    <div id="screen-intro" class="screen">
+      <div class="intro-wrap">
+        <div class="intro-orb">🔮</div>
+        <h1 class="intro-title">Магический<br><span>Кабинет</span></h1>
+        <p class="intro-sub">Таро · Заговоры · Лунный календарь<br>Персонально — по вашей дате рождения</p>
+        <div class="form-card">
+          <div class="field-wrap">
+            <label class="field-label">Ваше имя</label>
+            <input id="input-name" class="field-input" type="text" placeholder="Имя" maxlength="30" autocomplete="off">
+          </div>
+          <div class="field-wrap">
+            <label class="field-label">Дата рождения</label>
+            <input id="input-birth" class="field-input" type="date" max="2010-01-01" min="1920-01-01">
+          </div>
+          <button id="btn-start" class="btn-primary" disabled>
+            <span>Войти в кабинет</span>
+            <span class="btn-icon-r">🔮</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ ГЛАВНЫЙ ═══════════════════════════════════════════════════════════ -->
+    <div id="screen-home" class="screen">
+      <header class="top-bar">
+        <div class="top-bar-left">
+          <div class="avatar-circle">🔮</div>
+          <div>
+            <div class="top-name" id="top-name">...</div>
+            <div class="top-astro" id="top-astro">...</div>
+          </div>
+        </div>
+        <button class="icon-btn" id="btn-history">📜</button>
+      </header>
+
+      <div class="home-scroll">
+        <!-- Астро-стрипа -->
+        <div class="astro-strip" id="astro-strip"></div>
+
+        <!-- Сегодняшний блок: луна + карта дня -->
+        <div class="today-block" id="today-block">
+          <div class="today-moon" id="today-moon-pill"></div>
+          <div class="today-hint">Сегодня особый день для...</div>
+        </div>
+
+        <!-- Навигация: 4 секции -->
+        <div class="nav-grid">
+          <div class="nav-cell" data-screen="tarot">
+            <div class="nav-cell-emoji">🃏</div>
+            <div class="nav-cell-name">Таро</div>
+            <div class="nav-cell-sub">Расклады</div>
+          </div>
+          <div class="nav-cell" data-screen="spells">
+            <div class="nav-cell-emoji">🕯️</div>
+            <div class="nav-cell-name">Заговоры</div>
+            <div class="nav-cell-sub">Ритуалы</div>
+          </div>
+          <div class="nav-cell" data-screen="moon">
+            <div class="nav-cell-emoji">🌙</div>
+            <div class="nav-cell-name">Луна</div>
+            <div class="nav-cell-sub">Календарь</div>
+          </div>
+          <div class="nav-cell" data-screen="premium">
+            <div class="nav-cell-emoji">👑</div>
+            <div class="nav-cell-name">Премиум</div>
+            <div class="nav-cell-sub">Разблокировать</div>
+          </div>
+        </div>
+
+        <!-- Карта дня (краткая) -->
+        <section class="home-section">
+          <div class="section-head">
+            <span class="section-icon">✨</span>
+            <span class="section-label">Карта дня</span>
+            <span class="badge-free">БЕСПЛАТНО</span>
+          </div>
+          <div id="daily-zone" class="daily-zone">
+            <div class="tap-card" id="tap-daily">
+              <div class="tap-card-glow"></div>
+              <div class="tap-card-body">
+                <span class="tap-card-emoji">🌟</span>
+                <span class="tap-card-text">Нажмите, чтобы<br>открыть карту</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Заговоры на сегодня (превью) -->
+        <section class="home-section">
+          <div class="section-head">
+            <span class="section-icon">🕯️</span>
+            <span class="section-label">Заговоры на сегодня</span>
+            <button class="btn-link" id="btn-all-spells">Все →</button>
+          </div>
+          <div id="spells-preview" class="spells-preview"></div>
+        </section>
+
+        <div style="height:32px"></div>
+      </div>
+    </div>
+
+    <!-- ══ ТАРО ══════════════════════════════════════════════════════════════ -->
+    <div id="screen-tarot" class="screen">
+      <header class="top-bar">
+        <button class="icon-btn back-btn" data-to="home">←</button>
+        <div class="top-bar-title">🃏 Таро</div>
+        <div style="width:40px"></div>
+      </header>
+      <div class="tarot-scroll">
+        <!-- Астро-блок -->
+        <div class="reading-meta" id="tarot-meta"></div>
+
+        <!-- Карта дня -->
+        <section class="home-section">
+          <div class="section-head">
+            <span class="section-icon">✨</span>
+            <span class="section-label">Карта дня</span>
+            <span class="badge-free">БЕСПЛАТНО</span>
+          </div>
+          <div id="daily-zone-tarot" class="daily-zone">
+            <div class="tap-card" id="tap-daily-tarot">
+              <div class="tap-card-glow"></div>
+              <div class="tap-card-body">
+                <span class="tap-card-emoji">🌟</span>
+                <span class="tap-card-text">Нажмите, чтобы<br>открыть карту</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Три карты -->
+        <section class="home-section">
+          <div class="section-head">
+            <span class="section-icon">🃏</span>
+            <span class="section-label">Три карты</span>
+            <span class="badge-free">БЕСПЛАТНО</span>
+          </div>
+          <div class="spread-btn" data-spread="three_card">
+            <div class="spread-btn-left">
+              <div class="spread-emojis">🃏🃏🃏</div>
+              <div>
+                <div class="spread-name">Прошлое · Настоящее · Будущее</div>
+                <div class="spread-desc">Общий расклад на сейчас</div>
+              </div>
+            </div>
+            <div class="spread-arrow">→</div>
+          </div>
+        </section>
+
+        <!-- Премиум расклады -->
+        <section class="home-section">
+          <div class="section-head">
+            <span class="section-icon">👑</span>
+            <span class="section-label">Премиум расклады</span>
+          </div>
+          <div class="premium-grid">
+            <div class="premium-card" data-spread="love">
+              <div class="pcard-lock">🔒</div>
+              <div class="pcard-emoji">❤️</div>
+              <div class="pcard-name">Любовь</div>
+              <div class="pcard-desc">4 карты</div>
+            </div>
+            <div class="premium-card" data-spread="month">
+              <div class="pcard-lock">🔒</div>
+              <div class="pcard-emoji">📅</div>
+              <div class="pcard-name">Месяц</div>
+              <div class="pcard-desc">4 карты</div>
+            </div>
+            <div class="premium-card" data-spread="year">
+              <div class="pcard-lock">🔒</div>
+              <div class="pcard-emoji">🌟</div>
+              <div class="pcard-name">Год</div>
+              <div class="pcard-desc">6 карт</div>
+            </div>
+          </div>
+        </section>
+        <div style="height:32px"></div>
+      </div>
+    </div>
+
+    <!-- ══ РАСКЛАД ════════════════════════════════════════════════════════════ -->
+    <div id="screen-reading" class="screen">
+      <header class="top-bar">
+        <button class="icon-btn back-btn" data-to="tarot">←</button>
+        <div class="top-bar-title" id="reading-title">Расклад</div>
+        <div style="width:40px"></div>
+      </header>
+      <div class="reading-scroll" id="reading-scroll">
+        <div class="reading-meta" id="reading-meta"></div>
+        <div class="reading-interpretation" id="reading-interpretation"></div>
+        <div class="reading-cards-wrap" id="reading-cards-wrap"></div>
+        <div id="reading-summary-btn" class="reading-summary-btn hidden">
+          <button class="btn-primary" id="btn-show-summary">Полная интерпретация ✨</button>
+        </div>
+        <div style="height:40px"></div>
+      </div>
+    </div>
+
+    <!-- ══ ДЕТАЛИ КАРТЫ ТАРО ══════════════════════════════════════════════════ -->
+    <div id="screen-card" class="screen">
+      <header class="top-bar">
+        <button class="icon-btn" id="btn-back-card">←</button>
+        <div class="top-bar-title" id="card-detail-title">Карта</div>
+        <div style="width:40px"></div>
+      </header>
+      <div class="card-detail-scroll" id="card-detail-content"></div>
+    </div>
+
+    <!-- ══ ЗАГОВОРЫ (список категорий) ════════════════════════════════════════ -->
+    <div id="screen-spells" class="screen">
+      <header class="top-bar">
+        <button class="icon-btn back-btn" data-to="home">←</button>
+        <div class="top-bar-title">🕯️ Заговоры</div>
+        <div style="width:40px"></div>
+      </header>
+      <div class="spells-scroll">
+        <!-- Заговоры на сегодня по луне -->
+        <div class="spell-moon-banner" id="spell-moon-banner"></div>
+
+        <!-- Категории -->
+        <div class="spell-cats-title">Выберите категорию</div>
+        <div class="spell-cats" id="spell-cats"></div>
+
+        <div style="height:32px"></div>
+      </div>
+    </div>
+
+    <!-- ══ СПИСОК ЗАГОВОРОВ КАТЕГОРИИ ══════════════════════════════════════════ -->
+    <div id="screen-spell-list" class="screen">
+      <header class="top-bar">
+        <button class="icon-btn back-btn" data-to="spells">←</button>
+        <div class="top-bar-title" id="spell-list-title">Заговоры</div>
+        <div style="width:40px"></div>
+      </header>
+      <div class="spells-scroll" id="spell-list-content"></div>
+    </div>
+
+    <!-- ══ ДЕТАЛИ ЗАГОВОРА ════════════════════════════════════════════════════ -->
+    <div id="screen-spell-detail" class="screen">
+      <header class="top-bar">
+        <button class="icon-btn" id="btn-back-spell">←</button>
+        <div class="top-bar-title" id="spell-detail-title">Заговор</div>
+        <div style="width:40px"></div>
+      </header>
+      <div class="spell-detail-scroll" id="spell-detail-content"></div>
+    </div>
+
+    <!-- ══ ЛУННЫЙ КАЛЕНДАРЬ ═══════════════════════════════════════════════════ -->
+    <div id="screen-moon" class="screen">
+      <header class="top-bar">
+        <button class="icon-btn back-btn" data-to="home">←</button>
+        <div class="top-bar-title">🌙 Лунный календарь</div>
+        <div style="width:40px"></div>
+      </header>
+      <div class="moon-scroll" id="moon-content"></div>
+    </div>
+
+    <!-- ══ ИСТОРИЯ ════════════════════════════════════════════════════════════ -->
+    <div id="screen-history" class="screen">
+      <header class="top-bar">
+        <button class="icon-btn back-btn" data-to="home">←</button>
+        <div class="top-bar-title">Мои расклады</div>
+        <div style="width:40px"></div>
+      </header>
+      <div class="history-scroll" id="history-content"></div>
+    </div>
+
+    <!-- ══ ПРЕМИУМ ════════════════════════════════════════════════════════════ -->
+    <div id="screen-premium" class="screen">
+      <header class="top-bar">
+        <button class="icon-btn back-btn" data-to="home">←</button>
+        <div class="top-bar-title">👑 Премиум</div>
+        <div style="width:40px"></div>
+      </header>
+      <div class="premium-scroll">
+        <div class="premium-hero">
+          <div class="premium-crown">👑</div>
+          <h2 class="premium-title">Магический Премиум</h2>
+          <p class="premium-sub">Откройте полную силу магии.<br>Расклады и заговоры на основе<br>вашего знака и нумерологии.</p>
+        </div>
+        <div class="premium-features">
+          <div class="pf-item"><span class="pf-emoji">🃏</span><div><b>Все расклады Таро</b><div class="pf-desc">Любовь · Месяц · Год</div></div></div>
+          <div class="pf-item"><span class="pf-emoji">🕯️</span><div><b>Все заговоры и ритуалы</b><div class="pf-desc">Привороты · Деньги · Красота</div></div></div>
+          <div class="pf-item"><span class="pf-emoji">🌙</span><div><b>Лунный магический дневник</b><div class="pf-desc">Ритуалы на каждую фазу</div></div></div>
+          <div class="pf-item"><span class="pf-emoji">🔮</span><div><b>Алгоритм судьбы</b><div class="pf-desc">Персонально по дате рождения</div></div></div>
+          <div class="pf-item"><span class="pf-emoji">❤️</span><div><b>Привороты</b><div class="pf-desc">Любовная магия · Верность · Возврат</div></div></div>
+          <div class="pf-item"><span class="pf-emoji">💰</span><div><b>Денежная магия</b><div class="pf-desc">Мощные ритуалы на богатство</div></div></div>
+        </div>
+        <div class="premium-price-block">
+          <div class="premium-price">⭐ 299 звёзд Telegram</div>
+          <button class="btn-primary btn-gold" id="btn-buy-premium">Разблокировать Премиум 👑</button>
+          <p class="premium-note">Оплата через Telegram Stars · Единоразово</p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>
