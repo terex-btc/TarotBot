@@ -164,9 +164,41 @@ async function renderHome() {
     ].join('');
   }
 
-  updatePremiumCards(user.isPremium);
+  // Преміум статус з сервера (перевіряє expiry)
+  const ps = await api('GET', `/users/${state.userId}/premium-status`);
+  if (ps.ok) {
+    state.premiumStatus = ps;
+    state.user.isPremium = ps.isPremium;
+    updatePremiumBadge(ps);
+    updatePremiumCards(ps.isPremium);
+    updateThreeCardLock(ps.isPremium);
+  } else {
+    updatePremiumCards(user.isPremium);
+    updateThreeCardLock(user.isPremium);
+  }
+
   await loadDailyCard('daily-zone', 'tap-daily');
   await loadDailyCard('daily-zone-tarot', 'tap-daily-tarot');
+}
+
+function updatePremiumBadge(ps) {
+  const badge = document.getElementById('premium-badge');
+  if (!badge) return;
+  if (ps.isPremium) {
+    badge.classList.remove('hidden');
+    badge.textContent = ps.daysLeft !== null ? `👑 ${ps.daysLeft}д` : '👑';
+    badge.title = ps.daysLeft !== null ? `Премиум — осталось ${ps.daysLeft} дней` : 'Премиум активен';
+  } else {
+    badge.classList.add('hidden');
+  }
+}
+
+function updateThreeCardLock(isPremium) {
+  const badge = document.getElementById('three-card-badge');
+  const lock  = document.getElementById('three-card-lock');
+  if (badge) badge.textContent = isPremium ? '✓ ОТКРЫТО' : '👑 ПРЕМИУМ';
+  if (badge) badge.className = isPremium ? 'badge-free' : 'badge-premium';
+  if (lock)  lock.textContent = isPremium ? '→' : '🔒';
 }
 
 function getMoonTip(energy) {
@@ -254,8 +286,8 @@ function renderDailyRevealed(zone, reading) {
 
 // ── Таро: розкладання ──────────────────────────────────────────────────────
 async function openSpread(spreadType) {
-  const isPremium = ['love', 'month', 'year'].includes(spreadType);
-  if (isPremium && !state.user?.isPremium) { showScreen('premium'); return; }
+  const needsPremium = ['love', 'month', 'year', 'three_card'].includes(spreadType);
+  if (needsPremium && !state.user?.isPremium) { showScreen('premium'); await loadPremiumScreen(); return; }
   showScreen('reading');
   state.flippedCount = 0;
   document.getElementById('reading-meta').innerHTML = '';
@@ -698,7 +730,7 @@ function initNav() {
       if (s === 'tarot')   { showScreen('tarot'); }
       else if (s === 'spells') { await openSpellsScreen(); }
       else if (s === 'moon')   { showScreen('moon'); await renderMoonCalendar(); }
-      else if (s === 'premium') { showScreen('premium'); loadRefStats(); }
+      else if (s === 'premium') { /* handled by data-screen listener below */ }
     });
   });
 
@@ -723,7 +755,7 @@ function initNav() {
   });
 
   // ── Преміум: вибір плану ──────────────────────────────────────────────────
-  let selectedPlan = 'premium_90'; // за замовчуванням "3 місяці"
+  let selectedPlan = 'premium_90';
   document.querySelectorAll('.plan-card').forEach(el => {
     el.addEventListener('click', () => {
       document.querySelectorAll('.plan-card').forEach(c => c.classList.remove('selected'));
@@ -733,7 +765,6 @@ function initNav() {
       document.getElementById('btn-buy-label').textContent = `Оплатить ${labels[selectedPlan]} 👑`;
       tg?.HapticFeedback?.selectionChanged?.();
     });
-    // Виділяємо дефолт
     if (el.dataset.plan === selectedPlan) el.classList.add('selected');
   });
   document.getElementById('btn-buy-label').textContent = 'Оплатить 3 месяца — ⭐ 699 👑';
@@ -741,19 +772,21 @@ function initNav() {
   document.getElementById('btn-buy-premium').addEventListener('click', async () => {
     const btn = document.getElementById('btn-buy-premium');
     btn.disabled = true;
-    btn.querySelector('#btn-buy-label').textContent = '⭐ Создаём счёт...';
+    document.getElementById('btn-buy-label').textContent = '⭐ Создаём счёт...';
     try {
       const data = await api('POST', '/payments/invoice', { planId: selectedPlan, userId: state.userId });
       if (!data.ok) throw new Error(data.error);
-      tg?.openInvoice?.(data.link, (status) => {
+      tg?.openInvoice?.(data.link, async (status) => {
         if (status === 'paid') {
-          toast('✨ Премиум активирован! Перезайди в кабинет.');
-          setTimeout(() => location.reload(), 1500);
+          toast('✨ Премиум активирован!');
+          const ps = await api('GET', `/users/${state.userId}/premium-status`);
+          if (ps.ok) { state.user.isPremium = ps.isPremium; updatePremiumBadge(ps); updatePremiumCards(ps.isPremium); updateThreeCardLock(ps.isPremium); }
+          showScreen('home', 'left');
         } else if (status === 'cancelled') {
           toast('Оплата отменена');
         }
       });
-    } catch (e) {
+    } catch (_) {
       toast('Ошибка создания счёта. Попробуй позже.');
     } finally {
       btn.disabled = false;
@@ -761,40 +794,96 @@ function initNav() {
     }
   });
 
-  // ── Реферальна система ────────────────────────────────────────────────────
-  document.getElementById('btn-ref')?.addEventListener('click', async () => {
-    try {
-      const botInfo = await api('GET', '/status');
-      const botName = botInfo.botUsername || 'MagicCabinetBot';
-      const refLink = `https://t.me/${botName}?start=ref_${state.userId}`;
-      if (tg?.shareURL) {
-        tg.shareURL(refLink, '🔮 Присоединяйся к Магическому кабинету — карты Таро, заговоры и лунный календарь персонально!');
-      } else if (navigator.share) {
-        await navigator.share({ text: `🔮 Магический кабинет — Таро, заговоры и лунная магия!\n${refLink}` });
-      } else {
-        await navigator.clipboard.writeText(refLink);
-        toast('Ссылка скопирована! 🔗');
-      }
-      // Показуємо статистику
-      const refData = await api('GET', `/users/${state.userId}/ref`);
-      if (refData.ok && refData.refBonus > 0) {
-        document.getElementById('ref-stats').innerHTML =
-          `✨ Уже пригласила: <b>${refData.refBonus}</b> подруг${refData.refBonus === 1 ? 'у' : 'и'}`;
-      }
-    } catch (_) { toast('Не удалось поделиться'); }
+  // ── Кнопка "Пригласить подругу" на преміум-екрані ────────────────────────
+  document.getElementById('btn-share-ref')?.addEventListener('click', () => shareRefLink());
+
+  // Підтримка
+  document.getElementById('btn-support')?.addEventListener('click', async () => {
+    showScreen('support');
+    await loadSupportMessages();
+  });
+  document.getElementById('support-send')?.addEventListener('click', sendSupportMessage);
+  document.getElementById('support-input')?.addEventListener('keydown', e => {
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendSupportMessage(); }
   });
 
-  // Завантажуємо реф-статистику при відкритті
-  async function loadRefStats() {
-    const refData = await api('GET', `/users/${state.userId}/ref`);
-    if (refData.ok && refData.refBonus > 0) {
-      document.getElementById('ref-stats').innerHTML =
-        `✨ Уже пригласила: <b>${refData.refBonus}</b> подруг${refData.refBonus === 1 ? 'у' : 'и'}`;
-    }
-  }
+  // Преміум з навігації
+  document.querySelectorAll('[data-screen="premium"]').forEach(el => {
+    el.addEventListener('click', async () => { showScreen('premium'); await loadPremiumScreen(); });
+  });
 
   // Історія
   document.getElementById('btn-history').addEventListener('click', async () => { showScreen('history'); await loadHistory(); });
+}
+
+// ── Преміум екран ──────────────────────────────────────────────────────────
+async function loadPremiumScreen() {
+  const ps = await api('GET', `/users/${state.userId}/premium-status`);
+  if (!ps.ok) return;
+  const invited = document.getElementById('fpb-invited');
+  if (invited && ps.refBonus > 0) {
+    invited.innerHTML = `✨ Уже пригласила: <b>${ps.refBonus}</b> ${ps.refBonus === 1 ? 'подругу' : 'подруг'} — заработала <b>${ps.refBonus}</b> дн. Премиума`;
+  }
+  if (ps.isPremium && ps.daysLeft !== null) {
+    const hero = document.querySelector('.premium-hero .premium-sub');
+    if (hero) hero.innerHTML = `✅ Премиум активен · осталось <b>${ps.daysLeft}</b> дней`;
+  }
+}
+
+// ── Реферальне посилання ───────────────────────────────────────────────────
+async function shareRefLink() {
+  try {
+    const botInfo = await api('GET', '/status');
+    const botName = botInfo.botUsername || 'MagicCabinetBot';
+    const refLink = `https://t.me/${botName}?start=ref_${state.userId}`;
+    const text    = '🔮 Присоединяйся к Магическому кабинету — карты Таро, заговоры и лунный календарь персонально по дате рождения!';
+    if (tg?.shareURL) {
+      tg.shareURL(refLink, text);
+    } else if (navigator.share) {
+      await navigator.share({ text: `${text}\n${refLink}` });
+    } else {
+      await navigator.clipboard.writeText(refLink);
+      toast('Ссылка скопирована! 🔗');
+    }
+  } catch (_) { toast('Не удалось поделиться'); }
+}
+
+// ── Підтримка ──────────────────────────────────────────────────────────────
+async function loadSupportMessages() {
+  const wrap = document.getElementById('support-messages');
+  const data = await api('GET', `/support/messages/${state.userId}`);
+  const msgs = data.ok ? data.messages : [];
+  if (!msgs.length) {
+    wrap.innerHTML = `<div class="support-intro"><div class="support-intro-icon">🔮</div><div class="support-intro-text">Задайте любой вопрос — мы ответим в ближайшее время</div></div>`;
+    return;
+  }
+  wrap.innerHTML = msgs.map(m => `
+    <div class="support-msg ${m.from === 'user' ? 'msg-user' : 'msg-admin'}">
+      <div class="msg-bubble">${m.text}</div>
+      <div class="msg-time">${fmtDate(m.at)}</div>
+    </div>
+  `).join('');
+  wrap.scrollTop = wrap.scrollHeight;
+}
+
+async function sendSupportMessage() {
+  const inp  = document.getElementById('support-input');
+  const text = inp.value.trim();
+  if (!text) return;
+  inp.value = '';
+  inp.style.height = '';
+  const wrap = document.getElementById('support-messages');
+  // Показуємо одразу
+  wrap.insertAdjacentHTML('beforeend', `
+    <div class="support-msg msg-user">
+      <div class="msg-bubble">${text}</div>
+      <div class="msg-time">Отправляется...</div>
+    </div>
+  `);
+  wrap.scrollTop = wrap.scrollHeight;
+  tg?.HapticFeedback?.impactOccurred?.('light');
+  const data = await api('POST', '/support/message', { userId: state.userId, text });
+  if (!data.ok) toast('Ошибка отправки. Попробуйте позже.');
 }
 
 // ── Helpers ────────────────────────────────────────────────────────────────

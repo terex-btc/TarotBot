@@ -26,7 +26,7 @@ const SPREAD_TYPES = {
   },
   three_card: {
     name: { ua: 'Три карти', ru: 'Три карты', en: 'Three Cards' },
-    count: 3, premium: false,
+    count: 3, premium: true,
     positions: [
       { ua: 'Минуле', ru: 'Прошлое', en: 'Past' },
       { ua: 'Теперішнє', ru: 'Настоящее', en: 'Present' },

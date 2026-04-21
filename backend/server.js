@@ -175,6 +175,48 @@ if (BOT_TOKEN) {
     }
   });
 
+  // ── Підтримка: адмін відповідає на повідомлення ──────────────────────────
+  const ADMIN_ID = '369503508';
+  bot.on('message', async (msg) => {
+    // Тільки від адміна, тільки reply
+    if (String(msg.from.id) !== ADMIN_ID) return;
+    if (!msg.reply_to_message || !msg.text) return;
+
+    const { loadChats, saveChats } = require('./routes/support');
+    const chats = loadChats();
+
+    // Шукаємо userId за message_id оригінального повідомлення
+    const origMsgId = msg.reply_to_message.message_id;
+    const userId = chats[`msg_${origMsgId}`];
+    if (!userId) return; // не наше повідомлення
+
+    // Зберігаємо відповідь
+    if (!chats[userId]) chats[userId] = { messages: [] };
+    chats[userId].messages.push({
+      id: Date.now().toString(),
+      from: 'admin',
+      text: msg.text,
+      at: new Date().toISOString()
+    });
+    saveChats(chats);
+
+    // Надсилаємо юзеру
+    try {
+      const webAppUrl = process.env.WEBAPP_URL || `http://localhost:${PORT}`;
+      await bot.sendMessage(userId,
+        `🔮 *Ответ от Магического кабинета:*\n\n${msg.text}`,
+        {
+          parse_mode: 'Markdown',
+          reply_markup: { inline_keyboard: [[{ text: '💬 Открыть чат', web_app: { url: `${webAppUrl}?screen=support` } }]] }
+        }
+      );
+      // Підтвердження адміну
+      await bot.sendMessage(ADMIN_ID, `✅ Ответ отправлен пользователю ${userId}`, { reply_to_message_id: msg.message_id });
+    } catch (e) {
+      await bot.sendMessage(ADMIN_ID, `❌ Не удалось отправить: ${e.message}`);
+    }
+  });
+
   bot.on('polling_error', (error) => {
     console.error('[Bot] Polling error:', error.message);
   });
@@ -191,6 +233,7 @@ app.use('/api/readings', require('./routes/readings'));
 app.use('/api/users', require('./routes/users'));
 app.use('/api/spells', require('./routes/spells'));
 app.use('/api/payments', require('./routes/payments'));
+app.use('/api/support', require('./routes/support'));
 
 // ─── Status ───────────────────────────────────────────────────────────────────
 app.get('/api/status', (req, res) => {

@@ -276,6 +276,31 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   min-height: 56px;
 }
 .top-bar-left { display: flex; align-items: center; gap: 10px; }
+.top-bar-right { display: flex; align-items: center; gap: 6px; }
+
+/* Преміум бейдж у хедері */
+.premium-badge {
+  background: linear-gradient(135deg, #f0c040, #f59e0b);
+  color: #1a0a00;
+  font-size: 11px;
+  font-weight: 800;
+  padding: 3px 8px;
+  border-radius: 20px;
+  white-space: nowrap;
+  letter-spacing: 0.3px;
+}
+.premium-badge.hidden { display: none; }
+
+/* Бейдж преміум на кнопці "Три карти" */
+.badge-premium {
+  font-size: 10px;
+  font-weight: 700;
+  background: linear-gradient(135deg, var(--purple), var(--purple2));
+  color: #fff;
+  padding: 2px 8px;
+  border-radius: 20px;
+  white-space: nowrap;
+}
 .top-bar-title {
   font-family: 'Cinzel', serif;
   font-size: 16px;
@@ -686,6 +711,126 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   margin-bottom: 16px;
 }
 .premium-note { font-size: 11px; color: var(--text3); margin-top: 10px; text-align: center; }
+.premium-note-bottom { font-size: 10px; color: var(--text3); text-align: center; margin-top: 8px; }
+
+/* ── Безкоштовний преміум блок ───────────────────────────────────────────── */
+.free-premium-block {
+  background: linear-gradient(135deg, rgba(124,58,237,0.18), rgba(240,192,64,0.1));
+  border: 1.5px solid var(--gold);
+  border-radius: var(--r);
+  padding: 16px;
+  margin-bottom: 18px;
+}
+.fpb-header { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 12px; }
+.fpb-gift { font-size: 32px; line-height: 1; flex-shrink: 0; }
+.fpb-title { font-size: 15px; font-weight: 700; color: var(--gold); margin-bottom: 3px; }
+.fpb-sub   { font-size: 12px; color: var(--text2); }
+.fpb-counter { display: flex; flex-direction: column; gap: 5px; margin-bottom: 12px; }
+.fpb-step {
+  font-size: 12px;
+  color: var(--text2);
+  padding: 4px 10px;
+  background: var(--surface);
+  border-radius: 8px;
+}
+.fpb-invited { font-size: 13px; color: var(--gold); margin-bottom: 10px; min-height: 18px; }
+.btn-free-prem {
+  background: linear-gradient(135deg, var(--gold), #f59e0b) !important;
+  color: #1a0a00 !important;
+  font-weight: 800 !important;
+}
+
+.premium-divider {
+  text-align: center;
+  font-size: 12px;
+  color: var(--text3);
+  margin: 6px 0 18px;
+  position: relative;
+}
+
+/* ── Підтримка ────────────────────────────────────────────────────────────── */
+#screen-support { display: flex; flex-direction: column; }
+.support-wrap {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.support-messages {
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.support-intro {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 40px 20px;
+  gap: 12px;
+}
+.support-intro-icon { font-size: 48px; }
+.support-intro-text { font-size: 14px; color: var(--text2); line-height: 1.5; }
+.support-msg { display: flex; flex-direction: column; max-width: 82%; }
+.msg-user  { align-self: flex-end; align-items: flex-end; }
+.msg-admin { align-self: flex-start; align-items: flex-start; }
+.msg-bubble {
+  padding: 10px 14px;
+  border-radius: 16px;
+  font-size: 14px;
+  line-height: 1.45;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+.msg-user  .msg-bubble { background: var(--purple); color: #fff; border-bottom-right-radius: 4px; }
+.msg-admin .msg-bubble {
+  background: linear-gradient(135deg, rgba(240,192,64,0.15), rgba(124,58,237,0.15));
+  border: 1px solid var(--border);
+  color: var(--text);
+  border-bottom-left-radius: 4px;
+}
+.msg-time { font-size: 10px; color: var(--text3); margin-top: 3px; padding: 0 4px; }
+.support-input-bar {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  padding: 10px 14px calc(var(--safe-b) + 10px);
+  background: rgba(7,3,15,.92);
+  border-top: 1px solid var(--border);
+}
+.support-textarea {
+  flex: 1;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 10px 14px;
+  color: var(--text);
+  font-size: 14px;
+  font-family: inherit;
+  resize: none;
+  outline: none;
+  max-height: 120px;
+  overflow-y: auto;
+  line-height: 1.4;
+}
+.support-textarea:focus { border-color: var(--purple2); }
+.support-send-btn {
+  width: 40px; height: 40px;
+  border-radius: 50%;
+  background: var(--purple);
+  color: #fff;
+  font-size: 18px;
+  border: none;
+  cursor: pointer;
+  flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  transition: background .2s;
+}
+.support-send-btn:active { background: var(--purple2); }
 
 /* ── Плани преміуму ───────────────────────────────────────────────────────── */
 .plans-wrap {

@@ -18,6 +18,20 @@ function saveUsers(data) {
   fs.writeFileSync(USERS_PATH, JSON.stringify(data, null, 2));
 }
 
+// Перевірка активного преміуму (враховує термін дії)
+function isPremiumActive(user) {
+  if (!user) return false;
+  if (user.premiumExpiry) {
+    const active = Date.now() < user.premiumExpiry;
+    // Автоматично знімаємо флаг якщо термін вийшов
+    if (!active && user.isPremium) {
+      user.isPremium = false;
+    }
+    return active;
+  }
+  return !!user.isPremium;
+}
+
 // POST /api/users/init
 router.post('/init', (req, res) => {
   const { userId, username, firstName, name, birthDate, lang } = req.body;
@@ -78,6 +92,21 @@ router.get('/:userId', (req, res) => {
   res.json({ ok: true, user });
 });
 
+// GET /api/users/:userId/premium-status
+router.get('/:userId/premium-status', (req, res) => {
+  const users = loadUsers();
+  const user = users[req.params.userId];
+  if (!user) return res.json({ ok: true, isPremium: false, premiumExpiry: null, refBonus: 0 });
+  const active = isPremiumActive(user);
+  res.json({
+    ok: true,
+    isPremium: active,
+    premiumExpiry: user.premiumExpiry || null,
+    refBonus: user.refBonus || 0,
+    daysLeft: user.premiumExpiry ? Math.max(0, Math.ceil((user.premiumExpiry - Date.now()) / 86400000)) : null
+  });
+});
+
 // GET /api/users/:userId/ref — реферальна статистика
 router.get('/:userId/ref', (req, res) => {
   const users = loadUsers();
@@ -91,3 +120,4 @@ router.get('/:userId/ref', (req, res) => {
 module.exports = router;
 module.exports.loadUsers = loadUsers;
 module.exports.saveUsersFromServer = saveUsers;
+module.exports.isPremiumActive = isPremiumActive;

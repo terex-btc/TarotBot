@@ -62,7 +62,11 @@
             <div class="top-astro" id="top-astro">...</div>
           </div>
         </div>
-        <button class="icon-btn" id="btn-history">📜</button>
+        <div class="top-bar-right">
+          <div id="premium-badge" class="premium-badge hidden" title="Премиум активен"></div>
+          <button class="icon-btn" id="btn-support" title="Поддержка">💬</button>
+          <button class="icon-btn" id="btn-history" title="История">📜</button>
+        </div>
       </header>
 
       <div class="home-scroll">
@@ -160,12 +164,12 @@
           </div>
         </section>
 
-        <!-- Три карты -->
+        <!-- Три карты (премиум) -->
         <section class="home-section">
           <div class="section-head">
             <span class="section-icon">🃏</span>
             <span class="section-label">Три карты</span>
-            <span class="badge-free">БЕСПЛАТНО</span>
+            <span class="badge-premium" id="three-card-badge">👑 ПРЕМИУМ</span>
           </div>
           <div class="spread-btn" data-spread="three_card">
             <div class="spread-btn-left">
@@ -175,7 +179,7 @@
                 <div class="spread-desc">Общий расклад на сейчас</div>
               </div>
             </div>
-            <div class="spread-arrow">→</div>
+            <div class="spread-arrow" id="three-card-lock">🔒</div>
           </div>
         </section>
 
@@ -287,6 +291,27 @@
       <div class="moon-scroll" id="moon-content"></div>
     </div>
 
+    <!-- ══ ПОДДЕРЖКА ═══════════════════════════════════════════════════════════ -->
+    <div id="screen-support" class="screen">
+      <header class="top-bar">
+        <button class="icon-btn back-btn" data-to="home">←</button>
+        <div class="top-bar-title">💬 Поддержка</div>
+        <div style="width:40px"></div>
+      </header>
+      <div class="support-wrap">
+        <div class="support-messages" id="support-messages">
+          <div class="support-intro">
+            <div class="support-intro-icon">🔮</div>
+            <div class="support-intro-text">Задайте любой вопрос — мы ответим в ближайшее время</div>
+          </div>
+        </div>
+        <div class="support-input-bar">
+          <textarea id="support-input" class="support-textarea" placeholder="Напишите сообщение..." rows="1" maxlength="1000"></textarea>
+          <button class="support-send-btn" id="support-send">→</button>
+        </div>
+      </div>
+    </div>
+
     <!-- ══ ИСТОРИЯ ════════════════════════════════════════════════════════════ -->
     <div id="screen-history" class="screen">
       <header class="top-bar">
@@ -310,6 +335,28 @@
           <h2 class="premium-title">Магический Премиум</h2>
           <p class="premium-sub">Полная сила магии — персонально<br>по вашему знаку и нумерологии</p>
         </div>
+
+        <!-- Бесплатный премиум через реферал — ГЛАВНЫЙ БЛОК -->
+        <div class="free-premium-block">
+          <div class="fpb-header">
+            <span class="fpb-gift">🎁</span>
+            <div>
+              <div class="fpb-title">Получи Премиум бесплатно!</div>
+              <div class="fpb-sub">Пригласи подругу — получи 1 день Премиума</div>
+            </div>
+          </div>
+          <div class="fpb-counter" id="fpb-counter">
+            <div class="fpb-step" id="fpb-step1">👤 1 подруга = 1 день</div>
+            <div class="fpb-step" id="fpb-step3">👥 3 подруги = 3 дня</div>
+            <div class="fpb-step" id="fpb-step7">🌟 7 подруг = неделя!</div>
+          </div>
+          <div class="fpb-invited" id="fpb-invited"></div>
+          <button class="btn-primary btn-free-prem" id="btn-share-ref">
+            📲 Пригласить подругу
+          </button>
+        </div>
+
+        <div class="premium-divider">— или купить —</div>
 
         <div class="premium-features">
           <div class="pf-item"><span class="pf-emoji">🃏</span><div><b>Все расклады Таро</b><div class="pf-desc">Любовь · Месяц · Год — 22 карты судьбы</div></div></div>
@@ -348,13 +395,7 @@
         </button>
         <p class="premium-note">Оплата через Telegram Stars · Безопасно</p>
 
-        <!-- Реферальний блок -->
-        <div class="ref-block">
-          <div class="ref-title">🎁 Бесплатный Премиум</div>
-          <div class="ref-desc">Пригласи подругу — получи <b>1 день Премиума</b> в подарок</div>
-          <button class="btn-ref" id="btn-ref">Получить реферальную ссылку →</button>
-          <div class="ref-stats" id="ref-stats"></div>
-        </div>
+        <p class="premium-note-bottom">Оплачивая вы соглашаетесь с условиями сервиса</p>
 
         <div style="height:32px"></div>
       </div>
