@@ -685,7 +685,82 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   font-size: 22px; font-weight: 700; color: var(--gold);
   margin-bottom: 16px;
 }
-.premium-note { font-size: 11px; color: var(--text3); margin-top: 10px; }
+.premium-note { font-size: 11px; color: var(--text3); margin-top: 10px; text-align: center; }
+
+/* ── Плани преміуму ───────────────────────────────────────────────────────── */
+.plans-wrap {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 18px;
+}
+.plan-card {
+  flex: 1;
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: var(--r);
+  padding: 14px 8px;
+  text-align: center;
+  cursor: pointer;
+  position: relative;
+  transition: border-color .2s, background .2s, transform .15s;
+}
+.plan-card.selected {
+  border-color: var(--gold);
+  background: rgba(240,192,64,0.08);
+  transform: translateY(-2px);
+}
+.plan-card.plan-popular {
+  border-color: var(--purple2);
+}
+.plan-card.plan-popular.selected {
+  border-color: var(--gold);
+}
+.plan-badge {
+  position: absolute;
+  top: -10px; left: 50%;
+  transform: translateX(-50%);
+  background: var(--purple2);
+  color: #fff;
+  font-size: 9px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 20px;
+  white-space: nowrap;
+}
+.plan-emoji { font-size: 22px; margin-bottom: 4px; }
+.plan-label { font-size: 11px; color: var(--text2); margin-bottom: 6px; }
+.plan-price { font-size: 16px; font-weight: 700; color: var(--gold); margin-bottom: 2px; }
+.plan-per   { font-size: 10px; color: var(--text3); }
+
+/* ── Реферальний блок ────────────────────────────────────────────────────── */
+.ref-block {
+  margin-top: 24px;
+  background: rgba(124,58,237,0.1);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 16px;
+  text-align: center;
+}
+.ref-title  { font-size: 16px; font-weight: 700; margin-bottom: 6px; }
+.ref-desc   { font-size: 13px; color: var(--text2); margin-bottom: 14px; line-height: 1.5; }
+.btn-ref {
+  width: 100%;
+  padding: 12px;
+  background: var(--surface);
+  border: 1.5px solid var(--border2);
+  border-radius: var(--r-sm);
+  color: var(--purple3);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background .2s;
+}
+.btn-ref:active { background: var(--surf2); }
+.ref-stats {
+  margin-top: 10px;
+  font-size: 13px;
+  color: var(--gold);
+}
 
 /* ══ ИСТОРИЯ ══════════════════════════════════════════════════════════════ */
 .history-scroll {

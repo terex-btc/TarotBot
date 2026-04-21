@@ -308,21 +308,55 @@
         <div class="premium-hero">
           <div class="premium-crown">👑</div>
           <h2 class="premium-title">Магический Премиум</h2>
-          <p class="premium-sub">Откройте полную силу магии.<br>Расклады и заговоры на основе<br>вашего знака и нумерологии.</p>
+          <p class="premium-sub">Полная сила магии — персонально<br>по вашему знаку и нумерологии</p>
         </div>
+
         <div class="premium-features">
-          <div class="pf-item"><span class="pf-emoji">🃏</span><div><b>Все расклады Таро</b><div class="pf-desc">Любовь · Месяц · Год</div></div></div>
-          <div class="pf-item"><span class="pf-emoji">🕯️</span><div><b>Все заговоры и ритуалы</b><div class="pf-desc">Привороты · Деньги · Красота</div></div></div>
-          <div class="pf-item"><span class="pf-emoji">🌙</span><div><b>Лунный магический дневник</b><div class="pf-desc">Ритуалы на каждую фазу</div></div></div>
+          <div class="pf-item"><span class="pf-emoji">🃏</span><div><b>Все расклады Таро</b><div class="pf-desc">Любовь · Месяц · Год — 22 карты судьбы</div></div></div>
+          <div class="pf-item"><span class="pf-emoji">🕯️</span><div><b>Все заговоры и ритуалы</b><div class="pf-desc">Привороты · Деньги · Красота · Защита</div></div></div>
+          <div class="pf-item"><span class="pf-emoji">🌙</span><div><b>Лунный магический дневник</b><div class="pf-desc">Ритуалы на каждую фазу луны</div></div></div>
           <div class="pf-item"><span class="pf-emoji">🔮</span><div><b>Алгоритм судьбы</b><div class="pf-desc">Персонально по дате рождения</div></div></div>
-          <div class="pf-item"><span class="pf-emoji">❤️</span><div><b>Привороты</b><div class="pf-desc">Любовная магия · Верность · Возврат</div></div></div>
+          <div class="pf-item"><span class="pf-emoji">❤️</span><div><b>Привороты силы</b><div class="pf-desc">Любовная магия · Верность · Возврат</div></div></div>
           <div class="pf-item"><span class="pf-emoji">💰</span><div><b>Денежная магия</b><div class="pf-desc">Мощные ритуалы на богатство</div></div></div>
         </div>
-        <div class="premium-price-block">
-          <div class="premium-price">⭐ 299 звёзд Telegram</div>
-          <button class="btn-primary btn-gold" id="btn-buy-premium">Разблокировать Премиум 👑</button>
-          <p class="premium-note">Оплата через Telegram Stars · Единоразово</p>
+
+        <!-- Плани -->
+        <div class="plans-wrap">
+          <div class="plan-card" data-plan="premium_30">
+            <div class="plan-emoji">🌙</div>
+            <div class="plan-label">1 месяц</div>
+            <div class="plan-price">⭐ 299</div>
+            <div class="plan-per">≈ 10 ⭐/день</div>
+          </div>
+          <div class="plan-card plan-popular" data-plan="premium_90">
+            <div class="plan-badge">ВЫГОДНО</div>
+            <div class="plan-emoji">🌟</div>
+            <div class="plan-label">3 месяца</div>
+            <div class="plan-price">⭐ 699</div>
+            <div class="plan-per">≈ 8 ⭐/день</div>
+          </div>
+          <div class="plan-card" data-plan="premium_365">
+            <div class="plan-emoji">👑</div>
+            <div class="plan-label">1 год</div>
+            <div class="plan-price">⭐ 1990</div>
+            <div class="plan-per">≈ 5 ⭐/день</div>
+          </div>
         </div>
+
+        <button class="btn-primary btn-gold" id="btn-buy-premium">
+          <span id="btn-buy-label">Выбрать план 👑</span>
+        </button>
+        <p class="premium-note">Оплата через Telegram Stars · Безопасно</p>
+
+        <!-- Реферальний блок -->
+        <div class="ref-block">
+          <div class="ref-title">🎁 Бесплатный Премиум</div>
+          <div class="ref-desc">Пригласи подругу — получи <b>1 день Премиума</b> в подарок</div>
+          <button class="btn-ref" id="btn-ref">Получить реферальную ссылку →</button>
+          <div class="ref-stats" id="ref-stats"></div>
+        </div>
+
+        <div style="height:32px"></div>
       </div>
     </div>
 

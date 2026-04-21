@@ -78,5 +78,16 @@ router.get('/:userId', (req, res) => {
   res.json({ ok: true, user });
 });
 
+// GET /api/users/:userId/ref — реферальна статистика
+router.get('/:userId/ref', (req, res) => {
+  const users = loadUsers();
+  const user = users[req.params.userId];
+  if (!user) return res.status(404).json({ ok: false, error: 'User not found' });
+  const refBonus = user.refBonus || 0;
+  const premiumExpiry = user.premiumExpiry || null;
+  res.json({ ok: true, refBonus, premiumExpiry, isPremium: user.isPremium });
+});
+
 module.exports = router;
 module.exports.loadUsers = loadUsers;
+module.exports.saveUsersFromServer = saveUsers;

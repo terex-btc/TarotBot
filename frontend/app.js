@@ -698,7 +698,7 @@ function initNav() {
       if (s === 'tarot')   { showScreen('tarot'); }
       else if (s === 'spells') { await openSpellsScreen(); }
       else if (s === 'moon')   { showScreen('moon'); await renderMoonCalendar(); }
-      else if (s === 'premium') { showScreen('premium'); }
+      else if (s === 'premium') { showScreen('premium'); loadRefStats(); }
     });
   });
 
@@ -722,10 +722,76 @@ function initNav() {
     tg?.showPopup?.({ title: ru(r.spreadName), message: lines.slice(0, 600), buttons: [{ type: 'close' }] }) || alert(lines);
   });
 
-  // Premиум покупка
-  document.getElementById('btn-buy-premium').addEventListener('click', () => {
-    toast('Оплата будет доступна после подключения бота ⭐');
+  // ── Преміум: вибір плану ──────────────────────────────────────────────────
+  let selectedPlan = 'premium_90'; // за замовчуванням "3 місяці"
+  document.querySelectorAll('.plan-card').forEach(el => {
+    el.addEventListener('click', () => {
+      document.querySelectorAll('.plan-card').forEach(c => c.classList.remove('selected'));
+      el.classList.add('selected');
+      selectedPlan = el.dataset.plan;
+      const labels = { premium_30: '1 месяц — ⭐ 299', premium_90: '3 месяца — ⭐ 699', premium_365: '1 год — ⭐ 1990' };
+      document.getElementById('btn-buy-label').textContent = `Оплатить ${labels[selectedPlan]} 👑`;
+      tg?.HapticFeedback?.selectionChanged?.();
+    });
+    // Виділяємо дефолт
+    if (el.dataset.plan === selectedPlan) el.classList.add('selected');
   });
+  document.getElementById('btn-buy-label').textContent = 'Оплатить 3 месяца — ⭐ 699 👑';
+
+  document.getElementById('btn-buy-premium').addEventListener('click', async () => {
+    const btn = document.getElementById('btn-buy-premium');
+    btn.disabled = true;
+    btn.querySelector('#btn-buy-label').textContent = '⭐ Создаём счёт...';
+    try {
+      const data = await api('POST', '/payments/invoice', { planId: selectedPlan, userId: state.userId });
+      if (!data.ok) throw new Error(data.error);
+      tg?.openInvoice?.(data.link, (status) => {
+        if (status === 'paid') {
+          toast('✨ Премиум активирован! Перезайди в кабинет.');
+          setTimeout(() => location.reload(), 1500);
+        } else if (status === 'cancelled') {
+          toast('Оплата отменена');
+        }
+      });
+    } catch (e) {
+      toast('Ошибка создания счёта. Попробуй позже.');
+    } finally {
+      btn.disabled = false;
+      document.getElementById('btn-buy-label').textContent = 'Оплатить 👑';
+    }
+  });
+
+  // ── Реферальна система ────────────────────────────────────────────────────
+  document.getElementById('btn-ref')?.addEventListener('click', async () => {
+    try {
+      const botInfo = await api('GET', '/status');
+      const botName = botInfo.botUsername || 'MagicCabinetBot';
+      const refLink = `https://t.me/${botName}?start=ref_${state.userId}`;
+      if (tg?.shareURL) {
+        tg.shareURL(refLink, '🔮 Присоединяйся к Магическому кабинету — карты Таро, заговоры и лунный календарь персонально!');
+      } else if (navigator.share) {
+        await navigator.share({ text: `🔮 Магический кабинет — Таро, заговоры и лунная магия!\n${refLink}` });
+      } else {
+        await navigator.clipboard.writeText(refLink);
+        toast('Ссылка скопирована! 🔗');
+      }
+      // Показуємо статистику
+      const refData = await api('GET', `/users/${state.userId}/ref`);
+      if (refData.ok && refData.refBonus > 0) {
+        document.getElementById('ref-stats').innerHTML =
+          `✨ Уже пригласила: <b>${refData.refBonus}</b> подруг${refData.refBonus === 1 ? 'у' : 'и'}`;
+      }
+    } catch (_) { toast('Не удалось поделиться'); }
+  });
+
+  // Завантажуємо реф-статистику при відкритті
+  async function loadRefStats() {
+    const refData = await api('GET', `/users/${state.userId}/ref`);
+    if (refData.ok && refData.refBonus > 0) {
+      document.getElementById('ref-stats').innerHTML =
+        `✨ Уже пригласила: <b>${refData.refBonus}</b> подруг${refData.refBonus === 1 ? 'у' : 'и'}`;
+    }
+  }
 
   // Історія
   document.getElementById('btn-history').addEventListener('click', async () => { showScreen('history'); await loadHistory(); });

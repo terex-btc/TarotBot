@@ -95,6 +95,86 @@ if (BOT_TOKEN) {
     return d[energy] || 'Время магии и ритуалов.';
   }
 
+  // /ref — реферальна система
+  bot.onText(/\/ref/, async (msg) => {
+    const chatId = msg.chat.id;
+    const webAppUrl = process.env.WEBAPP_URL || `http://localhost:${PORT}`;
+    const refLink = `https://t.me/${(await bot.getMe()).username}?start=ref_${chatId}`;
+    await bot.sendMessage(chatId,
+      `🎁 *Пригласи подругу — получи Премиум!*\n\nТвоя реферальная ссылка:\n\`${refLink}\`\n\n✨ За каждую подругу которая зарегистрируется — ты получаешь *1 день Премиума* бесплатно!\n3 подруги = *3 дня* 🔮`,
+      { parse_mode: 'Markdown' }
+    );
+  });
+
+  // Обробка реферального /start
+  bot.onText(/\/start ref_(\d+)/, async (msg, match) => {
+    const chatId = msg.chat.id;
+    const refUserId = match[1];
+    const webAppUrl = process.env.WEBAPP_URL || `http://localhost:${PORT}`;
+
+    if (String(chatId) === refUserId) return; // сам себе не може запросити
+
+    // Активуємо 1 день преміум рефереру
+    const { loadUsers, saveUsersFromServer } = require('./routes/users');
+    const users = loadUsers();
+    if (users[refUserId]) {
+      const now = Date.now();
+      const currentExpiry = users[refUserId].premiumExpiry || now;
+      const base = Math.max(currentExpiry, now);
+      users[refUserId].premiumExpiry = base + 24 * 60 * 60 * 1000; // +1 день
+      users[refUserId].isPremium = true;
+      users[refUserId].refBonus = (users[refUserId].refBonus || 0) + 1;
+      saveUsersFromServer(users);
+      try {
+        await bot.sendMessage(refUserId,
+          `🎉 Твоя подруга присоединилась к Магическому кабинету!\n✨ Тебе начислен *1 день Премиума* в подарок 🔮`,
+          { parse_mode: 'Markdown' }
+        );
+      } catch (_) {}
+    }
+
+    // Стандартне привітання для нового юзера
+    const name = msg.from?.first_name || 'Дорогая';
+    const welcome = `🔮 *Добро пожаловать, ${name}!*\n\nТебя пригласила подруга — и звёзды уже ждут тебя!\n\n✨ Открой Магический кабинет и получи карту дня 👇`;
+    await bot.sendMessage(chatId, welcome, {
+      parse_mode: 'Markdown',
+      reply_markup: { inline_keyboard: [[{ text: '🔮 Открыть Магический кабинет', web_app: { url: webAppUrl } }]] }
+    });
+  });
+
+  // ── Платежі Telegram Stars ─────────────────────────────────────────────────
+  bot.on('pre_checkout_query', async (query) => {
+    await bot.answerPreCheckoutQuery(query.id, true);
+  });
+
+  bot.on('successful_payment', async (msg) => {
+    const chatId  = msg.chat.id;
+    const payload = msg.successful_payment.invoice_payload;
+    const stars   = msg.successful_payment.total_amount;
+
+    if (payload.startsWith('premium_')) {
+      const days = payload === 'premium_30' ? 30 : payload === 'premium_90' ? 90 : 365;
+      const { loadUsers, saveUsersFromServer } = require('./routes/users');
+      const users = loadUsers();
+      const uid   = String(chatId);
+      if (!users[uid]) users[uid] = { userId: uid, isPremium: false };
+      const now  = Date.now();
+      const base = Math.max(users[uid].premiumExpiry || now, now);
+      users[uid].premiumExpiry = base + days * 24 * 60 * 60 * 1000;
+      users[uid].isPremium = true;
+      saveUsersFromServer(users);
+
+      const webAppUrl = process.env.WEBAPP_URL || `http://localhost:${PORT}`;
+      await bot.sendMessage(chatId,
+        `👑 *Премиум активирован!*\n\n🌟 ${stars} Stars — оплачено\n✨ Срок: *${days} дней*\n\nТеперь тебе доступны все расклады, заговоры и ритуалы без ограничений!`,
+        {
+          parse_mode: 'Markdown',
+          reply_markup: { inline_keyboard: [[{ text: '🔮 Открыть кабинет', web_app: { url: webAppUrl } }]] }
+        }
+      );
+    }
+  });
+
   bot.on('polling_error', (error) => {
     console.error('[Bot] Polling error:', error.message);
   });
@@ -102,15 +182,19 @@ if (BOT_TOKEN) {
   console.log('[Bot] Telegram bot запущено');
 }
 
+// Передаємо bot в app для використання в роутах
+app.set('bot', bot || null);
+
 // ─── Routes ───────────────────────────────────────────────────────────────────
 app.use('/api/cards', require('./routes/cards'));
 app.use('/api/readings', require('./routes/readings'));
 app.use('/api/users', require('./routes/users'));
 app.use('/api/spells', require('./routes/spells'));
+app.use('/api/payments', require('./routes/payments'));
 
 // ─── Status ───────────────────────────────────────────────────────────────────
 app.get('/api/status', (req, res) => {
-  res.json({ ok: true, version: '1.0.0', bot: !!bot });
+  res.json({ ok: true, version: '1.0.0', bot: !!bot, botUsername: process.env.BOT_USERNAME || null });
 });
 
 // ─── SPA fallback ─────────────────────────────────────────────────────────────
