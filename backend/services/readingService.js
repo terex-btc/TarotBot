@@ -1,22 +1,8 @@
 'use strict';
-const fs = require('fs');
-const path = require('path');
+const { pool }      = require('../db');
 const { MAJOR_ARCANA } = require('../config/tarotCards');
-const algo = require('./algorithmService');
-const { isAdmin } = require('../config/admins');
-
-const STORAGE_PATH = path.join(__dirname, '../storage/readings.json');
-
-function loadReadings() {
-  try {
-    if (!fs.existsSync(STORAGE_PATH)) return {};
-    return JSON.parse(fs.readFileSync(STORAGE_PATH, 'utf8'));
-  } catch { return {}; }
-}
-
-function saveReadings(data) {
-  fs.writeFileSync(STORAGE_PATH, JSON.stringify(data, null, 2));
-}
+const algo          = require('./algorithmService');
+const { isAdmin }   = require('../config/admins');
 
 const SPREAD_TYPES = {
   daily: {
@@ -67,53 +53,62 @@ const SPREAD_TYPES = {
   }
 };
 
-function createReading(userId, birthDate, spreadType, targetDate, lang) {
+async function createReading(userId, birthDate, spreadType, targetDate, lang) {
   const spread = SPREAD_TYPES[spreadType];
   if (!spread) throw new Error('Unknown spread type');
 
-  const today = targetDate || new Date().toISOString().split('T')[0];
-
-  // Алгоритм підбору карт
+  const today  = targetDate || new Date().toISOString().split('T')[0];
   const adminMode = isAdmin(userId);
   const { cardIds, reversed, meta } = algo.selectCards(birthDate, today, spreadType, spread.count, adminMode);
-  const cards = cardIds.map((id, i) => ({ ...MAJOR_ARCANA[id], isReversed: reversed[i] }));
-
-  // Персоналізована інтерпретація
+  const cards  = cardIds.map((id, i) => ({ ...MAJOR_ARCANA[id], isReversed: reversed[i] }));
   const interpretation = algo.generateInterpretation(meta, spreadType, 'ru');
 
-  const reading = {
-    id: Date.now().toString(),
-    userId,
-    spreadType,
-    spreadName: spread.name,
-    positions: spread.positions,
-    cards,
-    meta,
-    interpretation,
-    createdAt: new Date().toISOString()
-  };
+  const id = Date.now().toString();
+  const { rows } = await pool.query(`
+    INSERT INTO readings (id, user_id, spread_type, spread_name, positions, cards, meta, interpretation)
+    VALUES ($1,$2,$3,$4,$5,$6,$7,$8)
+    RETURNING *
+  `, [id, userId, spreadType,
+      JSON.stringify(spread.name),
+      JSON.stringify(spread.positions),
+      JSON.stringify(cards),
+      JSON.stringify(meta),
+      interpretation]);
 
-  const readings = loadReadings();
-  if (!readings[userId]) readings[userId] = [];
-  readings[userId].unshift(reading);
-  readings[userId] = readings[userId].slice(0, 50);
-  saveReadings(readings);
-
-  return reading;
+  return rowToReading(rows[0]);
 }
 
-function getUserReadings(userId, limit = 10) {
-  const readings = loadReadings();
-  return (readings[userId] || []).slice(0, limit);
-}
-
-function getTodayReading(userId, spreadType) {
-  const readings = loadReadings();
-  const today = new Date().toDateString();
-  return (readings[userId] || []).find(r =>
-    r.spreadType === spreadType &&
-    new Date(r.createdAt).toDateString() === today
+async function getUserReadings(userId, limit = 10) {
+  const { rows } = await pool.query(
+    `SELECT * FROM readings WHERE user_id=$1 ORDER BY created_at DESC LIMIT $2`,
+    [userId, limit]
   );
+  return rows.map(rowToReading);
+}
+
+async function getTodayReading(userId, spreadType) {
+  const { rows } = await pool.query(`
+    SELECT * FROM readings
+    WHERE user_id=$1 AND spread_type=$2
+      AND created_at >= CURRENT_DATE::timestamptz
+      AND created_at <  (CURRENT_DATE + interval '1 day')::timestamptz
+    ORDER BY created_at DESC LIMIT 1
+  `, [userId, spreadType]);
+  return rows.length ? rowToReading(rows[0]) : null;
+}
+
+function rowToReading(row) {
+  return {
+    id:             row.id,
+    userId:         row.user_id,
+    spreadType:     row.spread_type,
+    spreadName:     row.spread_name,
+    positions:      row.positions,
+    cards:          row.cards,
+    meta:           row.meta,
+    interpretation: row.interpretation,
+    createdAt:      row.created_at,
+  };
 }
 
 module.exports = { createReading, getUserReadings, getTodayReading, SPREAD_TYPES };

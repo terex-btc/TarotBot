@@ -102,6 +102,14 @@ function initStars() {
   })();
 }
 
+// ── Splash ─────────────────────────────────────────────────────────────────
+function initSplashScreen() {
+  document.getElementById('btn-splash-start')?.addEventListener('click', () => {
+    tg?.HapticFeedback?.impactOccurred?.('medium');
+    showScreen('intro');
+  });
+}
+
 // ── Intro ──────────────────────────────────────────────────────────────────
 function initIntroScreen() {
   const nameIn  = document.getElementById('input-name');
@@ -270,12 +278,20 @@ async function loadDailyCard(zoneId, tapId) {
   };
 }
 
+function cardImg(card, cls = '') {
+  if (card.image) {
+    const rot = card.isReversed ? 'style="transform:rotate(180deg)"' : '';
+    return `<img src="${card.image}" alt="${card.nameRu || card.name}" class="card-img ${cls}" ${rot} loading="lazy">`;
+  }
+  return `<span class="dr-emoji">${card.emoji}</span>`;
+}
+
 function renderDailyRevealed(zone, reading) {
   const card    = reading.cards[0];
   const name    = card.nameRu || card.name;
   const meaning = card.isReversed ? ru(card.reversed) : ru(card.upright);
   zone.innerHTML = `<div class="daily-revealed" id="dr-${zone.id}">
-    <span class="dr-emoji">${card.emoji}</span>
+    ${cardImg(card, 'daily-card-img')}
     <div class="dr-name">${name}</div>
     ${card.isReversed ? '<div class="dr-reversed"><span class="reversed-tag">🔄 Перевёрнута</span></div>' : ''}
     <div class="dr-meaning">${meaning}</div>
@@ -341,7 +357,7 @@ function flipCard(cardEl, index, reading) {
   const back    = cardEl.querySelector('.flip-back');
   back.style.display = 'block';
   back.innerHTML = `<div class="card-front-face">
-    <div class="cff-emoji">${card.emoji}</div>
+    ${cardImg(card, 'flip-card-img')}
     <div class="cff-info">
       <div class="cff-pos">${ru(reading.positions[index])}</div>
       <div class="cff-name">${name}${card.isReversed ? '<span class="reversed-tag" style="font-size:10px;padding:1px 8px;">🔄</span>' : ''}</div>
@@ -368,7 +384,7 @@ function openCardDetail(card) {
   document.getElementById('card-detail-title').textContent = card.nameRu || card.name;
   document.getElementById('card-detail-content').innerHTML = `
     <div class="cd-hero">
-      <span class="cd-emoji">${card.emoji}</span>
+      ${card.image ? `<img src="${card.image}" alt="${card.nameRu||card.name}" class="card-img cd-card-img" ${card.isReversed?'style="transform:rotate(180deg)"':''}>` : `<span class="cd-emoji">${card.emoji}</span>`}
       <div class="cd-name">${card.name}</div>
       ${card.nameUa ? `<div class="cd-name-sub">${card.nameUa}</div>` : ''}
       ${card.isReversed ? '<span class="reversed-tag">🔄 Перевёрнутая</span>' : ''}
@@ -896,6 +912,7 @@ function fmtDate(iso) {
 async function init() {
   initStars();
   initNav();
+  initSplashScreen();
   initIntroScreen();
 
   const savedId = localStorage.getItem('tarot_uid');
@@ -910,7 +927,7 @@ async function init() {
       return;
     }
   }
-  setTimeout(() => showScreen('intro'), 900);
+  setTimeout(() => showScreen('splash'), 900);
 }
 
 init().catch(() => setTimeout(() => showScreen('intro'), 1000));

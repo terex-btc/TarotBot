@@ -1,8 +1,9 @@
 require('dotenv').config({ path: __dirname + '/.env' });
 const express = require('express');
-const cors = require('cors');
-const path = require('path');
+const cors    = require('cors');
+const path    = require('path');
 const TelegramBot = require('node-telegram-bot-api');
+const { initDB } = require('./db');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -108,41 +109,28 @@ if (BOT_TOKEN) {
 
   // Обробка реферального /start
   bot.onText(/\/start ref_(\d+)/, async (msg, match) => {
-    const chatId = msg.chat.id;
+    const chatId    = msg.chat.id;
     const refUserId = match[1];
     const webAppUrl = process.env.WEBAPP_URL || `http://localhost:${PORT}`;
+    if (String(chatId) === refUserId) return;
 
-    if (String(chatId) === refUserId) return; // сам себе не може запросити
+    const { addRefBonus } = require('./routes/users');
+    try {
+      await addRefBonus(refUserId, 1);
+      await bot.sendMessage(refUserId,
+        `🎉 Твоя подруга присоединилась!\n✨ Тебе начислен *1 день Премиума* 🔮`,
+        { parse_mode: 'Markdown' }
+      );
+    } catch (_) {}
 
-    // Активуємо 1 день преміум рефереру
-    const { loadUsers, saveUsersFromServer } = require('./routes/users');
-    const users = loadUsers();
-    if (users[refUserId]) {
-      const now = Date.now();
-      const currentExpiry = users[refUserId].premiumExpiry || now;
-      const base = Math.max(currentExpiry, now);
-      users[refUserId].premiumExpiry = base + 24 * 60 * 60 * 1000; // +1 день
-      users[refUserId].isPremium = true;
-      users[refUserId].refBonus = (users[refUserId].refBonus || 0) + 1;
-      saveUsersFromServer(users);
-      try {
-        await bot.sendMessage(refUserId,
-          `🎉 Твоя подруга присоединилась к Магическому кабинету!\n✨ Тебе начислен *1 день Премиума* в подарок 🔮`,
-          { parse_mode: 'Markdown' }
-        );
-      } catch (_) {}
-    }
-
-    // Стандартне привітання для нового юзера
     const name = msg.from?.first_name || 'Дорогая';
-    const welcome = `🔮 *Добро пожаловать, ${name}!*\n\nТебя пригласила подруга — и звёзды уже ждут тебя!\n\n✨ Открой Магический кабинет и получи карту дня 👇`;
-    await bot.sendMessage(chatId, welcome, {
-      parse_mode: 'Markdown',
-      reply_markup: { inline_keyboard: [[{ text: '🔮 Открыть Магический кабинет', web_app: { url: webAppUrl } }]] }
-    });
+    await bot.sendMessage(chatId,
+      `🔮 *Добро пожаловать, ${name}!*\n\nТебя пригласила подруга — звёзды уже ждут тебя!\n\n✨ Открой Магический кабинет и получи карту дня 👇`,
+      { parse_mode: 'Markdown', reply_markup: { inline_keyboard: [[{ text: '🔮 Открыть Магический кабинет', web_app: { url: webAppUrl } }]] } }
+    );
   });
 
-  // ── Платежі Telegram Stars ─────────────────────────────────────────────────
+  // ── Платежі Telegram Stars ────────────────────────────────────────────────
   bot.on('pre_checkout_query', async (query) => {
     await bot.answerPreCheckoutQuery(query.id, true);
   });
@@ -154,66 +142,39 @@ if (BOT_TOKEN) {
 
     if (payload.startsWith('premium_')) {
       const days = payload === 'premium_30' ? 30 : payload === 'premium_90' ? 90 : 365;
-      const { loadUsers, saveUsersFromServer } = require('./routes/users');
-      const users = loadUsers();
-      const uid   = String(chatId);
-      if (!users[uid]) users[uid] = { userId: uid, isPremium: false };
-      const now  = Date.now();
-      const base = Math.max(users[uid].premiumExpiry || now, now);
-      users[uid].premiumExpiry = base + days * 24 * 60 * 60 * 1000;
-      users[uid].isPremium = true;
-      saveUsersFromServer(users);
+      const { setUserPremium } = require('./routes/users');
+      const { pool } = require('./db');
+      const uid = String(chatId);
+      // Upsert юзера якщо ще не існує
+      await pool.query(
+        `INSERT INTO users (user_id) VALUES ($1) ON CONFLICT DO NOTHING`, [uid]
+      );
+      const { rows } = await pool.query(`SELECT premium_expiry FROM users WHERE user_id=$1`, [uid]);
+      const base = Math.max(rows[0]?.premium_expiry ? Number(rows[0].premium_expiry) : Date.now(), Date.now());
+      await setUserPremium(uid, base + days * 86400000);
 
       const webAppUrl = process.env.WEBAPP_URL || `http://localhost:${PORT}`;
       await bot.sendMessage(chatId,
-        `👑 *Премиум активирован!*\n\n🌟 ${stars} Stars — оплачено\n✨ Срок: *${days} дней*\n\nТеперь тебе доступны все расклады, заговоры и ритуалы без ограничений!`,
-        {
-          parse_mode: 'Markdown',
-          reply_markup: { inline_keyboard: [[{ text: '🔮 Открыть кабинет', web_app: { url: webAppUrl } }]] }
-        }
+        `👑 *Премиум активирован!*\n\n⭐ ${stars} Stars — оплачено\n✨ Срок: *${days} дней*\n\nТеперь тебе доступны все расклады и заговоры без ограничений!`,
+        { parse_mode: 'Markdown', reply_markup: { inline_keyboard: [[{ text: '🔮 Открыть кабинет', web_app: { url: webAppUrl } }]] } }
       );
     }
   });
 
-  // ── Підтримка: адмін відповідає на повідомлення ──────────────────────────
+  // ── Підтримка: адмін відповідає reply на повідомлення ───────────────────
   const ADMIN_ID = '369503508';
   bot.on('message', async (msg) => {
-    // Тільки від адміна, тільки reply
-    if (String(msg.from.id) !== ADMIN_ID) return;
+    if (String(msg.from?.id) !== ADMIN_ID) return;
     if (!msg.reply_to_message || !msg.text) return;
-
-    const { loadChats, saveChats } = require('./routes/support');
-    const chats = loadChats();
-
-    // Шукаємо userId за message_id оригінального повідомлення
-    const origMsgId = msg.reply_to_message.message_id;
-    const userId = chats[`msg_${origMsgId}`];
-    if (!userId) return; // не наше повідомлення
-
-    // Зберігаємо відповідь
-    if (!chats[userId]) chats[userId] = { messages: [] };
-    chats[userId].messages.push({
-      id: Date.now().toString(),
-      from: 'admin',
-      text: msg.text,
-      at: new Date().toISOString()
-    });
-    saveChats(chats);
-
-    // Надсилаємо юзеру
+    const { handleAdminReply } = require('./routes/support');
+    const webAppUrl = process.env.WEBAPP_URL || `http://localhost:${PORT}`;
     try {
-      const webAppUrl = process.env.WEBAPP_URL || `http://localhost:${PORT}`;
-      await bot.sendMessage(userId,
-        `🔮 *Ответ от Магического кабинета:*\n\n${msg.text}`,
-        {
-          parse_mode: 'Markdown',
-          reply_markup: { inline_keyboard: [[{ text: '💬 Открыть чат', web_app: { url: `${webAppUrl}?screen=support` } }]] }
-        }
-      );
-      // Підтвердження адміну
-      await bot.sendMessage(ADMIN_ID, `✅ Ответ отправлен пользователю ${userId}`, { reply_to_message_id: msg.message_id });
+      const userId = await handleAdminReply(bot, msg.reply_to_message.message_id, msg.text, msg.message_id, webAppUrl);
+      if (userId) {
+        await bot.sendMessage(ADMIN_ID, `✅ Ответ отправлен (${userId})`, { reply_to_message_id: msg.message_id });
+      }
     } catch (e) {
-      await bot.sendMessage(ADMIN_ID, `❌ Не удалось отправить: ${e.message}`);
+      await bot.sendMessage(ADMIN_ID, `❌ Ошибка: ${e.message}`);
     }
   });
 
@@ -246,6 +207,6 @@ app.get('/{*path}', (req, res) => {
 });
 
 // ─── Start ────────────────────────────────────────────────────────────────────
-app.listen(PORT, () => {
-  console.log(`[Server] Tarot Bot запущено на http://localhost:${PORT}`);
-});
+initDB()
+  .then(() => app.listen(PORT, () => console.log(`[Server] Tarot Bot запущено на http://localhost:${PORT}`)))
+  .catch(err => { console.error('[DB] Init failed:', err.message); process.exit(1); });

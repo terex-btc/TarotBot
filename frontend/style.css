@@ -140,6 +140,71 @@ body {
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
 }
+/* ══ SPLASH ══════════════════════════════════════════════════════════════ */
+#screen-splash { overflow-y: auto; -webkit-overflow-scrolling: touch; }
+.splash-wrap {
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-bottom: calc(var(--safe-b) + 20px);
+}
+.splash-cards {
+  width: 100%;
+  height: 220px;
+  position: relative;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+.splash-card {
+  position: absolute;
+  width: 110px;
+  height: 194px;
+  object-fit: cover;
+  border-radius: 10px;
+  box-shadow: 0 12px 40px rgba(0,0,0,0.6);
+  top: 14px;
+}
+.sc1 { left: 50%; transform: translateX(-50%) rotate(-12deg); z-index: 1; }
+.sc2 { left: 50%; transform: translateX(-50%) translateX(6px); z-index: 3; box-shadow: 0 16px 50px rgba(124,58,237,0.5); }
+.sc3 { left: 50%; transform: translateX(-50%) rotate(12deg); z-index: 1; }
+.splash-content {
+  text-align: center;
+  padding: 0 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+.splash-orb { font-size: 36px; }
+.splash-title {
+  font-family: 'Cinzel', serif;
+  font-size: 28px;
+  font-weight: 700;
+  line-height: 1.2;
+  background: linear-gradient(135deg, #c084fc, #fde68a);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin: 0;
+}
+.splash-title span { color: var(--gold); -webkit-text-fill-color: var(--gold); }
+.splash-sub { font-size: 14px; color: var(--text2); line-height: 1.5; }
+.splash-features {
+  width: 100%;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  text-align: left;
+}
+.sf-item { font-size: 13px; color: var(--text); display: flex; gap: 8px; align-items: center; }
+.sf-item span { color: var(--text2); }
+.btn-splash { width: 100%; margin-top: 4px; }
+.splash-note { font-size: 11px; color: var(--text3); }
+
 .intro-wrap {
   padding: 40px 20px 60px;
   display: flex;
@@ -435,6 +500,31 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   from { opacity: 0; transform: scale(.95) translateY(8px); }
   to   { opacity: 1; transform: scale(1) translateY(0); }
 }
+/* ── Зображення карт ──────────────────────────────────────────────────────── */
+.card-img {
+  display: block;
+  border-radius: 10px;
+  object-fit: cover;
+  box-shadow: 0 8px 32px rgba(124,58,237,0.4);
+  transition: transform .3s ease;
+}
+.daily-card-img {
+  width: 160px;
+  height: 280px;
+  margin: 0 auto 16px;
+}
+.flip-card-img {
+  width: 90px;
+  height: 158px;
+  margin: 0 auto 10px;
+  flex-shrink: 0;
+}
+.cd-card-img {
+  width: 180px;
+  height: 316px;
+  margin: 0 auto 16px;
+}
+
 .dr-emoji {
   font-size: 64px; text-align: center; display: block;
   margin-bottom: 12px;
@@ -623,8 +713,9 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   flex-direction: column; align-items: center;
   text-align: center; gap: 8px; min-height: 130px;
 }
-.grid-layout .cff-emoji  { font-size: 36px; }
-.grid-layout .cff-name   { font-size: 13px; }
+.grid-layout .cff-emoji    { font-size: 36px; }
+.grid-layout .cff-name     { font-size: 13px; }
+.grid-layout .flip-card-img { width: 70px; height: 123px; }
 .grid-layout .card-back-face { min-height: 130px; }
 
 .reading-summary-btn { margin-bottom: 18px; }

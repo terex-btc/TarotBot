@@ -29,12 +29,39 @@
       </div>
     </div>
 
-    <!-- ══ INTRO ══════════════════════════════════════════════════════════════ -->
+    <!-- ══ ONBOARDING SPLASH ════════════════════════════════════════════════ -->
+    <div id="screen-splash" class="screen">
+      <div class="splash-wrap">
+        <div class="splash-cards">
+          <img class="splash-card sc1" src="https://upload.wikimedia.org/wikipedia/commons/1/17/RWS_Tarot_19_Sun.jpg" alt="Sun">
+          <img class="splash-card sc2" src="https://upload.wikimedia.org/wikipedia/commons/d/db/RWS_Tarot_17_Star.jpg" alt="Star">
+          <img class="splash-card sc3" src="https://upload.wikimedia.org/wikipedia/commons/f/ff/RWS_Tarot_21_World.jpg" alt="World">
+        </div>
+        <div class="splash-content">
+          <div class="splash-orb">🔮</div>
+          <h1 class="splash-title">Магический<br><span>Кабинет</span></h1>
+          <p class="splash-sub">Карты Таро · Заговоры · Лунная магия<br>Персонально по дате рождения</p>
+          <div class="splash-features">
+            <div class="sf-item">🃏 <span>Карта дня — каждый день новый совет</span></div>
+            <div class="sf-item">🕯️ <span>Заговоры под текущую фазу луны</span></div>
+            <div class="sf-item">🌙 <span>Лунный календарь магических дел</span></div>
+            <div class="sf-item">🔢 <span>Нумерология по дате рождения</span></div>
+          </div>
+          <button class="btn-primary btn-splash" id="btn-splash-start">
+            <span>Начать — это бесплатно</span>
+            <span class="btn-icon-r">✨</span>
+          </button>
+          <p class="splash-note">Более 22 карт Старшего Аркана · Rider-Waite</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ INTRO (форма) ════════════════════════════════════════════════════ -->
     <div id="screen-intro" class="screen">
       <div class="intro-wrap">
         <div class="intro-orb">🔮</div>
-        <h1 class="intro-title">Магический<br><span>Кабинет</span></h1>
-        <p class="intro-sub">Таро · Заговоры · Лунный календарь<br>Персонально — по вашей дате рождения</p>
+        <h1 class="intro-title">Настройка<br><span>кабинета</span></h1>
+        <p class="intro-sub">Введи данные — звёзды рассчитают<br>твой персональный расклад</p>
         <div class="form-card">
           <div class="field-wrap">
             <label class="field-label">Ваше имя</label>
@@ -45,7 +72,7 @@
             <input id="input-birth" class="field-input" type="date" max="2010-01-01" min="1920-01-01">
           </div>
           <button id="btn-start" class="btn-primary" disabled>
-            <span>Войти в кабинет</span>
+            <span>Открыть кабинет</span>
             <span class="btn-icon-r">🔮</span>
           </button>
         </div>

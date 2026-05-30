@@ -1,123 +1,138 @@
 'use strict';
 const express = require('express');
-const router = express.Router();
-const fs = require('fs');
-const path = require('path');
+const router  = express.Router();
+const { pool } = require('../db');
 const { calcLifePath, getZodiac, getMoonPhase, calcPersonalYear, calcDayNumber } = require('../services/algorithmService');
 
-const USERS_PATH = path.join(__dirname, '../storage/users.json');
-
-function loadUsers() {
-  try {
-    if (!fs.existsSync(USERS_PATH)) return {};
-    return JSON.parse(fs.readFileSync(USERS_PATH, 'utf8'));
-  } catch { return {}; }
-}
-
-function saveUsers(data) {
-  fs.writeFileSync(USERS_PATH, JSON.stringify(data, null, 2));
-}
-
-// Перевірка активного преміуму (враховує термін дії)
+// ── Хелпери ───────────────────────────────────────────────────────────────────
 function isPremiumActive(user) {
   if (!user) return false;
-  if (user.premiumExpiry) {
-    const active = Date.now() < user.premiumExpiry;
-    // Автоматично знімаємо флаг якщо термін вийшов
-    if (!active && user.isPremium) {
-      user.isPremium = false;
-    }
-    return active;
+  if (user.premium_expiry || user.premiumExpiry) {
+    const expiry = user.premium_expiry || user.premiumExpiry;
+    return Date.now() < Number(expiry);
   }
-  return !!user.isPremium;
+  return !!(user.is_premium || user.isPremium);
+}
+
+function rowToUser(row) {
+  if (!row) return null;
+  return {
+    userId:        row.user_id,
+    username:      row.username,
+    firstName:     row.first_name,
+    birthDate:     row.birth_date,
+    lang:          row.lang,
+    isPremium:     isPremiumActive(row),
+    premiumExpiry: row.premium_expiry ? Number(row.premium_expiry) : null,
+    refBonus:      row.ref_bonus || 0,
+    astro:         row.astro,
+    createdAt:     row.created_at,
+  };
 }
 
 // POST /api/users/init
-router.post('/init', (req, res) => {
+router.post('/init', async (req, res) => {
   const { userId, username, firstName, name, birthDate, lang } = req.body;
   if (!userId) return res.status(400).json({ ok: false, error: 'userId required' });
 
-  const users = loadUsers();
-
   let astro = null;
   if (birthDate) {
-    const today = new Date().toISOString().split('T')[0];
+    const today  = new Date().toISOString().split('T')[0];
     const zodiac = getZodiac(birthDate);
-    const lifePath = calcLifePath(birthDate);
+    const lifePath    = calcLifePath(birthDate);
     const personalYear = calcPersonalYear(birthDate, new Date().getFullYear());
-    const moonPhase = getMoonPhase(today);
+    const moonPhase   = getMoonPhase(today);
     astro = { zodiac, lifePath, personalYear, moonPhase };
   }
 
-  if (!users[userId]) {
-    users[userId] = {
-      userId,
-      username: username || '',
-      firstName: firstName || name || '',
-      birthDate: birthDate || null,
-      lang: lang || 'ua',
-      isPremium: false,
-      astro,
-      createdAt: new Date().toISOString()
-    };
-  } else {
-    if (firstName || name) users[userId].firstName = firstName || name;
-    if (username) users[userId].username = username;
-    if (birthDate) { users[userId].birthDate = birthDate; users[userId].astro = astro; }
-    if (lang) users[userId].lang = lang;
-  }
+  const fname = firstName || name || '';
 
-  saveUsers(users);
-  res.json({ ok: true, user: users[userId] });
+  const { rows } = await pool.query(`
+    INSERT INTO users (user_id, username, first_name, birth_date, lang, astro)
+    VALUES ($1, $2, $3, $4, $5, $6)
+    ON CONFLICT (user_id) DO UPDATE SET
+      username   = COALESCE(NULLIF($2,''), users.username),
+      first_name = COALESCE(NULLIF($3,''), users.first_name),
+      birth_date = COALESCE($4, users.birth_date),
+      lang       = COALESCE($5, users.lang),
+      astro      = CASE WHEN $4 IS NOT NULL THEN $6 ELSE users.astro END,
+      updated_at = NOW()
+    RETURNING *
+  `, [userId, username || '', fname, birthDate || null, lang || 'ru', astro ? JSON.stringify(astro) : null]);
+
+  res.json({ ok: true, user: rowToUser(rows[0]) });
 });
 
-// POST /api/users/:userId/premium — активація преміум (через admin key)
-router.post('/:userId/premium', (req, res) => {
+// POST /api/users/:userId/premium
+router.post('/:userId/premium', async (req, res) => {
   const { adminKey } = req.body;
-  if (adminKey !== process.env.ADMIN_KEY) {
-    return res.status(403).json({ ok: false, error: 'Forbidden' });
-  }
-  const users = loadUsers();
-  if (!users[req.params.userId]) return res.status(404).json({ ok: false, error: 'User not found' });
-  users[req.params.userId].isPremium = true;
-  saveUsers(users);
-  res.json({ ok: true, user: users[req.params.userId] });
-});
-
-// GET /api/users/:userId
-router.get('/:userId', (req, res) => {
-  const users = loadUsers();
-  const user = users[req.params.userId];
-  if (!user) return res.status(404).json({ ok: false, error: 'User not found' });
-  res.json({ ok: true, user });
+  if (adminKey !== process.env.ADMIN_KEY) return res.status(403).json({ ok: false, error: 'Forbidden' });
+  const { rows } = await pool.query(
+    `UPDATE users SET is_premium=true, updated_at=NOW() WHERE user_id=$1 RETURNING *`,
+    [req.params.userId]
+  );
+  if (!rows.length) return res.status(404).json({ ok: false, error: 'User not found' });
+  res.json({ ok: true, user: rowToUser(rows[0]) });
 });
 
 // GET /api/users/:userId/premium-status
-router.get('/:userId/premium-status', (req, res) => {
-  const users = loadUsers();
-  const user = users[req.params.userId];
-  if (!user) return res.json({ ok: true, isPremium: false, premiumExpiry: null, refBonus: 0 });
+router.get('/:userId/premium-status', async (req, res) => {
+  const { rows } = await pool.query(`SELECT * FROM users WHERE user_id=$1`, [req.params.userId]);
+  if (!rows.length) return res.json({ ok: true, isPremium: false, premiumExpiry: null, refBonus: 0, daysLeft: null });
+  const user   = rows[0];
   const active = isPremiumActive(user);
+  const expiry = user.premium_expiry ? Number(user.premium_expiry) : null;
   res.json({
     ok: true,
-    isPremium: active,
-    premiumExpiry: user.premiumExpiry || null,
-    refBonus: user.refBonus || 0,
-    daysLeft: user.premiumExpiry ? Math.max(0, Math.ceil((user.premiumExpiry - Date.now()) / 86400000)) : null
+    isPremium:     active,
+    premiumExpiry: expiry,
+    refBonus:      user.ref_bonus || 0,
+    daysLeft:      expiry ? Math.max(0, Math.ceil((expiry - Date.now()) / 86400000)) : null,
   });
 });
 
-// GET /api/users/:userId/ref — реферальна статистика
-router.get('/:userId/ref', (req, res) => {
-  const users = loadUsers();
-  const user = users[req.params.userId];
-  if (!user) return res.status(404).json({ ok: false, error: 'User not found' });
-  const refBonus = user.refBonus || 0;
-  const premiumExpiry = user.premiumExpiry || null;
-  res.json({ ok: true, refBonus, premiumExpiry, isPremium: user.isPremium });
+// GET /api/users/:userId/ref
+router.get('/:userId/ref', async (req, res) => {
+  const { rows } = await pool.query(`SELECT * FROM users WHERE user_id=$1`, [req.params.userId]);
+  if (!rows.length) return res.status(404).json({ ok: false, error: 'User not found' });
+  const u = rows[0];
+  res.json({ ok: true, refBonus: u.ref_bonus || 0, premiumExpiry: u.premium_expiry, isPremium: isPremiumActive(u) });
 });
 
+// GET /api/users/:userId
+router.get('/:userId', async (req, res) => {
+  const { rows } = await pool.query(`SELECT * FROM users WHERE user_id=$1`, [req.params.userId]);
+  if (!rows.length) return res.status(404).json({ ok: false, error: 'User not found' });
+  res.json({ ok: true, user: rowToUser(rows[0]) });
+});
+
+// ── Функції для внутрішнього використання ────────────────────────────────────
+async function loadUser(userId) {
+  const { rows } = await pool.query(`SELECT * FROM users WHERE user_id=$1`, [userId]);
+  return rows[0] ? rowToUser(rows[0]) : null;
+}
+
+async function setUserPremium(userId, expiryMs) {
+  await pool.query(
+    `UPDATE users SET is_premium=true, premium_expiry=$2, updated_at=NOW() WHERE user_id=$1`,
+    [userId, expiryMs]
+  );
+}
+
+async function addRefBonus(userId, days) {
+  const now  = Date.now();
+  await pool.query(`
+    UPDATE users SET
+      ref_bonus      = ref_bonus + 1,
+      is_premium     = true,
+      premium_expiry = GREATEST(COALESCE(premium_expiry, $2), $2) + ($3 * 86400000),
+      updated_at     = NOW()
+    WHERE user_id = $1
+  `, [userId, now, days]);
+}
+
 module.exports = router;
-module.exports.loadUsers = loadUsers;
-module.exports.saveUsersFromServer = saveUsers;
 module.exports.isPremiumActive = isPremiumActive;
+module.exports.loadUser        = loadUser;
+module.exports.setUserPremium  = setUserPremium;
+module.exports.addRefBonus     = addRefBonus;
