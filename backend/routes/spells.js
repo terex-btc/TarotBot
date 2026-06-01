@@ -1,7 +1,7 @@
 'use strict';
 const express = require('express');
 const router  = express.Router();
-const { SPELLS, CATEGORIES, getSpellsByMoonPhase, getSpellsByCategory, getSpellById } = require('../config/spells');
+const { SPELLS, CATEGORIES, DREAM_MEANINGS, getSpellsByMoonPhase, getSpellsByCategory, getSpellById, getDreamMeaning } = require('../config/spells');
 const { getMoonPhase } = require('../services/algorithmService');
 const { isPremiumActive, loadUser } = require('./users');
 const { isAdmin } = require('../config/admins');
@@ -46,6 +46,28 @@ router.get('/:id', async (req, res) => {
     const premiumOk = isPremiumActive(user) || isAdmin(uid);
     if (spell.premium && !premiumOk) return res.status(403).json({ ok: false, error: 'premium_required' });
     res.json({ ok: true, spell });
+  } catch (e) { res.status(500).json({ ok: false, error: e.message }); }
+});
+
+// GET /api/spells/dreams/list — всі символи
+router.get('/dreams/list', (req, res) => {
+  res.json({ ok: true, dreams: DREAM_MEANINGS.map(d => ({ symbol: d.symbol, positive: d.positive, card_hint: d.card_hint })) });
+});
+
+// GET /api/spells/dreams/interpret?symbol=вода&lang=ru
+router.get('/dreams/interpret', async (req, res) => {
+  try {
+    const { symbol, lang = 'ru', userId } = req.query;
+    if (!symbol) return res.status(400).json({ ok: false, error: 'symbol required' });
+    const user = userId ? await loadUser(userId) : null;
+    const premiumOk = isPremiumActive(user) || isAdmin(userId || '');
+    const result = getDreamMeaning(symbol, lang);
+    if (!result) return res.json({ ok: true, found: false, message: 'Символ не знайдено в базі' });
+    // Детальне тлумачення — тільки для преміум
+    if (!premiumOk) {
+      return res.json({ ok: true, found: true, symbol: result.symbol, positive: result.positive, card_hint: result.card_hint, preview: result.meaning.slice(0, 60) + '...', locked: true });
+    }
+    res.json({ ok: true, found: true, locked: false, ...result });
   } catch (e) { res.status(500).json({ ok: false, error: e.message }); }
 });
 
