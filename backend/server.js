@@ -207,6 +207,21 @@ app.get('/{*path}', (req, res) => {
 });
 
 // ─── Start ────────────────────────────────────────────────────────────────────
-initDB()
-  .then(() => app.listen(PORT, () => console.log(`[Server] Tarot Bot запущено на http://localhost:${PORT}`)))
-  .catch(err => { console.error('[DB] Init failed:', err.message); process.exit(1); });
+// Запускаємо сервер відразу, БД ініціалізуємо з ретраями
+app.listen(PORT, () => console.log(`[Server] Tarot Bot запущено на http://localhost:${PORT}`));
+
+async function initDBWithRetry(attempts = 10, delayMs = 5000) {
+  for (let i = 1; i <= attempts; i++) {
+    try {
+      await initDB();
+      console.log('[DB] Підключення успішне');
+      return;
+    } catch (err) {
+      console.error(`[DB] Спроба ${i}/${attempts} невдала: ${err.message}`);
+      if (i < attempts) await new Promise(r => setTimeout(r, delayMs));
+    }
+  }
+  console.error('[DB] Не вдалося підключитися до БД після всіх спроб. Перевірте DATABASE_URL.');
+}
+
+initDBWithRetry();
