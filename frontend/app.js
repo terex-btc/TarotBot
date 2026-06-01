@@ -16,7 +16,7 @@ const state = {
          || ('u_' + Math.random().toString(36).slice(2)),
   tgUser: tg?.initDataUnsafe?.user || null,
   user:   null,
-  lang:   'ru',
+  lang:   (() => { const l = tg?.initDataUnsafe?.user?.language_code; return (l === 'uk' || l === 'ua') ? 'ua' : 'ru'; })(),
   currentReading: null,
   flippedCount:   0,
   prevScreen:     'home',
@@ -127,7 +127,7 @@ function initIntroScreen() {
     btn.innerHTML = '<span>Соединяемся со звёздами...</span>';
     const data = await api('POST', '/users/init', {
       userId: state.userId, firstName: nameIn.value.trim(),
-      username: state.tgUser?.username || '', birthDate: birthIn.value, lang: 'ru',
+      username: state.tgUser?.username || '', birthDate: birthIn.value, lang: state.lang,
     });
     if (data.ok) {
       state.user = data.user;
@@ -245,7 +245,23 @@ function renderAstroStrip(user) {
 
 function renderSpellsPreview(spells) {
   const wrap = document.getElementById('spells-preview');
-  if (!wrap || !spells?.length) return;
+  if (!wrap) return;
+  const isPremium = state.user?.isPremium || false;
+  if (!isPremium) {
+    // Показуємо тизер — назви заблоковані
+    wrap.innerHTML = `
+      <div class="spells-locked-banner" id="spells-locked-banner">
+        <div class="slb-icon">🔒</div>
+        <div class="slb-text"><b>Заговоры — Премиум</b><br>55 ритуалов, привороты, защита</div>
+        <button class="btn-primary btn-sm slb-btn" id="btn-unlock-spells">Открыть 👑</button>
+      </div>
+    `;
+    document.getElementById('btn-unlock-spells')?.addEventListener('click', async () => {
+      showScreen('premium'); await loadPremiumScreen();
+    });
+    return;
+  }
+  if (!spells?.length) return;
   wrap.innerHTML = spells.slice(0, 6).map(s => `
     <div class="spell-preview-card${s.locked ? ' locked' : ''}" data-spell-id="${s.id}">
       ${s.locked ? '<div class="spc-lock">🔒</div>' : ''}
@@ -272,7 +288,7 @@ async function loadDailyCard(zoneId, tapId) {
   tap.onclick = async () => {
     tap.onclick = null;
     zone.innerHTML = '<div style="text-align:center;padding:50px 0;color:var(--text2);font-size:14px;">🔮 Карты шепчут...</div>';
-    const data = await api('POST', `/readings/${state.userId}`, { spreadType: 'daily', lang: 'ru' });
+    const data = await api('POST', `/readings/${state.userId}`, { spreadType: 'daily', lang: state.lang });
     if (data.ok && data.reading) renderDailyRevealed(zone, data.reading);
     else zone.innerHTML = '<div style="text-align:center;padding:30px;color:var(--text2);">Ошибка 😢</div>';
   };
@@ -310,7 +326,7 @@ async function openSpread(spreadType) {
   document.getElementById('reading-interpretation').textContent = '🔮 Тасуем карты...';
   document.getElementById('reading-cards-wrap').innerHTML = '';
   document.getElementById('reading-summary-btn').classList.add('hidden');
-  const data = await api('POST', `/readings/${state.userId}`, { spreadType, lang: 'ru' });
+  const data = await api('POST', `/readings/${state.userId}`, { spreadType, lang: state.lang });
   if (!data.ok) { document.getElementById('reading-interpretation').textContent = 'Ошибка.'; return; }
   state.currentReading = data.reading;
   renderReading(data.reading);
@@ -399,6 +415,14 @@ function openCardDetail(card) {
 // ══ ЗАГОВОРЫ ════════════════════════════════════════════════════════════════
 
 async function openSpellsScreen() {
+  // Заговоры — только Премиум
+  const isPremium = state.user?.isPremium || false;
+  if (!isPremium) {
+    showScreen('premium');
+    await loadPremiumScreen();
+    toast('🔒 Заговоры доступны только в Премиум');
+    return;
+  }
   showScreen('spells');
   // Баннер фази місяця
   if (state.moonData) {
@@ -481,14 +505,87 @@ function buildSpellListItem(s) {
 async function openSpellById(spellId) {
   const data = await api('GET', `/spells/${spellId}?userId=${state.userId}`);
   if (!data.ok) {
-    if (data.error === 'premium_required') { showScreen('premium'); return; }
+    if (data.error === 'premium_required') {
+      // Показати вибір: купити один заговор або преміум
+      showSpellPaywall(spellId);
+      return;
+    }
     toast('Заговор не найден'); return;
   }
   openSpellDetail(data.spell, false);
 }
 
+function showSpellPaywall(spellId) {
+  // Показуємо спеціальний екран з двома варіантами оплати
+  const content = document.getElementById('spell-detail-content');
+  document.getElementById('spell-detail-title').textContent = '🔒 Заговор закрыт';
+  content.innerHTML = `
+    <div class="spell-paywall">
+      <div class="spw-icon">🕯️</div>
+      <div class="spw-title">Этот заговор доступен<br>в Премиум</div>
+      <div class="spw-sub">Выберите как открыть:</div>
+      <div class="spw-options">
+        <div class="spw-option spw-single" id="spw-buy-single" data-spell-id="${spellId}">
+          <div class="spwo-emoji">🕯️</div>
+          <div class="spwo-info">
+            <div class="spwo-title">Один заговор</div>
+            <div class="spwo-sub">Купить только этот</div>
+          </div>
+          <div class="spwo-price">⭐ 30</div>
+        </div>
+        <div class="spw-option spw-popular" id="spw-buy-pack">
+          <div class="spwo-badge">ВЫГОДНО</div>
+          <div class="spwo-emoji">✨</div>
+          <div class="spwo-info">
+            <div class="spwo-title">Пак 5 заговоров</div>
+            <div class="spwo-sub">Любые 5 на выбор</div>
+          </div>
+          <div class="spwo-price">⭐ 99</div>
+        </div>
+        <div class="spw-option" id="spw-premium">
+          <div class="spwo-emoji">👑</div>
+          <div class="spwo-info">
+            <div class="spwo-title">Премиум</div>
+            <div class="spwo-sub">Все 55 заговоров</div>
+          </div>
+          <div class="spwo-price">от ⭐ 299</div>
+        </div>
+      </div>
+    </div>
+  `;
+
+  document.getElementById('spw-buy-single')?.addEventListener('click', async () => {
+    await buySpell('spell_single', spellId);
+  });
+  document.getElementById('spw-buy-pack')?.addEventListener('click', async () => {
+    await buySpell('spell_pack5', null);
+  });
+  document.getElementById('spw-premium')?.addEventListener('click', async () => {
+    showScreen('premium'); await loadPremiumScreen();
+  });
+
+  showScreen('spell-detail');
+}
+
+async function buySpell(purchaseId, spellId) {
+  try {
+    const data = await api('POST', '/payments/invoice/spell', { purchaseId, userId: state.userId, spellId });
+    if (!data.ok) throw new Error(data.error);
+    tg?.openInvoice?.(data.link, async (status) => {
+      if (status === 'paid') {
+        toast('✨ Оплачено! Заговор открыт.');
+        if (spellId) openSpellById(spellId);
+      } else if (status === 'cancelled') {
+        toast('Оплата отменена');
+      }
+    });
+  } catch (e) {
+    toast('Ошибка. Попробуйте позже.');
+  }
+}
+
 function openSpellDetail(spell, locked) {
-  if (locked) { showScreen('premium'); return; }
+  if (locked) { showSpellPaywall(spell.id); return; }
   state.currentSpell = spell;
   document.getElementById('spell-detail-title').textContent = spell.title;
 
@@ -746,7 +843,8 @@ function initNav() {
       if (s === 'tarot')   { showScreen('tarot'); }
       else if (s === 'spells') { await openSpellsScreen(); }
       else if (s === 'moon')   { showScreen('moon'); await renderMoonCalendar(); }
-      else if (s === 'premium') { /* handled by data-screen listener below */ }
+      else if (s === 'dreams') { showScreen('dreams'); await initDreamsScreen(); }
+      else if (s === 'premium') { showScreen('premium'); await loadPremiumScreen(); }
     });
   });
 
@@ -812,6 +910,18 @@ function initNav() {
 
   // ── Кнопка "Пригласить подругу" на преміум-екрані ────────────────────────
   document.getElementById('btn-share-ref')?.addEventListener('click', () => shareRefLink());
+
+  // Сонник — кнопка пошуку
+  document.getElementById('btn-dream-search')?.addEventListener('click', () => {
+    const sym = document.getElementById('dream-input')?.value?.trim();
+    if (sym) searchDream(sym);
+  });
+  document.getElementById('dream-input')?.addEventListener('keydown', e => {
+    if (e.key === 'Enter') {
+      const sym = e.target.value.trim();
+      if (sym) searchDream(sym);
+    }
+  });
 
   // Підтримка
   document.getElementById('btn-support')?.addEventListener('click', async () => {
@@ -900,6 +1010,99 @@ async function sendSupportMessage() {
   tg?.HapticFeedback?.impactOccurred?.('light');
   const data = await api('POST', '/support/message', { userId: state.userId, text });
   if (!data.ok) toast('Ошибка отправки. Попробуйте позже.');
+}
+
+// ── Сонник ────────────────────────────────────────────────────────────────
+const DREAM_POPULAR = ['вода', 'змея', 'деньги', 'огонь', 'полет', 'зубы', 'дом', 'свадьба', 'кровь', 'беременность'];
+
+async function initDreamsScreen() {
+  // Chips (популярні символи)
+  const chipsEl = document.getElementById('dreams-chips');
+  if (chipsEl && !chipsEl.dataset.init) {
+    chipsEl.dataset.init = '1';
+    DREAM_POPULAR.forEach(sym => {
+      const ch = document.createElement('button');
+      ch.className = 'dream-chip';
+      ch.textContent = sym;
+      ch.addEventListener('click', () => {
+        document.getElementById('dream-input').value = sym;
+        searchDream(sym);
+      });
+      chipsEl.appendChild(ch);
+    });
+  }
+
+  // Список всіх символів
+  const listEl = document.getElementById('dreams-list');
+  if (listEl && !listEl.dataset.init) {
+    listEl.dataset.init = '1';
+    const data = await api('GET', '/spells/dreams/list');
+    if (data.ok) {
+      listEl.innerHTML = data.dreams.map(d => `
+        <div class="dream-list-item" data-symbol="${d.symbol}">
+          <span class="dli-icon">${d.positive === true ? '✨' : d.positive === false ? '⚠️' : '🌙'}</span>
+          <span class="dli-name">${d.symbol}</span>
+          <span class="dli-card">${d.card_hint}</span>
+        </div>
+      `).join('');
+      listEl.querySelectorAll('.dream-list-item').forEach(el => {
+        el.addEventListener('click', () => {
+          const sym = el.dataset.symbol;
+          document.getElementById('dream-input').value = sym;
+          searchDream(sym);
+          document.getElementById('dream-result').scrollIntoView({ behavior: 'smooth' });
+        });
+      });
+    }
+  }
+}
+
+async function searchDream(symbol) {
+  const resultEl = document.getElementById('dream-result');
+  resultEl.classList.remove('hidden');
+  resultEl.innerHTML = `<div class="dream-loading">🔮 Читаем сны...</div>`;
+
+  const lang = state.lang || 'ru';
+  const data = await api('GET', `/spells/dreams/interpret?symbol=${encodeURIComponent(symbol)}&lang=${lang}&userId=${state.userId}`);
+
+  if (!data.ok || !data.found) {
+    resultEl.innerHTML = `<div class="dream-not-found">
+      <div class="dnf-icon">🌙</div>
+      <div class="dnf-text">Символ <b>${symbol}</b> не найден в базе.<br>Попробуй другое слово.</div>
+    </div>`;
+    return;
+  }
+
+  const posIcon = data.positive === true ? '✨' : data.positive === false ? '⚠️' : '🌙';
+  const posText = data.positive === true ? 'Добрый знак' : data.positive === false ? 'Предупреждение' : 'Нейтральный';
+
+  if (data.locked) {
+    resultEl.innerHTML = `
+      <div class="dream-result-card">
+        <div class="drc-symbol">${posIcon} ${data.symbol}</div>
+        <div class="drc-badge">${posText}</div>
+        <div class="drc-tarot">Карта Таро: <b>${data.card_hint}</b></div>
+        <div class="drc-preview">${data.preview}</div>
+        <div class="drc-locked">
+          <div class="drc-lock-icon">🔒</div>
+          <div class="drc-lock-text">Полное толкование — только Премиум</div>
+          <button class="btn-primary btn-sm" id="btn-dream-premium">Открыть Премиум 👑</button>
+        </div>
+      </div>`;
+    document.getElementById('btn-dream-premium')?.addEventListener('click', async () => {
+      showScreen('premium'); await loadPremiumScreen();
+    });
+  } else {
+    resultEl.innerHTML = `
+      <div class="dream-result-card">
+        <div class="drc-symbol">${posIcon} ${data.symbol}</div>
+        <div class="drc-badge ${data.positive === true ? 'badge-good' : data.positive === false ? 'badge-warn' : ''}">${posText}</div>
+        <div class="drc-tarot">Карта Таро: <b>${data.card_hint}</b></div>
+        <div class="drc-meaning">${data.meaning}</div>
+      </div>`;
+  }
+
+  tg?.HapticFeedback?.impactOccurred?.('light');
 }
 
 // ── Helpers ────────────────────────────────────────────────────────────────

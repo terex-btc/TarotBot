@@ -106,8 +106,8 @@
           <div class="today-hint">Сегодня особый день для...</div>
         </div>
 
-        <!-- Навигация: 4 секции -->
-        <div class="nav-grid">
+        <!-- Навигация: 5 секций -->
+        <div class="nav-grid nav-grid-5">
           <div class="nav-cell" data-screen="tarot">
             <div class="nav-cell-emoji">🃏</div>
             <div class="nav-cell-name">Таро</div>
@@ -119,14 +119,19 @@
             <div class="nav-cell-sub">Ритуалы</div>
           </div>
           <div class="nav-cell" data-screen="moon">
-            <div class="nav-cell-emoji">🌙</div>
+            <div class="nav-cell-emoji">🌔</div>
             <div class="nav-cell-name">Луна</div>
             <div class="nav-cell-sub">Календарь</div>
+          </div>
+          <div class="nav-cell" data-screen="dreams">
+            <div class="nav-cell-emoji">😴</div>
+            <div class="nav-cell-name">Сонник</div>
+            <div class="nav-cell-sub">Тлум. снів</div>
           </div>
           <div class="nav-cell" data-screen="premium">
             <div class="nav-cell-emoji">👑</div>
             <div class="nav-cell-name">Премиум</div>
-            <div class="nav-cell-sub">Разблокировать</div>
+            <div class="nav-cell-sub">Все функции</div>
           </div>
         </div>
 
@@ -347,6 +352,46 @@
         <div style="width:40px"></div>
       </header>
       <div class="history-scroll" id="history-content"></div>
+    </div>
+
+    <!-- ══ ТЛУМАЧЕННЯ СНІВ ══════════════════════════════════════════════════ -->
+    <div id="screen-dreams" class="screen">
+      <header class="top-bar">
+        <button class="icon-btn back-btn" data-to="home">←</button>
+        <div class="top-bar-title">🌙 Сонник</div>
+        <div style="width:40px"></div>
+      </header>
+      <div class="dreams-scroll">
+        <div class="dreams-hero">
+          <div class="dreams-moon-icon">🌙</div>
+          <h2 class="dreams-title">Тлумачення снів</h2>
+          <p class="dreams-sub">Дізнайся що означає твій сон<br>через призму карт Таро</p>
+        </div>
+
+        <!-- Пошук символу -->
+        <div class="dreams-search-wrap">
+          <div class="dreams-search-box">
+            <span class="dreams-search-icon">🔍</span>
+            <input id="dream-input" class="dreams-search-input" type="text"
+              placeholder="Введи символ: вода, змея, деньги..."
+              autocomplete="off" maxlength="40">
+            <button class="dreams-search-btn" id="btn-dream-search">Узнать</button>
+          </div>
+        </div>
+
+        <!-- Результат -->
+        <div id="dream-result" class="dream-result hidden"></div>
+
+        <!-- Популярні символи -->
+        <div class="dreams-section-label">Популярные символы</div>
+        <div class="dreams-chips" id="dreams-chips"></div>
+
+        <!-- Список всіх символів -->
+        <div class="dreams-section-label">Все символы</div>
+        <div class="dreams-list" id="dreams-list"></div>
+
+        <div style="height:32px"></div>
+      </div>
     </div>
 
     <!-- ══ ПРЕМИУМ ════════════════════════════════════════════════════════════ -->

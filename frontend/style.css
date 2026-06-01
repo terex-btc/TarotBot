@@ -1090,6 +1090,16 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   gap: 8px;
   margin-bottom: 20px;
 }
+.nav-grid-5 {
+  grid-template-columns: repeat(5, 1fr);
+}
+.nav-grid-5 .nav-cell {
+  padding: 12px 4px 10px;
+  min-height: 78px;
+}
+.nav-grid-5 .nav-cell-emoji { font-size: 22px; }
+.nav-grid-5 .nav-cell-name  { font-size: 11px; }
+.nav-grid-5 .nav-cell-sub   { font-size: 9px; }
 .nav-cell {
   background: var(--surface);
   border: 1px solid var(--border);
@@ -1413,3 +1423,174 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 .mdp-day   { font-size: 11px; color: var(--text2); margin-bottom: 4px; }
 .mdp-emoji { font-size: 20px; margin-bottom: 3px; }
 .mdp-date  { font-size: 11px; color: var(--text3); }
+
+/* ══ Сонник (Dreams screen) ══════════════════════════════════════════════ */
+.dreams-scroll {
+  flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch;
+  padding: 16px 16px calc(var(--safe-b) + 24px);
+}
+.dreams-hero {
+  text-align: center; padding: 20px 0 24px;
+}
+.dreams-moon-icon { font-size: 48px; margin-bottom: 10px; }
+.dreams-title {
+  font-family: 'Cinzel', serif; font-size: 22px; font-weight: 700;
+  color: var(--text); margin-bottom: 8px;
+}
+.dreams-sub { font-size: 14px; color: var(--text2); line-height: 1.5; }
+
+.dreams-search-wrap { margin-bottom: 20px; }
+.dreams-search-box {
+  display: flex; align-items: center; gap: 8px;
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: var(--r);
+  padding: 10px 14px;
+  transition: border-color .2s;
+}
+.dreams-search-box:focus-within { border-color: var(--purple2); }
+.dreams-search-icon { font-size: 16px; flex-shrink: 0; }
+.dreams-search-input {
+  flex: 1; background: none; border: none; outline: none;
+  font-size: 15px; color: var(--text); font-family: inherit;
+}
+.dreams-search-input::placeholder { color: var(--text3); }
+.dreams-search-btn {
+  background: var(--purple); color: #fff;
+  border: none; border-radius: 10px;
+  padding: 7px 14px; font-size: 13px; font-weight: 600;
+  cursor: pointer; white-space: nowrap;
+  transition: background .15s;
+}
+.dreams-search-btn:active { background: var(--purple2); }
+
+.dreams-section-label {
+  font-size: 11px; font-weight: 700; color: var(--text3);
+  letter-spacing: .07em; text-transform: uppercase;
+  margin: 16px 0 10px;
+}
+
+/* Чіпси */
+.dreams-chips {
+  display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 8px;
+}
+.dream-chip {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 6px 14px;
+  font-size: 13px; color: var(--text2);
+  cursor: pointer; transition: all .15s;
+}
+.dream-chip:active { background: var(--surf2); color: var(--text); border-color: var(--purple2); }
+
+/* Список символів */
+.dreams-list { display: flex; flex-direction: column; gap: 2px; }
+.dream-list-item {
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px 14px;
+  background: var(--surface);
+  border-radius: var(--r-sm);
+  cursor: pointer; transition: background .15s;
+}
+.dream-list-item:active { background: var(--surf2); }
+.dli-icon { font-size: 18px; flex-shrink: 0; }
+.dli-name { flex: 1; font-size: 14px; font-weight: 600; color: var(--text); text-transform: capitalize; }
+.dli-card { font-size: 11px; color: var(--text3); flex-shrink: 0; }
+
+/* Результат тлумачення */
+.dream-result { margin-bottom: 16px; }
+.dream-result.hidden { display: none; }
+.dream-loading { text-align: center; padding: 24px; font-size: 16px; color: var(--text2); }
+.dream-not-found { text-align: center; padding: 24px 16px; }
+.dnf-icon { font-size: 32px; margin-bottom: 10px; }
+.dnf-text { font-size: 14px; color: var(--text2); line-height: 1.6; }
+
+.dream-result-card {
+  background: linear-gradient(135deg, rgba(124,58,237,.12), rgba(14,8,32,.8));
+  border: 1.5px solid var(--border2);
+  border-radius: var(--r);
+  padding: 20px;
+}
+.drc-symbol {
+  font-size: 20px; font-weight: 700; color: var(--text);
+  margin-bottom: 8px; text-transform: capitalize;
+}
+.drc-badge {
+  display: inline-block;
+  padding: 3px 12px; border-radius: 20px;
+  font-size: 11px; font-weight: 700; letter-spacing: .05em;
+  background: rgba(255,255,255,.08); color: var(--text2);
+  margin-bottom: 12px;
+}
+.drc-badge.badge-good { background: rgba(34,197,94,.15); color: #4ade80; }
+.drc-badge.badge-warn { background: rgba(251,146,60,.15); color: #fb923c; }
+.drc-tarot {
+  font-size: 12px; color: var(--text3); margin-bottom: 12px;
+}
+.drc-tarot b { color: var(--purple3); }
+.drc-meaning {
+  font-size: 14px; color: var(--text2); line-height: 1.7;
+}
+.drc-preview {
+  font-size: 14px; color: var(--text2); line-height: 1.7;
+  margin-bottom: 14px; opacity: .7;
+}
+.drc-locked {
+  text-align: center; padding: 14px;
+  background: rgba(0,0,0,.3); border-radius: var(--r-sm);
+  margin-top: 4px;
+}
+.drc-lock-icon { font-size: 28px; margin-bottom: 8px; }
+.drc-lock-text { font-size: 13px; color: var(--text2); margin-bottom: 12px; }
+
+/* Заблокований банер заговорів */
+.spells-locked-banner {
+  display: flex; align-items: center; gap: 14px;
+  background: linear-gradient(135deg, rgba(124,58,237,.15), rgba(14,8,32,.8));
+  border: 1.5px solid var(--border2);
+  border-radius: var(--r);
+  padding: 16px;
+}
+.slb-icon { font-size: 28px; flex-shrink: 0; }
+.slb-text { flex: 1; font-size: 13px; color: var(--text2); line-height: 1.5; }
+.slb-text b { color: var(--text); display: block; margin-bottom: 2px; }
+.slb-btn { flex-shrink: 0; padding: 8px 14px !important; font-size: 12px !important; }
+
+/* Маленька кнопка */
+.btn-sm { padding: 9px 18px !important; font-size: 13px !important; }
+
+/* ══ Paywall заговору ════════════════════════════════════════════════════ */
+.spell-paywall {
+  text-align: center; padding: 24px 16px;
+}
+.spw-icon { font-size: 52px; margin-bottom: 14px; }
+.spw-title {
+  font-family: 'Cinzel', serif; font-size: 18px; font-weight: 700;
+  color: var(--text); margin-bottom: 8px; line-height: 1.4;
+}
+.spw-sub { font-size: 13px; color: var(--text2); margin-bottom: 20px; }
+.spw-options { display: flex; flex-direction: column; gap: 10px; text-align: left; }
+.spw-option {
+  display: flex; align-items: center; gap: 14px;
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: var(--r);
+  padding: 14px 16px;
+  cursor: pointer;
+  position: relative;
+  transition: border-color .15s, background .15s;
+}
+.spw-option:active { background: var(--surf2); border-color: var(--purple2); }
+.spw-popular { border-color: var(--purple); background: rgba(124,58,237,.1); }
+.spwo-badge {
+  position: absolute; top: -9px; left: 14px;
+  background: var(--purple); color: #fff;
+  font-size: 9px; font-weight: 800; letter-spacing: .08em;
+  padding: 2px 8px; border-radius: 10px;
+}
+.spwo-emoji { font-size: 26px; flex-shrink: 0; }
+.spwo-info { flex: 1; }
+.spwo-title { font-size: 14px; font-weight: 700; color: var(--text); margin-bottom: 2px; }
+.spwo-sub   { font-size: 12px; color: var(--text2); }
+.spwo-price { font-size: 14px; font-weight: 700; color: var(--gold); flex-shrink: 0; }

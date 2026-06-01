@@ -20,6 +20,7 @@ async function initDB() {
         is_premium   BOOLEAN DEFAULT FALSE,
         premium_expiry BIGINT,
         ref_bonus    INTEGER DEFAULT 0,
+        spell_credits INTEGER DEFAULT 0,
         astro        JSONB,
         created_at   TIMESTAMPTZ DEFAULT NOW(),
         updated_at   TIMESTAMPTZ DEFAULT NOW()
@@ -52,6 +53,13 @@ async function initDB() {
       CREATE TABLE IF NOT EXISTS tg_msg_map (
         tg_message_id  INTEGER PRIMARY KEY,
         user_id        TEXT NOT NULL
+      );
+
+      CREATE TABLE IF NOT EXISTS spell_purchases (
+        user_id     TEXT NOT NULL,
+        spell_id    TEXT NOT NULL,
+        purchased_at TIMESTAMPTZ DEFAULT NOW(),
+        PRIMARY KEY (user_id, spell_id)
       );
     `);
     console.log('[DB] Схема ініціалізована');
