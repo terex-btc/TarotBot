@@ -1,13 +1,12 @@
 'use strict';
 
-const BASE = 'https://upload.wikimedia.org/wikipedia/commons';
-
-// 22 Старших Аркани Таро (Rider-Waite, public domain)
+// 22 Старших Аркани Таро (Rider-Waite, public domain 1909)
+// Зображення зберігаються локально у frontend/assets/cards/
 const MAJOR_ARCANA = [
   {
     id: 0, name: 'The Fool', nameUa: 'Блазень', nameRu: 'Шут',
     emoji: '🃏',
-    image: `${BASE}/9/90/RWS_Tarot_00_Fool.jpg`,
+    image: '/assets/cards/card_00.jpg',
     upright: {
       ua: 'Нові початки, спонтанність, пригода, свобода духу',
       ru: 'Новые начинания, спонтанность, приключения, свобода духа',
@@ -27,7 +26,7 @@ const MAJOR_ARCANA = [
   {
     id: 1, name: 'The Magician', nameUa: 'Маг', nameRu: 'Маг',
     emoji: '🪄',
-    image: `${BASE}/d/de/RWS_Tarot_01_Magician.jpg`,
+    image: '/assets/cards/card_01.jpg',
     upright: {
       ua: 'Сила волі, майстерність, концентрація, маніфестація',
       ru: 'Сила воли, мастерство, концентрация, манифестация',
@@ -47,7 +46,7 @@ const MAJOR_ARCANA = [
   {
     id: 2, name: 'The High Priestess', nameUa: 'Верховна Жриця', nameRu: 'Верховная Жрица',
     emoji: '🌙',
-    image: `${BASE}/8/88/RWS_Tarot_02_High_Priestess.jpg`,
+    image: '/assets/cards/card_02.jpg',
     upright: {
       ua: 'Інтуїція, підсвідомість, таємниця, внутрішнє знання',
       ru: 'Интуиция, подсознание, тайна, внутреннее знание',
@@ -67,7 +66,7 @@ const MAJOR_ARCANA = [
   {
     id: 3, name: 'The Empress', nameUa: 'Імператриця', nameRu: 'Императрица',
     emoji: '👑',
-    image: `${BASE}/d/d2/RWS_Tarot_03_Empress.jpg`,
+    image: '/assets/cards/card_03.jpg',
     upright: {
       ua: 'Родючість, краса, природа, турбота, достаток',
       ru: 'Плодородие, красота, природа, забота, изобилие',
@@ -87,7 +86,7 @@ const MAJOR_ARCANA = [
   {
     id: 4, name: 'The Emperor', nameUa: 'Імператор', nameRu: 'Император',
     emoji: '⚔️',
-    image: `${BASE}/c/c3/RWS_Tarot_04_Emperor.jpg`,
+    image: '/assets/cards/card_04.jpg',
     upright: {
       ua: 'Авторитет, структура, контроль, стабільність',
       ru: 'Авторитет, структура, контроль, стабильность',
@@ -107,7 +106,7 @@ const MAJOR_ARCANA = [
   {
     id: 5, name: 'The Hierophant', nameUa: 'Єрофант', nameRu: 'Иерофант',
     emoji: '⛪',
-    image: `${BASE}/8/8d/RWS_Tarot_05_Hierophant.jpg`,
+    image: '/assets/cards/card_05.jpg',
     upright: {
       ua: 'Традиції, духовність, освіта, моральні закони',
       ru: 'Традиции, духовность, образование, моральные законы',
@@ -127,7 +126,7 @@ const MAJOR_ARCANA = [
   {
     id: 6, name: 'The Lovers', nameUa: 'Закохані', nameRu: 'Влюблённые',
     emoji: '❤️',
-    image: `${BASE}/d/db/RWS_Tarot_06_Lovers.jpg`,
+    image: '/assets/cards/card_06.jpg',
     upright: {
       ua: 'Любов, гармонія, вибір, відносини, цінності',
       ru: 'Любовь, гармония, выбор, отношения, ценности',
@@ -147,7 +146,7 @@ const MAJOR_ARCANA = [
   {
     id: 7, name: 'The Chariot', nameUa: 'Колісниця', nameRu: 'Колесница',
     emoji: '🏆',
-    image: `${BASE}/9/9b/RWS_Tarot_07_Chariot.jpg`,
+    image: '/assets/cards/card_07.jpg',
     upright: {
       ua: 'Перемога, воля, контроль, рішучість, успіх',
       ru: 'Победа, воля, контроль, решимость, успех',
@@ -167,7 +166,7 @@ const MAJOR_ARCANA = [
   {
     id: 8, name: 'Strength', nameUa: 'Сила', nameRu: 'Сила',
     emoji: '🦁',
-    image: `${BASE}/f/f5/RWS_Tarot_08_Strength.jpg`,
+    image: '/assets/cards/card_08.jpg',
     upright: {
       ua: 'Сила, мужність, терпіння, внутрішня сила',
       ru: 'Сила, мужество, терпение, внутренняя сила',
@@ -187,7 +186,7 @@ const MAJOR_ARCANA = [
   {
     id: 9, name: 'The Hermit', nameUa: 'Відлюдник', nameRu: 'Отшельник',
     emoji: '🏔️',
-    image: `${BASE}/4/4d/RWS_Tarot_09_Hermit.jpg`,
+    image: '/assets/cards/card_09.jpg',
     upright: {
       ua: 'Усамітнення, душевний пошук, внутрішнє керівництво',
       ru: 'Уединение, душевный поиск, внутреннее руководство',
@@ -207,7 +206,7 @@ const MAJOR_ARCANA = [
   {
     id: 10, name: 'Wheel of Fortune', nameUa: 'Колесо Фортуни', nameRu: 'Колесо Фортуны',
     emoji: '🎡',
-    image: `${BASE}/3/3c/RWS_Tarot_10_Wheel_of_Fortune.jpg`,
+    image: '/assets/cards/card_10.jpg',
     upright: {
       ua: 'Удача, карма, доля, поворотний момент',
       ru: 'Удача, карма, судьба, поворотный момент',
@@ -227,7 +226,7 @@ const MAJOR_ARCANA = [
   {
     id: 11, name: 'Justice', nameUa: 'Справедливість', nameRu: 'Справедливость',
     emoji: '⚖️',
-    image: `${BASE}/e/e0/RWS_Tarot_11_Justice.jpg`,
+    image: '/assets/cards/card_11.jpg',
     upright: {
       ua: 'Справедливість, правда, закон, баланс',
       ru: 'Справедливость, правда, закон, баланс',
@@ -247,7 +246,7 @@ const MAJOR_ARCANA = [
   {
     id: 12, name: 'The Hanged Man', nameUa: 'Повішений', nameRu: 'Повешенный',
     emoji: '🙃',
-    image: `${BASE}/2/2b/RWS_Tarot_12_Hanged_Man.jpg`,
+    image: '/assets/cards/card_12.jpg',
     upright: {
       ua: 'Пауза, здача, нова перспектива, жертва',
       ru: 'Пауза, сдача, новая перспектива, жертва',
@@ -267,7 +266,7 @@ const MAJOR_ARCANA = [
   {
     id: 13, name: 'Death', nameUa: 'Смерть', nameRu: 'Смерть',
     emoji: '🌑',
-    image: `${BASE}/d/d7/RWS_Tarot_13_Death.jpg`,
+    image: '/assets/cards/card_13.jpg',
     upright: {
       ua: 'Кінець, перехід, трансформація, нові початки',
       ru: 'Конец, переход, трансформация, новые начала',
@@ -287,7 +286,7 @@ const MAJOR_ARCANA = [
   {
     id: 14, name: 'Temperance', nameUa: 'Поміркованість', nameRu: 'Умеренность',
     emoji: '🌊',
-    image: `${BASE}/f/f8/RWS_Tarot_14_Temperance.jpg`,
+    image: '/assets/cards/card_14.jpg',
     upright: {
       ua: 'Баланс, поміркованість, терпіння, гармонія',
       ru: 'Баланс, умеренность, терпение, гармония',
@@ -307,7 +306,7 @@ const MAJOR_ARCANA = [
   {
     id: 15, name: 'The Devil', nameUa: 'Диявол', nameRu: 'Дьявол',
     emoji: '😈',
-    image: `${BASE}/5/55/RWS_Tarot_15_Devil.jpg`,
+    image: '/assets/cards/card_15.jpg',
     upright: {
       ua: 'Прив\'язаність, матеріалізм, залежність, обмеження',
       ru: 'Привязанность, материализм, зависимость, ограничения',
@@ -327,7 +326,7 @@ const MAJOR_ARCANA = [
   {
     id: 16, name: 'The Tower', nameUa: 'Вежа', nameRu: 'Башня',
     emoji: '⚡',
-    image: `${BASE}/5/53/RWS_Tarot_16_Tower.jpg`,
+    image: '/assets/cards/card_16.jpg',
     upright: {
       ua: 'Раптові зміни, хаос, одкровення, пробудження',
       ru: 'Внезапные изменения, хаос, откровение, пробуждение',
@@ -347,7 +346,7 @@ const MAJOR_ARCANA = [
   {
     id: 17, name: 'The Star', nameUa: 'Зірка', nameRu: 'Звезда',
     emoji: '⭐',
-    image: `${BASE}/d/db/RWS_Tarot_17_Star.jpg`,
+    image: '/assets/cards/card_17.jpg',
     upright: {
       ua: 'Надія, натхнення, духовність, оновлення',
       ru: 'Надежда, вдохновение, духовность, обновление',
@@ -367,7 +366,7 @@ const MAJOR_ARCANA = [
   {
     id: 18, name: 'The Moon', nameUa: 'Місяць', nameRu: 'Луна',
     emoji: '🌕',
-    image: `${BASE}/7/7f/RWS_Tarot_18_Moon.jpg`,
+    image: '/assets/cards/card_18.jpg',
     upright: {
       ua: 'Ілюзія, страх, підсвідомість, нерозуміння',
       ru: 'Иллюзия, страх, подсознание, непонимание',
@@ -387,7 +386,7 @@ const MAJOR_ARCANA = [
   {
     id: 19, name: 'The Sun', nameUa: 'Сонце', nameRu: 'Солнце',
     emoji: '☀️',
-    image: `${BASE}/1/17/RWS_Tarot_19_Sun.jpg`,
+    image: '/assets/cards/card_19.jpg',
     upright: {
       ua: 'Радість, успіх, позитивність, ясність, енергія',
       ru: 'Радость, успех, позитивность, ясность, энергия',
@@ -407,7 +406,7 @@ const MAJOR_ARCANA = [
   {
     id: 20, name: 'Judgement', nameUa: 'Суд', nameRu: 'Суд',
     emoji: '📯',
-    image: `${BASE}/d/dd/RWS_Tarot_20_Judgement.jpg`,
+    image: '/assets/cards/card_20.jpg',
     upright: {
       ua: 'Відродження, прощення, внутрішній поклик',
       ru: 'Возрождение, прощение, внутренний зов',
@@ -427,7 +426,7 @@ const MAJOR_ARCANA = [
   {
     id: 21, name: 'The World', nameUa: 'Світ', nameRu: 'Мир',
     emoji: '🌍',
-    image: `${BASE}/f/ff/RWS_Tarot_21_World.jpg`,
+    image: '/assets/cards/card_21.jpg',
     upright: {
       ua: 'Завершення, інтеграція, досягнення, успіх',
       ru: 'Завершение, интеграция, достижение, успех',
