@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Магический Кабинет — персональный Таро бот в Telegram. Карта дня, заговоры, лунный календарь, AI-интерпретации по дате рождения.">
+  <meta property="og:title" content="🔮 Магический Кабинет — Таро в Telegram">
+  <meta property="og:description" content="Карта дня, заговоры, лунная магия — всё персонально по дате рождения. Попробуй бесплатно!">
+  <meta property="og:image" content="/assets/cards/card_19.jpg">
+  <title>🔮 Магический Кабинет — Таро, Заговоры, Лунная Магия</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #07030f;
+      --card: #120a1e;
+      --surface: #1a1028;
+      --border: rgba(255,255,255,.08);
+      --text: #f0e8ff;
+      --text2: #9d88b8;
+      --purple: #7c3aed;
+      --purple-light: #a855f7;
+      --gold: #f0c040;
+      --grad: linear-gradient(135deg,#5b21b6,#7c3aed,#a855f7);
+    }
+    html { scroll-behavior: smooth; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+
+    /* ── Зірки ── */
+    .stars-bg {
+      position: fixed; inset: 0; pointer-events: none; z-index: 0;
+      background:
+        radial-gradient(ellipse at 20% 50%, rgba(120,50,200,.15) 0%, transparent 60%),
+        radial-gradient(ellipse at 80% 20%, rgba(60,30,120,.12) 0%, transparent 60%);
+    }
+
+    /* ── Хедер ── */
+    header {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      padding: 16px 24px;
+      display: flex; align-items: center; justify-content: space-between;
+      background: rgba(7,3,15,.8); backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border);
+    }
+    .logo {
+      font-family: 'Cinzel', serif;
+      font-size: 18px; font-weight: 700;
+      background: var(--grad); -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    .header-cta {
+      padding: 10px 20px; border-radius: 12px;
+      background: var(--grad); color: #fff;
+      font-weight: 700; font-size: 14px;
+      text-decoration: none; transition: opacity .2s;
+    }
+    .header-cta:hover { opacity: .85; }
+
+    /* ── Hero ── */
+    .hero {
+      position: relative; z-index: 1;
+      min-height: 100vh;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      text-align: center;
+      padding: 100px 24px 60px;
+    }
+    .hero-cards {
+      display: flex; gap: 16px; margin-bottom: 40px;
+      animation: heroFloat 4s ease-in-out infinite;
+    }
+    @keyframes heroFloat {
+      0%,100%{transform:translateY(0)} 50%{transform:translateY(-12px)}
+    }
+    .hero-card {
+      width: 80px; height: 138px; border-radius: 10px;
+      overflow: hidden; box-shadow: 0 8px 32px rgba(120,50,200,.5);
+      border: 1px solid rgba(255,255,255,.15);
+    }
+    .hero-card img { width: 100%; height: 100%; object-fit: cover; }
+    .hero-card:nth-child(1) { transform: rotate(-8deg); }
+    .hero-card:nth-child(2) { transform: translateY(-16px); }
+    .hero-card:nth-child(3) { transform: rotate(8deg); }
+
+    .hero-badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 6px 16px; border-radius: 20px; margin-bottom: 16px;
+      background: rgba(240,192,64,.12); border: 1px solid rgba(240,192,64,.3);
+      font-size: 12px; font-weight: 700; color: var(--gold);
+      letter-spacing: .5px; text-transform: uppercase;
+    }
+    h1 {
+      font-family: 'Cinzel', serif;
+      font-size: clamp(32px, 8vw, 64px);
+      font-weight: 900;
+      line-height: 1.1;
+      margin-bottom: 20px;
+      background: linear-gradient(135deg, #f0e8ff, #c084fc, #f0c040);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    .hero-sub {
+      font-size: clamp(16px, 3vw, 20px);
+      color: var(--text2);
+      max-width: 540px; margin: 0 auto 36px;
+      line-height: 1.6;
+    }
+    .hero-cta-wrap { display: flex; flex-direction: column; align-items: center; gap: 12px; }
+    .btn-hero {
+      display: inline-flex; align-items: center; gap: 10px;
+      padding: 18px 40px; border-radius: 16px;
+      background: var(--grad); color: #fff;
+      font-size: 18px; font-weight: 700;
+      text-decoration: none;
+      box-shadow: 0 8px 32px rgba(124,58,237,.5);
+      transition: transform .2s, box-shadow .2s;
+      animation: pulseShadow 2.5s ease-in-out infinite;
+    }
+    @keyframes pulseShadow {
+      0%,100%{box-shadow:0 8px 32px rgba(124,58,237,.5)}
+      50%{box-shadow:0 12px 48px rgba(124,58,237,.8)}
+    }
+    .btn-hero:hover { transform: translateY(-2px); }
+    .hero-note { font-size: 13px; color: var(--text2); }
+    .hero-note strong { color: var(--gold); }
+
+    /* ── Статистика ── */
+    .stats {
+      position: relative; z-index: 1;
+      display: grid; grid-template-columns: repeat(3, 1fr);
+      gap: 1px; background: var(--border);
+      border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
+    }
+    .stat {
+      background: var(--card); padding: 32px 20px; text-align: center;
+    }
+    .stat-num {
+      font-family: 'Cinzel', serif;
+      font-size: 28px; font-weight: 700; color: var(--gold);
+      margin-bottom: 4px;
+    }
+    .stat-label { font-size: 12px; color: var(--text2); }
+
+    /* ── Секції ── */
+    section { position: relative; z-index: 1; padding: 80px 24px; }
+    .section-title {
+      font-family: 'Cinzel', serif;
+      font-size: clamp(22px, 4vw, 36px);
+      font-weight: 700; text-align: center; margin-bottom: 12px;
+    }
+    .section-sub { text-align: center; color: var(--text2); font-size: 16px; margin-bottom: 48px; }
+    .container { max-width: 1100px; margin: 0 auto; }
+
+    /* ── Фічи ── */
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 20px;
+    }
+    .feature-card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 20px; padding: 28px 24px;
+      transition: border-color .2s, transform .2s;
+    }
+    .feature-card:hover { border-color: rgba(124,58,237,.4); transform: translateY(-4px); }
+    .feature-emoji { font-size: 36px; margin-bottom: 14px; }
+    .feature-title { font-family: 'Cinzel', serif; font-size: 16px; font-weight: 700; margin-bottom: 8px; }
+    .feature-desc { font-size: 14px; color: var(--text2); line-height: 1.6; }
+    .feature-tag {
+      display: inline-block; margin-top: 10px;
+      padding: 3px 10px; border-radius: 8px; font-size: 10px; font-weight: 700;
+      text-transform: uppercase; letter-spacing: .5px;
+    }
+    .tag-free { background: rgba(34,197,94,.12); color: #4ade80; border: 1px solid rgba(34,197,94,.2); }
+    .tag-premium { background: rgba(240,192,64,.12); color: var(--gold); border: 1px solid rgba(240,192,64,.2); }
+    .tag-ai { background: rgba(124,58,237,.15); color: #c084fc; border: 1px solid rgba(124,58,237,.3); }
+
+    /* ── Як це працює ── */
+    .how-it-works { background: var(--card); }
+    .steps-wrap { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 32px; }
+    .step { text-align: center; }
+    .step-num {
+      width: 48px; height: 48px; border-radius: 50%;
+      background: var(--grad); margin: 0 auto 16px;
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Cinzel', serif; font-size: 20px; font-weight: 700; color: #fff;
+    }
+    .step-title { font-weight: 700; margin-bottom: 6px; }
+    .step-desc { font-size: 14px; color: var(--text2); }
+
+    /* ── Відгуки ── */
+    .reviews-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; }
+    .review-card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 16px; padding: 24px;
+    }
+    .review-stars { font-size: 14px; margin-bottom: 10px; color: var(--gold); }
+    .review-text { font-size: 14px; color: var(--text2); line-height: 1.7; margin-bottom: 14px; font-style: italic; }
+    .review-author { display: flex; align-items: center; gap: 10px; }
+    .review-avatar { font-size: 24px; }
+    .review-name { font-weight: 700; font-size: 14px; }
+    .review-sign { font-size: 11px; color: var(--text2); }
+
+    /* ── Преміум ── */
+    .premium-section { text-align: center; }
+    .plans-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px; max-width: 700px; margin: 0 auto 40px;
+    }
+    .plan {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 20px; padding: 28px 20px; text-align: center;
+      transition: border-color .2s;
+    }
+    .plan.popular {
+      border-color: var(--purple-light);
+      background: linear-gradient(135deg,rgba(91,33,182,.2),rgba(124,58,237,.1));
+    }
+    .plan-badge {
+      display: inline-block; margin-bottom: 12px;
+      padding: 3px 12px; border-radius: 10px; font-size: 10px; font-weight: 700;
+      text-transform: uppercase; letter-spacing: .5px;
+      background: var(--grad); color: #fff;
+    }
+    .plan-name { font-family: 'Cinzel', serif; font-size: 16px; font-weight: 700; margin-bottom: 6px; }
+    .plan-price { font-size: 28px; font-weight: 900; color: var(--gold); margin: 10px 0; }
+    .plan-price span { font-size: 14px; color: var(--text2); font-weight: 400; }
+    .plan-list { list-style: none; text-align: left; margin-top: 16px; }
+    .plan-list li { font-size: 13px; color: var(--text2); padding: 4px 0; }
+    .plan-list li::before { content: '✓ '; color: #4ade80; }
+
+    /* ── CTA bottom ── */
+    .cta-bottom {
+      text-align: center;
+      background: linear-gradient(135deg,rgba(91,33,182,.3),rgba(168,85,247,.15));
+      border-top: 1px solid rgba(124,58,237,.2);
+      border-bottom: 1px solid rgba(124,58,237,.2);
+    }
+    .cta-title { font-family: 'Cinzel', serif; font-size: clamp(24px,4vw,40px); font-weight: 700; margin-bottom: 16px; }
+    .cta-sub { color: var(--text2); font-size: 16px; margin-bottom: 36px; }
+
+    /* ── Footer ── */
+    footer {
+      position: relative; z-index: 1;
+      padding: 32px 24px; text-align: center;
+      border-top: 1px solid var(--border);
+      color: var(--text2); font-size: 13px;
+    }
+
+    @media (max-width: 600px) {
+      .hero-cards .hero-card { width: 60px; height: 104px; }
+      .stats { grid-template-columns: repeat(3,1fr); }
+      .stat-num { font-size: 22px; }
+      .stat-label { font-size: 10px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="stars-bg"></div>
+
+  <header>
+    <div class="logo">🔮 Магический Кабинет</div>
+    <a href="https://t.me/MagicCabinetBot" class="header-cta">Открыть бесплатно →</a>
+  </header>
+
+  <!-- ══ HERO ══════════════════════════════════════════════════════════════════ -->
+  <section class="hero">
+    <div class="hero-cards">
+      <div class="hero-card"><img src="/assets/cards/card_19.jpg" alt="Солнце"></div>
+      <div class="hero-card"><img src="/assets/cards/card_02.jpg" alt="Жрица"></div>
+      <div class="hero-card"><img src="/assets/cards/card_17.jpg" alt="Звезда"></div>
+    </div>
+
+    <div class="hero-badge">✨ Telegram Mini App</div>
+    <h1>Таро, Заговоры<br>и Лунная Магия</h1>
+    <p class="hero-sub">
+      Персональные предсказания по дате рождения.<br>
+      AI-интерпретации, 55 заговоров, лунный календарь —<br>
+      всё в одном Telegram-боте.
+    </p>
+
+    <div class="hero-cta-wrap">
+      <a href="https://t.me/MagicCabinetBot" class="btn-hero">
+        <span>🔮</span>
+        <span>Открыть Магический Кабинет</span>
+      </a>
+      <p class="hero-note">Бесплатно · <strong>Карта дня каждый день</strong> · Без регистрации</p>
+    </div>
+  </section>
+
+  <!-- ══ СТАТИСТИКА ═════════════════════════════════════════════════════════════ -->
+  <div class="stats">
+    <div class="stat">
+      <div class="stat-num">22+</div>
+      <div class="stat-label">Карт Таро</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num">55</div>
+      <div class="stat-label">Заговоров</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num">8</div>
+      <div class="stat-label">Фаз Луны</div>
+    </div>
+  </div>
+
+  <!-- ══ ФІЧІ ══════════════════════════════════════════════════════════════════ -->
+  <section>
+    <div class="container">
+      <h2 class="section-title">Всё что нужно для магии</h2>
+      <p class="section-sub">Персонализировано по дате рождения · Работает прямо в Telegram</p>
+      <div class="features-grid">
+        <div class="feature-card">
+          <div class="feature-emoji">🃏</div>
+          <div class="feature-title">Карта дня</div>
+          <div class="feature-desc">Каждый день — уникальная карта, выбранная специально для тебя на основе даты рождения, числа жизненного пути и фазы луны.</div>
+          <span class="feature-tag tag-free">Бесплатно</span>
+        </div>
+        <div class="feature-card">
+          <div class="feature-emoji">🤖</div>
+          <div class="feature-title">AI-толкование</div>
+          <div class="feature-desc">Задай вопрос картам — и получи персональную интерпретацию от AI, учитывающую твой гороскоп, жизненный путь и конкретный вопрос.</div>
+          <span class="feature-tag tag-ai">AI-powered</span>
+        </div>
+        <div class="feature-card">
+          <div class="feature-emoji">🕯️</div>
+          <div class="feature-title">Заговоры</div>
+          <div class="feature-desc">55 ритуалов на любовь, деньги, красоту, защиту и удачу. Показывает только те, что работают сегодня — по фазе луны.</div>
+          <span class="feature-tag tag-premium">Премиум</span>
+        </div>
+        <div class="feature-card">
+          <div class="feature-emoji">🌙</div>
+          <div class="feature-title">Лунный календарь</div>
+          <div class="feature-desc">8 фаз луны, магические рекомендации на каждый день, список дел и ритуалов. Знай когда действовать, а когда ждать.</div>
+          <span class="feature-tag tag-free">Бесплатно</span>
+        </div>
+        <div class="feature-card">
+          <div class="feature-emoji">🔢</div>
+          <div class="feature-title">Нумерология</div>
+          <div class="feature-desc">Жизненный путь, личный год, личный день — рассчитываются по дате рождения и влияют на каждый расклад Таро.</div>
+          <span class="feature-tag tag-free">Бесплатно</span>
+        </div>
+        <div class="feature-card">
+          <div class="feature-emoji">💞</div>
+          <div class="feature-title">Совместимость</div>
+          <div class="feature-desc">Проверь совместимость по знакам зодиака. Узнай сильные стороны союза и зоны роста отношений.</div>
+          <span class="feature-tag tag-free">Бесплатно</span>
+        </div>
+        <div class="feature-card">
+          <div class="feature-emoji">😴</div>
+          <div class="feature-title">Сонник</div>
+          <div class="feature-desc">База толкований снов с поиском. Узнай что значит тот или иной символ в твоём сне.</div>
+          <span class="feature-tag tag-free">Бесплатно</span>
+        </div>
+        <div class="feature-card">
+          <div class="feature-emoji">🌟</div>
+          <div class="feature-title">Гороскоп</div>
+          <div class="feature-desc">Еженедельный гороскоп по знаку зодиака: любовь, работа, здоровье. Счастливый день и число недели.</div>
+          <span class="feature-tag tag-free">Бесплатно</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══ ЯК ЦЕ ПРАЦЮЄ ══════════════════════════════════════════════════════════ -->
+  <section class="how-it-works">
+    <div class="container">
+      <h2 class="section-title">Как начать за 30 секунд</h2>
+      <p class="section-sub">Без регистрации, без email, прямо в Telegram</p>
+      <div class="steps-wrap">
+        <div class="step">
+          <div class="step-num">1</div>
+          <div class="step-title">Открой бота</div>
+          <div class="step-desc">Нажми кнопку «Открыть» — бот запускается в Telegram.</div>
+        </div>
+        <div class="step">
+          <div class="step-num">2</div>
+          <div class="step-title">Введи дату рождения</div>
+          <div class="step-desc">Один раз — и все расклады будут персональными навсегда.</div>
+        </div>
+        <div class="step">
+          <div class="step-num">3</div>
+          <div class="step-title">Задай вопрос картам</div>
+          <div class="step-desc">Открой карту дня или выбери расклад — карты ответят.</div>
+        </div>
+        <div class="step">
+          <div class="step-num">4</div>
+          <div class="step-title">Получи AI-толкование</div>
+          <div class="step-desc">Нажми кнопку — и AI объяснит расклад с учётом твоего вопроса.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══ ВІДГУКИ ════════════════════════════════════════════════════════════════ -->
+  <section>
+    <div class="container">
+      <h2 class="section-title">Что говорят пользователи</h2>
+      <p class="section-sub">Тысячи девушек уже открывают карту каждое утро</p>
+      <div class="reviews-grid">
+        <div class="review-card">
+          <div class="review-stars">★★★★★</div>
+          <p class="review-text">«AI-интерпретация просто поразила — она точно ответила на мой вопрос об отношениях. Ощущение что карты меня слышат.»</p>
+          <div class="review-author">
+            <div class="review-avatar">🌺</div>
+            <div>
+              <div class="review-name">Анастасия</div>
+              <div class="review-sign">♏ Скорпион · Киев</div>
+            </div>
+          </div>
+        </div>
+        <div class="review-card">
+          <div class="review-stars">★★★★★</div>
+          <p class="review-text">«Заговор на деньги под растущую луну реально работает! И не нужно ничего искать — приложение само показывает нужные ритуалы.»</p>
+          <div class="review-author">
+            <div class="review-avatar">🌙</div>
+            <div>
+              <div class="review-name">Марина</div>
+              <div class="review-sign">♉ Телец · Одесса</div>
+            </div>
+          </div>
+        </div>
+        <div class="review-card">
+          <div class="review-stars">★★★★★</div>
+          <p class="review-text">«Карта дня стала утренним ритуалом. Открываю первым делом — и день идёт иначе. Это уже полгода!»</p>
+          <div class="review-author">
+            <div class="review-avatar">✨</div>
+            <div>
+              <div class="review-name">Вікторія</div>
+              <div class="review-sign">♓ Риби · Харків</div>
+            </div>
+          </div>
+        </div>
+        <div class="review-card">
+          <div class="review-stars">★★★★★</div>
+          <p class="review-text">«Нумерология точно описала мой характер — числа жизненного пути совпали с тем как я себя вижу. Советую всем!»</p>
+          <div class="review-author">
+            <div class="review-avatar">🔮</div>
+            <div>
+              <div class="review-name">Елена</div>
+              <div class="review-sign">♊ Близнецы · Днепр</div>
+            </div>
+          </div>
+        </div>
+        <div class="review-card">
+          <div class="review-stars">★★★★★</div>
+          <p class="review-text">«Расклад на месяц помог мне спланировать важные решения. Карты показали что октябрь — не время менять работу. Я послушалась и не пожалела.»</p>
+          <div class="review-author">
+            <div class="review-avatar">🌟</div>
+            <div>
+              <div class="review-name">Юлия</div>
+              <div class="review-sign">♑ Козерог · Львів</div>
+            </div>
+          </div>
+        </div>
+        <div class="review-card">
+          <div class="review-stars">★★★★★</div>
+          <p class="review-text">«Сонник всегда под рукой в Telegram! Привиделся странный сон — сразу нашла толкование. Удобнее чем гуглить.»</p>
+          <div class="review-author">
+            <div class="review-avatar">🌸</div>
+            <div>
+              <div class="review-name">Дарья</div>
+              <div class="review-sign">♋ Рак · Запоріжжя</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══ ПРЕМІУМ ════════════════════════════════════════════════════════════════ -->
+  <section class="premium-section" style="background:var(--card)">
+    <div class="container">
+      <h2 class="section-title">💎 Премиум — максимум магии</h2>
+      <p class="section-sub">Открой все расклады, заговоры и AI-толкования без ограничений</p>
+      <div class="plans-grid">
+        <div class="plan">
+          <div class="plan-name">1 Месяц</div>
+          <div class="plan-price">⭐ 299 <span>Stars</span></div>
+          <ul class="plan-list">
+            <li>Все 5 раскладов Таро</li>
+            <li>55 заговоров и ритуалов</li>
+            <li>AI-толкования без лимита</li>
+            <li>Расклад Любви и Год</li>
+          </ul>
+        </div>
+        <div class="plan popular">
+          <div class="plan-badge">Выгоднее всего</div>
+          <div class="plan-name">3 Месяца</div>
+          <div class="plan-price">⭐ 699 <span>Stars</span></div>
+          <ul class="plan-list">
+            <li>Всё из Месяца</li>
+            <li>Экономия 200 Stars</li>
+            <li>Приоритетные обновления</li>
+            <li>Расширенная нумерология</li>
+          </ul>
+        </div>
+        <div class="plan">
+          <div class="plan-name">1 Год</div>
+          <div class="plan-price">⭐ 1990 <span>Stars</span></div>
+          <ul class="plan-list">
+            <li>Всё на целый год</li>
+            <li>Экономия 600 Stars</li>
+            <li>Все будущие функции</li>
+            <li>VIP поддержка</li>
+          </ul>
+        </div>
+      </div>
+      <a href="https://t.me/MagicCabinetBot" class="btn-hero" style="font-size:16px;padding:16px 32px;">
+        Попробовать бесплатно →
+      </a>
+    </div>
+  </section>
+
+  <!-- ══ CTA BOTTOM ═════════════════════════════════════════════════════════════ -->
+  <section class="cta-bottom">
+    <div class="container">
+      <h2 class="cta-title">Готова узнать своё послание?</h2>
+      <p class="cta-sub">Карты уже выбраны специально для тебя. Открой — это бесплатно.</p>
+      <a href="https://t.me/MagicCabinetBot" class="btn-hero">
+        <span>🔮</span>
+        <span>Открыть Магический Кабинет</span>
+      </a>
+    </div>
+  </section>
+
+  <!-- ══ FOOTER ═════════════════════════════════════════════════════════════════ -->
+  <footer>
+    <p>🔮 Магический Кабинет · Таро Бот в Telegram</p>
+    <p style="margin-top:8px;font-size:11px;opacity:.6;">
+      Расклады Таро носят развлекательный характер.
+      Карты Rider-Waite, 1909 (Public Domain).
+    </p>
+  </footer>
+</body>
+</html>

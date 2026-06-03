@@ -39,15 +39,13 @@ router.post('/init', async (req, res) => {
     let astro = null;
     if (birthDate) {
       try {
-        const today       = new Date().toISOString().split('T')[0];
-        const zodiac      = getZodiac(birthDate);
-        const lifePath    = calcLifePath(birthDate);
+        const today        = new Date().toISOString().split('T')[0];
+        const zodiac       = getZodiac(birthDate);
+        const lifePath     = calcLifePath(birthDate);
         const personalYear = calcPersonalYear(birthDate, new Date().getFullYear());
-        const moonPhase   = getMoonPhase(today);
+        const moonPhase    = getMoonPhase(today);
         astro = { zodiac, lifePath, personalYear, moonPhase };
-      } catch (e) {
-        console.error('[users/init] astro calc error:', e.message);
-      }
+      } catch (e) { console.error('[users/init] astro calc error:', e.message); }
     }
 
     const fname = firstName || name || '';
@@ -137,7 +135,7 @@ async function setUserPremium(userId, expiryMs) {
 }
 
 async function addRefBonus(userId, days) {
-  const now  = Date.now();
+  const now = Date.now();
   await pool.query(`
     UPDATE users SET
       ref_bonus      = ref_bonus + 1,

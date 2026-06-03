@@ -1878,3 +1878,122 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 .bp-lock { font-size:20px;margin-bottom:4px; }
 .bp-text { font-size:10px;font-weight:700;color:var(--gold);text-align:center;line-height:1.3; }
 .spwo-price { font-size: 14px; font-weight: 700; color: var(--gold); flex-shrink: 0; }
+
+/* ══ МОДАЛ ПИТАННЯ ═══════════════════════════════════════════════════════ */
+.modal-overlay {
+  position:fixed;inset:0;z-index:1000;
+  background:rgba(7,3,15,.85);backdrop-filter:blur(8px);
+  display:flex;align-items:flex-end;justify-content:center;
+  padding:16px;padding-bottom:max(16px, env(safe-area-inset-bottom));
+  transition:opacity .25s;
+}
+.modal-overlay.hidden { opacity:0;pointer-events:none; }
+.modal-card {
+  width:100%;max-width:440px;
+  background:var(--card);border:1px solid var(--border);
+  border-radius:20px;padding:24px 20px;
+  display:flex;flex-direction:column;gap:10px;
+  box-shadow:0 -4px 40px rgba(120,60,200,.3);
+  animation:slideUp .3s ease;
+}
+@keyframes slideUp { from{transform:translateY(30px);opacity:0} to{transform:none;opacity:1} }
+.modal-icon { font-size:36px;text-align:center;margin-bottom:4px; }
+.modal-title { font-family:'Cinzel',serif;font-size:18px;font-weight:700;text-align:center;color:var(--text); }
+.modal-sub { font-size:13px;color:var(--text2);text-align:center;line-height:1.5; }
+.question-textarea {
+  width:100%;background:var(--surface);border:1px solid var(--border);
+  border-radius:12px;color:var(--text);font-size:14px;line-height:1.5;
+  padding:12px 14px;resize:none;font-family:'Inter',sans-serif;
+  transition:border-color .2s;
+}
+.question-textarea:focus { outline:none;border-color:var(--purple); }
+.modal-note { font-size:11px;color:var(--text2);text-align:center; }
+.modal-btns { display:flex;gap:10px;margin-top:4px; }
+.modal-btns .btn-secondary {
+  flex:0 0 auto;padding:14px 16px;
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--r);color:var(--text2);font-size:14px;cursor:pointer;
+  transition:background .15s;
+}
+.modal-btns .btn-secondary:hover { background:var(--card); }
+.modal-btns .btn-primary { flex:1; }
+
+/* ══ AI ІНТЕРПРЕТАЦІЯ ════════════════════════════════════════════════════ */
+.btn-ai-interpret {
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  background:linear-gradient(135deg,#5b21b6,#7c3aed,#a855f7);
+  animation:glowPulse 2.5s ease-in-out infinite;
+}
+@keyframes glowPulse {
+  0%,100%{box-shadow:0 0 12px rgba(139,92,246,.4)}
+  50%{box-shadow:0 0 24px rgba(139,92,246,.7)}
+}
+.bai-icon { font-size:18px; }
+.btn-ai-hint { text-align:center;font-size:11px;color:var(--text2);margin-top:6px; }
+
+.ai-interpretation-block {
+  margin:16px;padding:20px;
+  background:linear-gradient(135deg,rgba(91,33,182,.15),rgba(168,85,247,.08));
+  border:1px solid rgba(139,92,246,.35);
+  border-radius:16px;
+}
+.ai-interpretation-block.hidden { display:none; }
+.aib-header { display:flex;align-items:center;gap:8px;margin-bottom:12px; }
+.aib-icon { font-size:20px; }
+.aib-title { font-family:'Cinzel',serif;font-size:14px;font-weight:700;color:var(--purple-light,#c4b5fd); }
+.aib-badge {
+  margin-left:auto;font-size:9px;font-weight:700;letter-spacing:.5px;
+  text-transform:uppercase;color:var(--gold);
+  background:rgba(240,192,64,.12);border:1px solid rgba(240,192,64,.25);
+  border-radius:8px;padding:2px 8px;
+}
+.aib-text {
+  font-size:14px;line-height:1.7;color:var(--text);
+  white-space:pre-wrap;
+}
+.aib-loading {
+  display:flex;align-items:center;gap:8px;color:var(--text2);font-size:14px;
+}
+.aib-spinner {
+  width:16px;height:16px;border:2px solid rgba(139,92,246,.3);
+  border-top-color:#a855f7;border-radius:50%;
+  animation:spin .8s linear infinite;
+}
+@keyframes spin { to{transform:rotate(360deg)} }
+.aib-actions { margin-top:14px;display:flex;gap:8px; }
+.btn-share-reading {
+  flex:1;padding:12px;border-radius:var(--r);
+  background:var(--surface);border:1px solid var(--border);
+  color:var(--text);font-size:13px;font-weight:600;cursor:pointer;
+  transition:background .15s;
+}
+.btn-share-reading:hover { background:var(--card); }
+
+/* ══ БЕЙДЖ ПИТАННЯ У РОЗКЛАДІ ════════════════════════════════════════════ */
+.reading-question-badge {
+  margin:12px 16px 0;padding:10px 14px;
+  background:rgba(139,92,246,.1);border:1px solid rgba(139,92,246,.2);
+  border-radius:12px;font-size:13px;color:var(--text2);
+  display:flex;align-items:flex-start;gap:8px;
+}
+.reading-question-badge.hidden { display:none; }
+.reading-question-badge::before { content:'❓';flex-shrink:0; }
+
+/* ══ ГОРОСКОП: нові елементи ════════════════════════════════════════════ */
+.horo-weekly-block {
+  margin:12px 16px;padding:16px;
+  background:linear-gradient(135deg,rgba(91,33,182,.15),rgba(168,85,247,.08));
+  border:1px solid rgba(139,92,246,.25);border-radius:16px;
+}
+.hwb-label { font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--purple-light,#c4b5fd);margin-bottom:8px; }
+.hwb-text { font-size:14px;line-height:1.7;color:var(--text); }
+.horo-lucky {
+  margin:12px 16px;padding:16px;
+  background:rgba(240,192,64,.06);border:1px solid rgba(240,192,64,.2);
+  border-radius:16px;
+}
+.hl-title { font-size:12px;font-weight:700;color:var(--gold);margin-bottom:10px; }
+.hl-grid { display:grid;grid-template-columns:repeat(3,1fr);gap:8px; }
+.hl-item { text-align:center;background:rgba(240,192,64,.05);border-radius:10px;padding:8px 6px; }
+.hl-label { font-size:10px;color:var(--text2);margin-bottom:2px; }
+.hl-val { font-size:14px;font-weight:700;color:var(--gold); }

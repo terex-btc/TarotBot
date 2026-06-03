@@ -266,6 +266,21 @@
       </div>
     </div>
 
+    <!-- ══ МОДАЛ ПИТАННЯ ПЕРЕД РОЗКЛАДОМ ═══════════════════════════════════════ -->
+    <div id="question-modal" class="modal-overlay hidden">
+      <div class="modal-card">
+        <div class="modal-icon">🔮</div>
+        <div class="modal-title">Задай вопрос картам</div>
+        <div class="modal-sub">Что тебя волнует? Карты дадут ответ,<br>персональный именно для тебя.</div>
+        <textarea id="question-input" class="question-textarea" placeholder="Например: Стоит ли мне менять работу? Как развиваются наши отношения?..." maxlength="300" rows="3"></textarea>
+        <div class="modal-note">Можно пропустить — карты читают мысли ✨</div>
+        <div class="modal-btns">
+          <button class="btn-secondary" id="btn-skip-question">Пропустить</button>
+          <button class="btn-primary" id="btn-ask-cards">Спросить карты 🃏</button>
+        </div>
+      </div>
+    </div>
+
     <!-- ══ РАСКЛАД ════════════════════════════════════════════════════════════ -->
     <div id="screen-reading" class="screen">
       <header class="top-bar">
@@ -274,11 +289,27 @@
         <div style="width:40px"></div>
       </header>
       <div class="reading-scroll" id="reading-scroll">
+        <div class="reading-question-badge hidden" id="reading-question-badge"></div>
         <div class="reading-meta" id="reading-meta"></div>
         <div class="reading-interpretation" id="reading-interpretation"></div>
         <div class="reading-cards-wrap" id="reading-cards-wrap"></div>
         <div id="reading-summary-btn" class="reading-summary-btn hidden">
-          <button class="btn-primary" id="btn-show-summary">Полная интерпретация ✨</button>
+          <button class="btn-primary btn-ai-interpret" id="btn-show-summary">
+            <span class="bai-icon">✨</span>
+            <span>Получить AI-толкование</span>
+          </button>
+          <div class="btn-ai-hint">Персональная интерпретация от AI</div>
+        </div>
+        <div id="ai-interpretation-block" class="ai-interpretation-block hidden">
+          <div class="aib-header">
+            <span class="aib-icon">🔮</span>
+            <span class="aib-title">AI-толкование</span>
+            <span class="aib-badge">персональное</span>
+          </div>
+          <div class="aib-text" id="ai-interpretation-text"></div>
+          <div class="aib-actions">
+            <button class="btn-share-reading" id="btn-share-reading">📲 Поделиться</button>
+          </div>
         </div>
         <div style="height:40px"></div>
       </div>

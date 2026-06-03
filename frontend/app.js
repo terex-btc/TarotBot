@@ -18,13 +18,14 @@ const state = {
   tgUser: tg?.initDataUnsafe?.user || null,
   user:   null,
   lang:   (() => { const l = tg?.initDataUnsafe?.user?.language_code; return (l === 'uk' || l === 'ua') ? 'ua' : 'ru'; })(),
-  currentReading: null,
-  flippedCount:   0,
-  prevScreen:     'home',
-  currentSpell:   null,
-  spellTimer:     null,
-  spellTimerSec:  0,
-  moonData:       null,
+  currentReading:  null,
+  currentQuestion: '',
+  flippedCount:    0,
+  prevScreen:      'home',
+  currentSpell:    null,
+  spellTimer:      null,
+  spellTimerSec:   0,
+  moonData:        null,
 };
 
 // ── API ────────────────────────────────────────────────────────────────────
@@ -359,16 +360,50 @@ function renderDailyRevealed(zone, reading) {
   });
 }
 
+// ── Питання перед розкладом ────────────────────────────────────────────────
+function showQuestionModal(spreadType) {
+  const modal = document.getElementById('question-modal');
+  const input = document.getElementById('question-input');
+  if (!modal) { startReading(spreadType, ''); return; }
+  input.value = '';
+  modal.classList.remove('hidden');
+  setTimeout(() => input.focus(), 300);
+
+  const doStart = () => {
+    modal.classList.add('hidden');
+    startReading(spreadType, input.value.trim());
+  };
+  document.getElementById('btn-ask-cards').onclick = doStart;
+  document.getElementById('btn-skip-question').onclick = () => {
+    modal.classList.add('hidden');
+    startReading(spreadType, '');
+  };
+  modal.onclick = (e) => { if (e.target === modal) { modal.classList.add('hidden'); startReading(spreadType, ''); } };
+}
+
 // ── Таро: розкладання ──────────────────────────────────────────────────────
 async function openSpread(spreadType) {
   const needsPremium = ['love', 'month', 'year', 'three_card'].includes(spreadType);
   if (needsPremium && !state.user?.isPremium) { showScreen('premium'); await loadPremiumScreen(); return; }
+  showQuestionModal(spreadType);
+}
+
+async function startReading(spreadType, question) {
+  state.currentQuestion = question;
   showScreen('reading');
   state.flippedCount = 0;
   document.getElementById('reading-meta').innerHTML = '';
   document.getElementById('reading-interpretation').textContent = '🔮 Тасуем карты...';
   document.getElementById('reading-cards-wrap').innerHTML = '';
   document.getElementById('reading-summary-btn').classList.add('hidden');
+  document.getElementById('ai-interpretation-block')?.classList.add('hidden');
+
+  const badge = document.getElementById('reading-question-badge');
+  if (badge) {
+    if (question) { badge.textContent = question; badge.classList.remove('hidden'); }
+    else badge.classList.add('hidden');
+  }
+
   const data = await api('POST', `/readings/${state.userId}`, { spreadType, lang: state.lang });
   if (!data.ok) { document.getElementById('reading-interpretation').textContent = 'Ошибка.'; return; }
   state.currentReading = data.reading;
@@ -905,14 +940,54 @@ function initNav() {
   // Заговоры → категорія (повторюємо і в tarot-screen)
   document.querySelectorAll('.premium-card[data-spread]').forEach(el => el.addEventListener('click', () => openSpread(el.dataset.spread)));
 
-  // Кнопка підсумку
-  document.getElementById('btn-show-summary').addEventListener('click', () => {
+  // Кнопка AI-інтерпретації
+  document.getElementById('btn-show-summary').addEventListener('click', async () => {
     const r = state.currentReading;
     if (!r) return;
-    const lines = [`🔮 ${ru(r.spreadName)}`, r.interpretation || '', '',
-      ...r.cards.map((c, i) => `${c.emoji} ${ru(r.positions[i])}: ${c.nameRu || c.name}\n${c.isReversed ? ru(c.reversed) : ru(c.upright)}`)
-    ].join('\n');
-    tg?.showPopup?.({ title: ru(r.spreadName), message: lines.slice(0, 600), buttons: [{ type: 'close' }] }) || alert(lines);
+
+    const summaryBtn = document.getElementById('reading-summary-btn');
+    const aiBlock    = document.getElementById('ai-interpretation-block');
+    const aiText     = document.getElementById('ai-interpretation-text');
+    if (!aiBlock || !aiText) return;
+
+    summaryBtn.classList.add('hidden');
+    aiBlock.classList.remove('hidden');
+    aiText.innerHTML = '<div class="aib-loading"><div class="aib-spinner"></div><span>Карты говорят...</span></div>';
+
+    tg?.HapticFeedback?.impactOccurred?.('medium');
+
+    try {
+      const data = await api('POST', '/ai/interpret', {
+        cards:      r.cards,
+        positions:  r.positions,
+        spreadName: r.spreadName,
+        question:   state.currentQuestion || '',
+        userAstro:  state.user?.astro || null,
+        lang:       state.lang,
+      });
+      if (data.ok && data.interpretation) {
+        aiText.textContent = data.interpretation;
+        tg?.HapticFeedback?.notificationOccurred?.('success');
+      } else {
+        aiText.textContent = r.interpretation || 'Карты дали свой ответ. Доверься интуиции.';
+      }
+    } catch (_) {
+      aiText.textContent = r.interpretation || 'Карты дали свой ответ. Доверься интуиции.';
+    }
+
+    // Кнопка "Поделиться" після AI
+    document.getElementById('btn-share-reading')?.addEventListener('click', () => {
+      shareReading(r, aiText.textContent);
+    });
+
+    setTimeout(() => document.getElementById('reading-scroll')?.scrollTo({ top: 99999, behavior: 'smooth' }), 200);
+  });
+
+  // Кнопка share розкладу
+  document.getElementById('btn-share-reading')?.addEventListener('click', () => {
+    const r = state.currentReading;
+    const aiText = document.getElementById('ai-interpretation-text')?.textContent || '';
+    if (r) shareReading(r, aiText);
   });
 
   // ── Преміум: вибір плану ──────────────────────────────────────────────────
@@ -1159,7 +1234,30 @@ async function shareCard(card, name, meaning) {
     const botInfo = await api('GET', '/status');
     const botName = botInfo.botUsername || 'MagicCabinetBot';
     const link = `https://t.me/${botName}?start=ref_${state.userId}`;
-    const text = `🃏 Моя карта дня — ${name}\n${meaning.slice(0, 120)}...\n\n✨ Узнай свою карту дня в Магическом кабинете!`;
+    const text = `🃏 Моя карта дня — *${name}*\n_${meaning.slice(0, 100)}_\n\n✨ Узнай свою карту в Магическом кабинете!`;
+    if (tg?.shareURL) {
+      tg.shareURL(link, text);
+    } else if (navigator.share) {
+      await navigator.share({ text: `${text}\n${link}` });
+    } else {
+      await navigator.clipboard.writeText(`${text}\n${link}`);
+      toast('Скопировано в буфер 📋');
+    }
+  } catch (_) { toast('Не удалось поделиться'); }
+}
+
+// ── Share reading (з AI-інтерпретацією) ────────────────────────────────────
+async function shareReading(reading, aiText) {
+  try {
+    const botInfo = await api('GET', '/status');
+    const botName = botInfo.botUsername || 'MagicCabinetBot';
+    const link = `https://t.me/${botName}?start=ref_${state.userId}`;
+    const cardNames = reading.cards.map(c => `${c.emoji} ${c.nameRu || c.name}`).join(', ');
+    const spreadName = typeof reading.spreadName === 'object'
+      ? (reading.spreadName.ru || reading.spreadName.ua || 'Расклад')
+      : reading.spreadName;
+    const preview = aiText ? aiText.slice(0, 150) + (aiText.length > 150 ? '...' : '') : '';
+    const text = `🔮 Мой расклад Таро — ${spreadName}\n🃏 ${cardNames}\n\n${preview}\n\n✨ Получи своё персональное предсказание!`;
     if (tg?.shareURL) {
       tg.shareURL(link, text);
     } else if (navigator.share) {
@@ -1336,20 +1434,51 @@ const HOROSCOPE_DATA = {
   Рыбы:      { emoji:'♓', ru: { love:'Романтика и мечты станут реальностью. Открывайте сердце.', work:'Интуиция подскажет верное решение там, где логика зашла в тупик.', health:'Иммунная система требует поддержки — сон и витамины.', money:'Финансовая интуиция на высоте — доверяйте предчувствию.' }, ua: { love:'Романтика та мрії стануть реальністю.', work:'Інтуїція підкаже вірне рішення.', health:'Імунна система потребує підтримки.', money:'Фінансова інтуїція на висоті.' }},
 };
 
-function loadHoroscopeScreen() {
+// Маппінг знаків: ru-назва → ключ API
+const ZODIAC_KEY_MAP = {
+  'Овен':'aries','Телец':'taurus','Близнецы':'gemini','Рак':'cancer',
+  'Лев':'leo','Дева':'virgo','Весы':'libra','Скорпион':'scorpio',
+  'Стрелец':'sagittarius','Козерог':'capricorn','Водолей':'aquarius','Рыбы':'pisces',
+};
+
+async function loadHoroscopeScreen() {
   const content = document.getElementById('horo-content');
   const user = state.user;
   const zodiacName = user?.astro?.zodiac?.name;
-  const lang = state.lang;
-
-  const weekRange = getWeekRange();
 
   if (!zodiacName || !HOROSCOPE_DATA[zodiacName]) {
     content.innerHTML = `<div class="empty-state"><p>Введите дату рождения для получения гороскопа.</p></div>`;
     return;
   }
+
+  content.innerHTML = '<div style="padding:40px;text-align:center;color:var(--text2);">🌟 Загрузка...</div>';
+
+  // Спробуємо отримати дані з API, fallback на локальні
+  const signKey = ZODIAC_KEY_MAP[zodiacName];
+  let apiData = null;
+  if (signKey) {
+    try {
+      const resp = await api('GET', `/horoscope/${signKey}`);
+      if (resp.ok) apiData = resp;
+    } catch (_) {}
+  }
+
+  renderHoroscopeContent(content, zodiacName, apiData);
+}
+
+function renderHoroscopeContent(content, zodiacName, apiData) {
+  const lang = state.lang;
   const horo = HOROSCOPE_DATA[zodiacName];
-  const data = horo[lang] || horo.ru;
+  const localData = horo[lang] || horo.ru;
+  const weekRange = apiData?.period || getWeekRange();
+
+  // Дані з API (більш детальні) або локальні
+  const love   = apiData?.data?.love   || localData.love;
+  const work   = apiData?.data?.work   || localData.work;
+  const health = apiData?.data?.health || localData.health;
+  const money  = localData.money;
+  const weekly = apiData?.data?.weekly || '';
+  const lucky  = apiData?.data?.lucky  || null;
 
   content.innerHTML = `
     <div class="horo-hero">
@@ -1358,24 +1487,38 @@ function loadHoroscopeScreen() {
       <div class="horo-week">${weekRange}</div>
     </div>
 
+    ${weekly ? `<div class="horo-weekly-block">
+      <div class="hwb-label">🔮 Прогноз недели</div>
+      <div class="hwb-text">${weekly}</div>
+    </div>` : ''}
+
     <div class="horo-areas">
       <div class="horo-area">
         <div class="ha-icon">❤️</div>
-        <div class="ha-info"><div class="ha-title">Любовь</div><div class="ha-desc">${data.love}</div></div>
+        <div class="ha-info"><div class="ha-title">Любовь</div><div class="ha-desc">${love}</div></div>
       </div>
       <div class="horo-area">
         <div class="ha-icon">💼</div>
-        <div class="ha-info"><div class="ha-title">Работа</div><div class="ha-desc">${data.work}</div></div>
+        <div class="ha-info"><div class="ha-title">Работа</div><div class="ha-desc">${work}</div></div>
       </div>
       <div class="horo-area">
         <div class="ha-icon">🌿</div>
-        <div class="ha-info"><div class="ha-title">Здоровье</div><div class="ha-desc">${data.health}</div></div>
+        <div class="ha-info"><div class="ha-title">Здоровье</div><div class="ha-desc">${health}</div></div>
       </div>
       <div class="horo-area">
         <div class="ha-icon">💰</div>
-        <div class="ha-info"><div class="ha-title">Финансы</div><div class="ha-desc">${data.money}</div></div>
+        <div class="ha-info"><div class="ha-title">Финансы</div><div class="ha-desc">${money}</div></div>
       </div>
     </div>
+
+    ${lucky ? `<div class="horo-lucky">
+      <div class="hl-title">✨ Удача недели</div>
+      <div class="hl-grid">
+        <div class="hl-item"><div class="hl-label">День</div><div class="hl-val">${lucky.day}</div></div>
+        <div class="hl-item"><div class="hl-label">Цвет</div><div class="hl-val">${lucky.color}</div></div>
+        <div class="hl-item"><div class="hl-label">Число</div><div class="hl-val">${lucky.number}</div></div>
+      </div>
+    </div>` : ''}
 
     <div class="horo-all-signs">
       <div class="horo-all-title">Все знаки</div>
@@ -1393,20 +1536,19 @@ function loadHoroscopeScreen() {
   `;
 
   content.querySelectorAll('.horo-sign-cell').forEach(el => {
-    el.addEventListener('click', () => {
+    el.addEventListener('click', async () => {
       const name = el.dataset.sign;
-      const h2 = HOROSCOPE_DATA[name];
-      const d2 = h2[lang] || h2.ru;
-      content.querySelector('.horo-sign-emoji').textContent = h2.emoji;
-      content.querySelector('.horo-sign-name').textContent = name;
-      const areas = content.querySelectorAll('.ha-desc');
-      areas[0].textContent = d2.love;
-      areas[1].textContent = d2.work;
-      areas[2].textContent = d2.health;
-      areas[3].textContent = d2.money;
+      const h2   = HOROSCOPE_DATA[name];
+      if (!h2) return;
       content.querySelectorAll('.horo-sign-cell').forEach(c => c.classList.remove('active'));
       el.classList.add('active');
       tg?.HapticFeedback?.selectionChanged?.();
+      const sKey = ZODIAC_KEY_MAP[name];
+      let aData = null;
+      if (sKey) {
+        try { const r = await api('GET', `/horoscope/${sKey}`); if (r.ok) aData = r; } catch (_) {}
+      }
+      renderHoroscopeContent(content, name, aData);
     });
   });
 }

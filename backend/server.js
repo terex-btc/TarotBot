@@ -3,6 +3,7 @@ const express = require('express');
 const cors    = require('cors');
 const path    = require('path');
 const TelegramBot = require('node-telegram-bot-api');
+const cron    = require('node-cron');
 const { initDB } = require('./db');
 
 const app = express();
@@ -210,6 +211,48 @@ if (BOT_TOKEN) {
     console.error('[Bot] Polling error:', error.message);
   });
 
+  // ── Щоденні сповіщення: 9:00 ранку кожен день ────────────────────────────
+  cron.schedule('0 9 * * *', async () => {
+    try {
+      const { pool } = require('./db');
+      const { getMoonPhase } = require('./services/algorithmService');
+      const webAppUrl = process.env.WEBAPP_URL || `http://localhost:${PORT}`;
+      const moon = getMoonPhase(new Date().toISOString().split('T')[0]);
+
+      // Вибираємо активних юзерів (реєструвалися за останні 60 днів)
+      const cutoff = Date.now() - 60 * 24 * 60 * 60 * 1000;
+      const { rows } = await pool.query(
+        `SELECT user_id, first_name FROM users WHERE created_at > to_timestamp($1/1000) AND birth_date IS NOT NULL LIMIT 5000`,
+        [cutoff]
+      );
+
+      const msgs = [
+        `🔮 Карта дня уже готова для тебя!`,
+        `✨ Звёзды приготовили послание на сегодня`,
+        `🌟 Твоя карта дня ждёт — что скажут карты?`,
+        `🃏 Начни день с Таро — открой карту дня!`,
+      ];
+      const moonMsg = `\n\n${moon.emoji} Луна сегодня: *${moon.name}*`;
+
+      for (const user of rows) {
+        try {
+          const greeting = `${msgs[Math.floor(Math.random() * msgs.length)]}, ${user.first_name || 'дорогая'}!${moonMsg}`;
+          await bot.sendMessage(user.user_id, greeting, {
+            parse_mode: 'Markdown',
+            reply_markup: { inline_keyboard: [[
+              { text: '🔮 Открыть карту дня', web_app: { url: webAppUrl } },
+            ]]},
+          });
+          // Невелика затримка щоб не спамити Telegram API
+          await new Promise(r => setTimeout(r, 50));
+        } catch (_) { /* юзер заблокував бота — пропускаємо */ }
+      }
+      console.log(`[Cron] Щоденні сповіщення відправлено ${rows.length} юзерам`);
+    } catch (e) {
+      console.error('[Cron] Помилка щоденних сповіщень:', e.message);
+    }
+  }, { timezone: 'Europe/Kyiv' });
+
   console.log('[Bot] Telegram bot запущено');
 }
 
@@ -223,6 +266,8 @@ app.use('/api/users', require('./routes/users'));
 app.use('/api/spells', require('./routes/spells'));
 app.use('/api/payments', require('./routes/payments'));
 app.use('/api/support', require('./routes/support'));
+app.use('/api/ai', require('./routes/ai'));
+app.use('/api/horoscope', require('./routes/horoscope'));
 
 // ─── Status ───────────────────────────────────────────────────────────────────
 let _cachedBotUsername = null;
