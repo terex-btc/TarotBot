@@ -27,7 +27,11 @@ if (USE_PG) {
 
 } else {
   // ── SQLite (локальна розробка) ──────────────────────────────────────────────
-  const Database = require('better-sqlite3');
+  let Database;
+  try { Database = require('better-sqlite3'); } catch (_) {
+    console.error('[DB] better-sqlite3 недоступна і DATABASE_URL не задана. Встановіть одне з двох.');
+    process.exit(1);
+  }
   const DB_PATH  = path.join(__dirname, 'storage', 'tarot.db');
   const db       = new Database(DB_PATH);
   db.pragma('journal_mode = WAL');

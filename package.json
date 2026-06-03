@@ -13,7 +13,6 @@
   "type": "commonjs",
   "dependencies": {
     "@anthropic-ai/sdk": "^0.100.1",
-    "better-sqlite3": "^12.10.0",
     "cors": "^2.8.5",
     "dotenv": "^16.4.7",
     "express": "^5.2.1",
@@ -21,6 +20,9 @@
     "node-cron": "^4.2.1",
     "node-telegram-bot-api": "^0.66.0",
     "pg": "^8.21.0"
+  },
+  "optionalDependencies": {
+    "better-sqlite3": "^12.10.0"
   },
   "devDependencies": {
     "nodemon": "^3.1.11"
