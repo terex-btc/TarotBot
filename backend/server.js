@@ -225,8 +225,18 @@ app.use('/api/payments', require('./routes/payments'));
 app.use('/api/support', require('./routes/support'));
 
 // ─── Status ───────────────────────────────────────────────────────────────────
-app.get('/api/status', (req, res) => {
-  res.json({ ok: true, version: '1.0.0', bot: !!bot, botUsername: process.env.BOT_USERNAME || null });
+let _cachedBotUsername = null;
+app.get('/api/status', async (req, res) => {
+  if (!_cachedBotUsername && bot) {
+    try { const me = await bot.getMe(); _cachedBotUsername = me.username; } catch (_) {}
+  }
+  res.json({ ok: true, version: '1.0.0', bot: !!bot, botUsername: _cachedBotUsername || process.env.BOT_USERNAME || null });
+});
+
+// ─── Global error handler ─────────────────────────────────────────────────────
+app.use((err, req, res, _next) => {
+  console.error('[Error]', err.message || err);
+  res.status(500).json({ ok: false, error: 'internal_error' });
 });
 
 // ─── SPA fallback ─────────────────────────────────────────────────────────────

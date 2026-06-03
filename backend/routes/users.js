@@ -32,78 +32,95 @@ function rowToUser(row) {
 
 // POST /api/users/init
 router.post('/init', async (req, res) => {
-  const { userId, username, firstName, name, birthDate, lang } = req.body;
-  if (!userId) return res.status(400).json({ ok: false, error: 'userId required' });
+  try {
+    const { userId, username, firstName, name, birthDate, lang } = req.body;
+    if (!userId) return res.status(400).json({ ok: false, error: 'userId required' });
 
-  let astro = null;
-  if (birthDate) {
-    const today  = new Date().toISOString().split('T')[0];
-    const zodiac = getZodiac(birthDate);
-    const lifePath    = calcLifePath(birthDate);
-    const personalYear = calcPersonalYear(birthDate, new Date().getFullYear());
-    const moonPhase   = getMoonPhase(today);
-    astro = { zodiac, lifePath, personalYear, moonPhase };
+    let astro = null;
+    if (birthDate) {
+      try {
+        const today       = new Date().toISOString().split('T')[0];
+        const zodiac      = getZodiac(birthDate);
+        const lifePath    = calcLifePath(birthDate);
+        const personalYear = calcPersonalYear(birthDate, new Date().getFullYear());
+        const moonPhase   = getMoonPhase(today);
+        astro = { zodiac, lifePath, personalYear, moonPhase };
+      } catch (e) {
+        console.error('[users/init] astro calc error:', e.message);
+      }
+    }
+
+    const fname = firstName || name || '';
+
+    const { rows } = await pool.query(`
+      INSERT INTO users (user_id, username, first_name, birth_date, lang, astro)
+      VALUES ($1, $2, $3, $4, $5, $6)
+      ON CONFLICT (user_id) DO UPDATE SET
+        username   = COALESCE(NULLIF($2,''), users.username),
+        first_name = COALESCE(NULLIF($3,''), users.first_name),
+        birth_date = COALESCE($4, users.birth_date),
+        lang       = COALESCE($5, users.lang),
+        astro      = CASE WHEN $4 IS NOT NULL THEN $6 ELSE users.astro END,
+        updated_at = NOW()
+      RETURNING *
+    `, [userId, username || '', fname, birthDate || null, lang || 'ru', astro ? JSON.stringify(astro) : null]);
+
+    res.json({ ok: true, user: rowToUser(rows[0]) });
+  } catch (e) {
+    console.error('[users/init] error:', e.message);
+    res.status(500).json({ ok: false, error: 'db_error' });
   }
-
-  const fname = firstName || name || '';
-
-  const { rows } = await pool.query(`
-    INSERT INTO users (user_id, username, first_name, birth_date, lang, astro)
-    VALUES ($1, $2, $3, $4, $5, $6)
-    ON CONFLICT (user_id) DO UPDATE SET
-      username   = COALESCE(NULLIF($2,''), users.username),
-      first_name = COALESCE(NULLIF($3,''), users.first_name),
-      birth_date = COALESCE($4, users.birth_date),
-      lang       = COALESCE($5, users.lang),
-      astro      = CASE WHEN $4 IS NOT NULL THEN $6 ELSE users.astro END,
-      updated_at = NOW()
-    RETURNING *
-  `, [userId, username || '', fname, birthDate || null, lang || 'ru', astro ? JSON.stringify(astro) : null]);
-
-  res.json({ ok: true, user: rowToUser(rows[0]) });
 });
 
 // POST /api/users/:userId/premium
 router.post('/:userId/premium', async (req, res) => {
-  const { adminKey } = req.body;
-  if (adminKey !== process.env.ADMIN_KEY) return res.status(403).json({ ok: false, error: 'Forbidden' });
-  const { rows } = await pool.query(
-    `UPDATE users SET is_premium=true, updated_at=NOW() WHERE user_id=$1 RETURNING *`,
-    [req.params.userId]
-  );
-  if (!rows.length) return res.status(404).json({ ok: false, error: 'User not found' });
-  res.json({ ok: true, user: rowToUser(rows[0]) });
+  try {
+    const { adminKey } = req.body;
+    if (adminKey !== process.env.ADMIN_KEY) return res.status(403).json({ ok: false, error: 'Forbidden' });
+    const { rows } = await pool.query(
+      `UPDATE users SET is_premium=true, updated_at=NOW() WHERE user_id=$1 RETURNING *`,
+      [req.params.userId]
+    );
+    if (!rows.length) return res.status(404).json({ ok: false, error: 'User not found' });
+    res.json({ ok: true, user: rowToUser(rows[0]) });
+  } catch (e) { res.status(500).json({ ok: false, error: e.message }); }
 });
 
 // GET /api/users/:userId/premium-status
 router.get('/:userId/premium-status', async (req, res) => {
-  const { rows } = await pool.query(`SELECT * FROM users WHERE user_id=$1`, [req.params.userId]);
-  if (!rows.length) return res.json({ ok: true, isPremium: false, premiumExpiry: null, refBonus: 0, daysLeft: null });
-  const user   = rows[0];
-  const active = isPremiumActive(user);
-  const expiry = user.premium_expiry ? Number(user.premium_expiry) : null;
-  res.json({
-    ok: true,
-    isPremium:     active,
-    premiumExpiry: expiry,
-    refBonus:      user.ref_bonus || 0,
-    daysLeft:      expiry ? Math.max(0, Math.ceil((expiry - Date.now()) / 86400000)) : null,
-  });
+  try {
+    const { rows } = await pool.query(`SELECT * FROM users WHERE user_id=$1`, [req.params.userId]);
+    if (!rows.length) return res.json({ ok: true, isPremium: false, premiumExpiry: null, refBonus: 0, daysLeft: null });
+    const user   = rows[0];
+    const active = isPremiumActive(user);
+    const expiry = user.premium_expiry ? Number(user.premium_expiry) : null;
+    res.json({
+      ok: true,
+      isPremium:     active,
+      premiumExpiry: expiry,
+      refBonus:      user.ref_bonus || 0,
+      daysLeft:      expiry ? Math.max(0, Math.ceil((expiry - Date.now()) / 86400000)) : null,
+    });
+  } catch (e) { res.json({ ok: true, isPremium: false, daysLeft: null, refBonus: 0 }); }
 });
 
 // GET /api/users/:userId/ref
 router.get('/:userId/ref', async (req, res) => {
-  const { rows } = await pool.query(`SELECT * FROM users WHERE user_id=$1`, [req.params.userId]);
-  if (!rows.length) return res.status(404).json({ ok: false, error: 'User not found' });
-  const u = rows[0];
-  res.json({ ok: true, refBonus: u.ref_bonus || 0, premiumExpiry: u.premium_expiry, isPremium: isPremiumActive(u) });
+  try {
+    const { rows } = await pool.query(`SELECT * FROM users WHERE user_id=$1`, [req.params.userId]);
+    if (!rows.length) return res.status(404).json({ ok: false, error: 'User not found' });
+    const u = rows[0];
+    res.json({ ok: true, refBonus: u.ref_bonus || 0, premiumExpiry: u.premium_expiry, isPremium: isPremiumActive(u) });
+  } catch (e) { res.status(500).json({ ok: false, error: e.message }); }
 });
 
 // GET /api/users/:userId
 router.get('/:userId', async (req, res) => {
-  const { rows } = await pool.query(`SELECT * FROM users WHERE user_id=$1`, [req.params.userId]);
-  if (!rows.length) return res.status(404).json({ ok: false, error: 'User not found' });
-  res.json({ ok: true, user: rowToUser(rows[0]) });
+  try {
+    const { rows } = await pool.query(`SELECT * FROM users WHERE user_id=$1`, [req.params.userId]);
+    if (!rows.length) return res.status(404).json({ ok: false, error: 'User not found' });
+    res.json({ ok: true, user: rowToUser(rows[0]) });
+  } catch (e) { res.status(500).json({ ok: false, error: e.message }); }
 });
 
 // ── Функції для внутрішнього використання ────────────────────────────────────

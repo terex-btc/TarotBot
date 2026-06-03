@@ -1,5 +1,6 @@
 // ══ Магический кабинет — App ══════════════════════════════════════════════
 'use strict';
+import { t } from './i18n.js';
 
 const tg = window.Telegram?.WebApp;
 if (tg) {
@@ -33,7 +34,7 @@ async function api(method, path, body) {
     headers: { 'Content-Type': 'application/json' },
     body: body ? JSON.stringify(body) : undefined,
   });
-  return r.json();
+  try { return await r.json(); } catch (_) { return { ok: false, error: `http_${r.status}` }; }
 }
 
 // ── Роутер ─────────────────────────────────────────────────────────────────
@@ -122,22 +123,40 @@ function initIntroScreen() {
   nameIn.addEventListener('input', check);
   birthIn.addEventListener('change', check);
   check();
+  const resetBtn = () => {
+    btn.disabled = false;
+    btn.innerHTML = `<span>${t('openBtn', state.lang)}</span><span class="btn-icon-r">🔮</span>`;
+  };
+
   btn.onclick = async () => {
+    if (!nameIn.value.trim() || !birthIn.value) return;
     btn.disabled = true;
-    btn.innerHTML = '<span>Соединяемся со звёздами...</span>';
-    const data = await api('POST', '/users/init', {
-      userId: state.userId, firstName: nameIn.value.trim(),
-      username: state.tgUser?.username || '', birthDate: birthIn.value, lang: state.lang,
-    });
-    if (data.ok) {
-      state.user = data.user;
-      localStorage.setItem('tarot_uid', state.userId);
-      await renderHome();
-      showScreen('home');
-    } else {
-      btn.disabled = false;
-      btn.innerHTML = '<span>Войти в кабинет</span><span class="btn-icon-r">🔮</span>';
-      toast('Ошибка. Попробуйте ещё раз.');
+    btn.innerHTML = `<span>${t('connecting', state.lang)}</span>`;
+    try {
+      const data = await api('POST', '/users/init', {
+        userId:    state.userId,
+        firstName: nameIn.value.trim(),
+        username:  state.tgUser?.username || '',
+        birthDate: birthIn.value,
+        lang:      state.lang,
+      });
+      if (data.ok && data.user) {
+        state.user = data.user;
+        localStorage.setItem('tarot_uid', state.userId);
+        try {
+          renderOnboarding(data.user);
+        } catch (_) {
+          // якщо онбординг впав — одразу на головну
+          await renderHome();
+          showScreen('home');
+        }
+      } else {
+        resetBtn();
+        toast(data.error || 'Ошибка. Попробуйте ещё раз.');
+      }
+    } catch (err) {
+      resetBtn();
+      toast('Нет соединения. Попробуйте позже.');
     }
   };
 }
@@ -277,7 +296,18 @@ function renderSpellsPreview(spells) {
 }
 
 function updatePremiumCards(isPremium) {
-  document.querySelectorAll('.premium-card[data-spread]').forEach(el => el.classList.toggle('unlocked', !!isPremium));
+  document.querySelectorAll('.premium-card[data-spread]').forEach(el => {
+    el.classList.toggle('unlocked', !!isPremium);
+    if (!isPremium) {
+      const spreadType = el.dataset.spread;
+      const existing = el.querySelector('.blurred-preview');
+      if (!existing) {
+        el.insertAdjacentHTML('beforeend', renderBlurredSpreadPreview(spreadType));
+      }
+    } else {
+      el.querySelector('.blurred-preview')?.remove();
+    }
+  });
 }
 
 // ── Карта дня ──────────────────────────────────────────────────────────────
@@ -306,14 +336,27 @@ function renderDailyRevealed(zone, reading) {
   const card    = reading.cards[0];
   const name    = card.nameRu || card.name;
   const meaning = card.isReversed ? ru(card.reversed) : ru(card.upright);
+  const userName = state.user?.firstName || '';
+  const personalLabel = userName ? `<div class="dr-personal">✨ ${t('personalCard', state.lang)} ${userName}</div>` : '';
   zone.innerHTML = `<div class="daily-revealed" id="dr-${zone.id}">
+    ${personalLabel}
     ${cardImg(card, 'daily-card-img')}
     <div class="dr-name">${name}</div>
     ${card.isReversed ? '<div class="dr-reversed"><span class="reversed-tag">🔄 Перевёрнута</span></div>' : ''}
     <div class="dr-meaning">${meaning}</div>
-    <div class="dr-hint">Нажмите для подробностей →</div>
+    <div class="dr-actions">
+      <div class="dr-hint">Нажмите для подробностей →</div>
+      <button class="dr-share-btn" id="dr-share-${zone.id}">📲</button>
+    </div>
   </div>`;
-  document.getElementById(`dr-${zone.id}`).addEventListener('click', () => openCardDetail(card));
+  document.getElementById(`dr-${zone.id}`).addEventListener('click', e => {
+    if (e.target.closest('.dr-share-btn')) return;
+    openCardDetail(card);
+  });
+  document.getElementById(`dr-share-${zone.id}`)?.addEventListener('click', e => {
+    e.stopPropagation();
+    shareCard(card, name, meaning);
+  });
 }
 
 // ── Таро: розкладання ──────────────────────────────────────────────────────
@@ -836,15 +879,19 @@ function initNav() {
     showScreen(state.prevScreen, 'left');
   });
 
-  // Навігація з головного екрану (4 клітинки)
+  // Навігація з головного екрану (всі клітинки nav-cell)
   document.querySelectorAll('.nav-cell[data-screen]').forEach(el => {
     el.addEventListener('click', async () => {
       const s = el.dataset.screen;
-      if (s === 'tarot')   { showScreen('tarot'); }
-      else if (s === 'spells') { await openSpellsScreen(); }
-      else if (s === 'moon')   { showScreen('moon'); await renderMoonCalendar(); }
-      else if (s === 'dreams') { showScreen('dreams'); await initDreamsScreen(); }
-      else if (s === 'premium') { showScreen('premium'); await loadPremiumScreen(); }
+      if (s === 'tarot')        { showScreen('tarot'); }
+      else if (s === 'spells')     { await openSpellsScreen(); }
+      else if (s === 'moon')       { showScreen('moon'); await renderMoonCalendar(); }
+      else if (s === 'dreams')     { showScreen('dreams'); await initDreamsScreen(); }
+      else if (s === 'premium')    { showScreen('premium'); await loadPremiumScreen(); }
+      else if (s === 'numerology') { showScreen('numerology'); await loadNumerologyScreen(); }
+      else if (s === 'horoscope')  { showScreen('horoscope'); loadHoroscopeScreen(); }
+      else if (s === 'compat')     { showScreen('compat'); initCompatScreen(); }
+      else if (s === 'diary')      { showScreen('diary'); loadDiaryScreen(); }
     });
   });
 
@@ -946,6 +993,7 @@ function initNav() {
 async function loadPremiumScreen() {
   const ps = await api('GET', `/users/${state.userId}/premium-status`);
   if (!ps.ok) return;
+  renderReferralProgress(ps.refBonus || 0);
   const invited = document.getElementById('fpb-invited');
   if (invited && ps.refBonus > 0) {
     invited.innerHTML = `✨ Уже пригласила: <b>${ps.refBonus}</b> ${ps.refBonus === 1 ? 'подругу' : 'подруг'} — заработала <b>${ps.refBonus}</b> дн. Премиума`;
@@ -1103,6 +1151,512 @@ async function searchDream(symbol) {
   }
 
   tg?.HapticFeedback?.impactOccurred?.('light');
+}
+
+// ── Share card ─────────────────────────────────────────────────────────────
+async function shareCard(card, name, meaning) {
+  try {
+    const botInfo = await api('GET', '/status');
+    const botName = botInfo.botUsername || 'MagicCabinetBot';
+    const link = `https://t.me/${botName}?start=ref_${state.userId}`;
+    const text = `🃏 Моя карта дня — ${name}\n${meaning.slice(0, 120)}...\n\n✨ Узнай свою карту дня в Магическом кабинете!`;
+    if (tg?.shareURL) {
+      tg.shareURL(link, text);
+    } else if (navigator.share) {
+      await navigator.share({ text: `${text}\n${link}` });
+    } else {
+      await navigator.clipboard.writeText(`${text}\n${link}`);
+      toast('Скопировано в буфер 📋');
+    }
+  } catch (_) { toast('Не удалось поделиться'); }
+}
+
+// ══ ОНБОРДИНГ ═══════════════════════════════════════════════════════════════
+
+const LIFE_PATH_SHORT = {
+  1: 'Лидер', 2: 'Дипломат', 3: 'Творец', 4: 'Строитель',
+  5: 'Искатель', 6: 'Хранитель', 7: 'Мудрец', 8: 'Властелин',
+  9: 'Гуманист', 11: 'Мистик', 22: 'Архитектор',
+};
+
+function renderOnboarding(user) {
+  const nameEl = document.getElementById('onb-name');
+  const grid   = document.getElementById('onb-grid');
+  const lpBlock = document.getElementById('onb-lp-block');
+  const doneBtn = document.getElementById('btn-onboarding-done');
+  // Якщо екрану онбордингу немає — одразу на головну
+  if (!nameEl || !grid) throw new Error('onboarding-screen-missing');
+
+  nameEl.textContent = user.firstName || 'Провидец';
+  const a = user.astro;
+  const cards = [
+    { icon: a?.zodiac?.emoji || '⭐', title: a?.zodiac?.name || '...', sub: a?.zodiac?.element ? `Стихия ${a.zodiac.element}` : 'Знак зодиака' },
+    { icon: '🔢', title: `Путь ${a?.lifePath || '?'}`, sub: LIFE_PATH_SHORT[a?.lifePath] || 'Число судьбы' },
+    { icon: a?.moonPhase?.emoji || '🌙', title: a?.moonPhase?.name || '...', sub: 'Луна при рождении' },
+    { icon: '🪐', title: a?.zodiac?.planet || '...', sub: `Планета-покровитель` },
+  ];
+  grid.innerHTML = cards.map((c, i) => `
+    <div class="onb-card" style="--delay:${i * 0.12}s">
+      <div class="onb-card-icon">${c.icon}</div>
+      <div class="onb-card-title">${c.title}</div>
+      <div class="onb-card-sub">${c.sub}</div>
+    </div>
+  `).join('');
+
+  const lp = a?.lifePath;
+  if (lp && lpBlock) {
+    lpBlock.innerHTML = `<div class="onb-lp"><span class="onb-lp-num">${lp}</span><span class="onb-lp-label">${LIFE_PATH_SHORT[lp] || 'Ваш путь'}</span></div>`;
+  }
+
+  if (doneBtn) doneBtn.onclick = async () => {
+    tg?.HapticFeedback?.impactOccurred?.('medium');
+    await renderHome();
+    showScreen('home');
+  };
+
+  showScreen('onboarding');
+  tg?.HapticFeedback?.notificationOccurred?.('success');
+}
+
+// ══ НУМЕРОЛОГІЯ ═════════════════════════════════════════════════════════════
+
+const LIFE_PATH_DATA = {
+  1:  { title: 'Число 1 — Лидер', desc: 'Вы — первопроходец с сильной волей. Ваш путь — самодостаточность, независимость и лидерство. Вы рождены, чтобы вести других, воплощать смелые идеи и проявлять себя в полную силу.', color: '🔴 Красный, Золотой', lucky: [1, 10, 19, 28], days: 'Воскресенье', stone: 'Рубин' },
+  2:  { title: 'Число 2 — Дипломат', desc: 'Вы — миротворец и партнёр. Ваш путь — гармония, сотрудничество и любовь. Вы чувствуете других людей на глубоком уровне и умеете создавать красоту в отношениях.', color: '🌸 Серебряный, Розовый', lucky: [2, 11, 20, 29], days: 'Понедельник', stone: 'Лунный камень' },
+  3:  { title: 'Число 3 — Творец', desc: 'Вы — выразитель и художник. Ваш путь — радость, самовыражение и творчество. Вы несёте свет в мир своими словами, искусством и обаянием.', color: '🌞 Жёлтый, Оранжевый', lucky: [3, 12, 21, 30], days: 'Среда', stone: 'Цитрин' },
+  4:  { title: 'Число 4 — Строитель', desc: 'Вы — основа и опора. Ваш путь — труд, порядок и надёжность. Вы умеете создавать прочное и долговечное. На вас можно положиться всегда.', color: '🌿 Зелёный, Коричневый', lucky: [4, 13, 22, 31], days: 'Суббота', stone: 'Изумруд' },
+  5:  { title: 'Число 5 — Искатель', desc: 'Вы — свободная душа и искатель приключений. Ваш путь — перемены, свобода и разнообразие. Вы умеете адаптироваться и видеть возможности там, где другие теряются.', color: '💙 Голубой, Серебряный', lucky: [5, 14, 23], days: 'Пятница', stone: 'Аквамарин' },
+  6:  { title: 'Число 6 — Хранитель', desc: 'Вы — хранитель очага и защитник близких. Ваш путь — забота, красота и ответственность. Вы создаёте тепло и уют везде, где появляетесь.', color: '💜 Синий, Индиго', lucky: [6, 15, 24], days: 'Пятница', stone: 'Сапфир' },
+  7:  { title: 'Число 7 — Мудрец', desc: 'Вы — искатель истины и мистик. Ваш путь — познание, духовность и одиночество. Вы обладаете глубокой интуицией и видите то, что скрыто от других.', color: '🔮 Фиолетовый, Белый', lucky: [7, 16, 25], days: 'Воскресенье', stone: 'Аметист' },
+  8:  { title: 'Число 8 — Властелин', desc: 'Вы — властелин материального мира. Ваш путь — успех, власть и изобилие. Вы умеете аккумулировать силы и достигать больших целей через упорство.', color: '🖤 Чёрный, Тёмно-синий', lucky: [8, 17, 26], days: 'Суббота', stone: 'Оникс' },
+  9:  { title: 'Число 9 — Гуманист', desc: 'Вы — гуманист и завершитель. Ваш путь — служение, мудрость и духовная эволюция. Вы несёте в мир глубокое понимание и compassion.', color: '✨ Золотой, Белый', lucky: [9, 18, 27], days: 'Вторник', stone: 'Гранат' },
+  11: { title: 'Число 11 — Мистик', desc: 'Мастер-число! Вы — вдохновитель и духовный проводник. Ваш путь — просветление, интуиция и высшие миссии. Вы несёте свет в мир через искусство, духовность и слово.', color: '🌟 Серебряный, Белый', lucky: [11, 2, 29], days: 'Понедельник', stone: 'Алмаз' },
+  22: { title: 'Число 22 — Архитектор', desc: 'Мастер-число! Вы — великий строитель и архитектор судьбы. Ваш путь — грандиозные проекты, наследие и воплощение великих идей в реальность.', color: '🏆 Золотой, Коричневый', lucky: [22, 4, 13], days: 'Суббота', stone: 'Обсидиан' },
+};
+
+const PERSONAL_YEAR_DATA = {
+  1: 'Год новых начал. Сейчас — лучшее время для старта. Всё, что вы начнёте в этом году, заложит основу следующего 9-летнего цикла.',
+  2: 'Год отношений и партнёрства. Укрепляйте связи, будьте терпеливы — сейчас важны союзы, а не одиночные решения.',
+  3: 'Год творчества и радости. Выражайте себя, общайтесь, создавайте. Этот год принесёт социальные возможности.',
+  4: 'Год труда и фундамента. Время строить, систематизировать и укреплять то, что важно для вашего будущего.',
+  5: 'Год перемен и свободы. Ждите неожиданных поворотов. Не сопротивляйтесь изменениям — они ведут к росту.',
+  6: 'Год семьи и ответственности. Фокус на доме, близких, здоровье. Год гармонии и заботы о себе и других.',
+  7: 'Год рефлексии и духовного роста. Время анализировать, учиться, медитировать. Уединение принесёт мудрость.',
+  8: 'Год силы и достижений. Время для карьерных успехов, финансовых решений и реализации амбиций.',
+  9: 'Год завершений. Отпустите старое, чтобы освободить место для нового. Прощайте, заканчивайте, подводите итоги.',
+};
+
+async function loadNumerologyScreen() {
+  const content = document.getElementById('num-content');
+  const user = state.user;
+  if (!user?.astro) {
+    content.innerHTML = '<div class="empty-state"><p>Данные не найдены. Введите дату рождения.</p></div>';
+    return;
+  }
+  const a = user.astro;
+  const lp = a.lifePath;
+  const py = a.personalYear;
+  const lpData = LIFE_PATH_DATA[lp] || LIFE_PATH_DATA[9];
+  const pyDesc = PERSONAL_YEAR_DATA[py] || PERSONAL_YEAR_DATA[1];
+
+  const isPremium = state.user?.isPremium;
+
+  content.innerHTML = `
+    <div class="num-hero">
+      <div class="num-number">${lp}</div>
+      <div class="num-title">${lpData.title}</div>
+      <div class="num-zodiac">${a.zodiac?.emoji} ${a.zodiac?.name} · ${a.zodiac?.element}</div>
+    </div>
+
+    <div class="num-block">
+      <div class="num-block-title">📖 Ваш жизненный путь</div>
+      <p class="num-desc">${lpData.desc}</p>
+    </div>
+
+    <div class="num-props">
+      <div class="num-prop"><span class="np-icon">🍀</span><div><div class="np-label">Счастливые числа</div><div class="np-val">${lpData.lucky.join(', ')}</div></div></div>
+      <div class="num-prop"><span class="np-icon">🎨</span><div><div class="np-label">Цвета удачи</div><div class="np-val">${lpData.color}</div></div></div>
+      <div class="num-prop"><span class="np-icon">📅</span><div><div class="np-label">Счастливый день</div><div class="np-val">${lpData.days}</div></div></div>
+      <div class="num-prop"><span class="np-icon">💎</span><div><div class="np-label">Камень силы</div><div class="np-val">${lpData.stone}</div></div></div>
+    </div>
+
+    <div class="num-block">
+      <div class="num-block-title">🌀 Личный год: ${py}</div>
+      <p class="num-desc">${pyDesc}</p>
+    </div>
+
+    ${!isPremium ? `
+    <div class="num-premium-teaser">
+      <div class="npt-lock">🔒</div>
+      <div class="npt-text"><b>Полный нумерологический анализ</b><br>Матрица Пифагора, кармические числа и предназначение — в Премиум</div>
+      <button class="btn-primary btn-sm npt-btn" id="btn-num-premium">Открыть Премиум 👑</button>
+    </div>` : `
+    <div class="num-block">
+      <div class="num-block-title">🔮 Матрица Пифагора</div>
+      <div class="num-matrix" id="num-matrix">${buildPythagorasMatrix(user.birthDate)}</div>
+    </div>`}
+
+    <div style="height:32px"></div>
+  `;
+
+  document.getElementById('btn-num-premium')?.addEventListener('click', async () => {
+    showScreen('premium'); await loadPremiumScreen();
+  });
+}
+
+function buildPythagorasMatrix(birthDate) {
+  if (!birthDate) return '';
+  const digits = birthDate.replace(/-/g, '').split('').map(Number).filter(n => n > 0);
+  const counts = Array(10).fill(0);
+  digits.forEach(d => counts[d]++);
+  const cell = n => `<div class="pm-cell pm-c${n}">${Array(counts[n]).fill(n).join('') || '—'}</div>`;
+  return `
+    <div class="pythagor-matrix">
+      <div class="pm-row">${cell(1)}${cell(2)}${cell(3)}</div>
+      <div class="pm-row">${cell(4)}${cell(5)}${cell(6)}</div>
+      <div class="pm-row">${cell(7)}${cell(8)}${cell(9)}</div>
+    </div>
+  `;
+}
+
+// ══ ГОРОСКОП ════════════════════════════════════════════════════════════════
+
+const HOROSCOPE_DATA = {
+  Овен:      { emoji:'♈', ru: { love:'Страсть и эмоции зашкаливают. Не торопите события — позвольте чувствам раскрыться естественно.', work:'Ваша энергия на пике. Берите инициативу и не бойтесь сложных задач.', health:'Следите за головными болями и давлением. Больше отдыхайте.', money:'Финансовая удача улыбается. Можно рассмотреть новые вложения.' }, ua: { love:'Пристрасть і емоції зашкалюють. Дозвольте почуттям розкритися природно.', work:'Ваша енергія на піку. Беріть ініціативу.', health:'Стежте за тиском та головними болями.', money:'Фінансова удача всміхається.' }},
+  Телец:     { emoji:'♉', ru: { love:'Стабильность в отношениях. Партнёр ценит вашу надёжность и тепло.', work:'Медленно но верно — ваш девиз недели. Проверяйте детали.', health:'Горло и шея требуют внимания. Тёплые напитки и отдых.', money:'Не торопитесь с крупными тратами — дождитесь лучшего момента.' }, ua: { love:'Стабільність у стосунках. Партнер цінує вашу надійність.', work:'Повільно але вірно — ваш девіз тижня.', health:'Горло та шия потребують уваги.', money:'Не поспішайте з великими витратами.' }},
+  Близнецы:  { emoji:'♊', ru: { love:'Общение и лёгкость — ключ к сердцу. Флирт принесёт радость.', work:'Многозадачность поможет справиться с горящими делами. Используйте свою гибкость.', health:'Нервная система нуждается в отдыхе. Меньше информационного шума.', money:'Небольшие непредвиденные расходы — будьте готовы.' }, ua: { love:'Спілкування та легкість — ключ до серця.', work:'Багатозадачність допоможе з терміновими справами.', health:'Нервова система потребує відпочинку.', money:'Невеликі непередбачені витрати — будьте готові.' }},
+  Рак:       { emoji:'♋', ru: { love:'Интуиция подскажет правильный шаг. Доверяйте своим чувствам, не логике.', work:'Творческий подход даст неожиданные результаты. Доверяйте вдохновению.', health:'Желудок и эмоциональный фон связаны — берегите себя от стрессов.', money:'Деньги могут прийти из неожиданного источника.' }, ua: { love:'Інтуїція підкаже правильний крок.', work:'Творчий підхід дасть несподівані результати.', health:'Шлунок та емоційний фон пов\'язані.', money:'Гроші можуть прийти з несподіваного джерела.' }},
+  Лев:       { emoji:'♌', ru: { love:'Вы в центре внимания! Романтика, комплименты и восхищение — ваша неделя.', work:'Лидерские качества помогут решить сложный вопрос в команде.', health:'Сердце и спина — уделите им внимание. Лёгкая зарядка поможет.', money:'Щедрость вернётся к вам сторицей. Но контролируйте импульсивные покупки.' }, ua: { love:'Ви в центрі уваги! Романтика та захоплення — ваш тиждень.', work:'Лідерські якості допоможуть вирішити складне питання.', health:'Серце та спина — приділіть їм увагу.', money:'Щедрість повернеться до вас сторицею.' }},
+  Дева:      { emoji:'♍', ru: { love:'Практический подход к романтике даст неожиданно нежные результаты.', work:'Ваша внимательность к деталям будет оценена по достоинству.', health:'Пищеварение — зона внимания. Питайтесь правильно.', money:'Бюджетирование сейчас принесёт дивиденды позже.' }, ua: { love:'Практичний підхід до романтики дасть ніжні результати.', work:'Вашу уважність до деталей оцінять.', health:'Травлення — зона уваги. Харчуйтесь правильно.', money:'Бюджетування зараз принесе дивіденди пізніше.' }},
+  Весы:      { emoji:'♎', ru: { love:'Баланс и гармония в отношениях. Отличное время для важных разговоров.', work:'Дипломатия поможет урегулировать конфликт на работе.', health:'Почки и поясница — уделите внимание. Пейте больше воды.', money:'Партнёрские сделки принесут удачу.' }, ua: { love:'Баланс та гармонія у стосунках.', work:'Дипломатія допоможе врегулювати конфлікт.', health:'Нирки та поперек — приділіть увагу.', money:'Партнерські угоди принесуть удачу.' }},
+  Скорпион:  { emoji:'♏', ru: { love:'Глубокая связь и страсть. Но берегитесь ревности — она может навредить.', work:'Расследовательские способности помогут раскрыть важную тайну проекта.', health:'Избегайте переутомления. Тёмная энергия накапливается — нужна разгрузка.', money:'Финансовые тайны могут раскрыться. Будьте осторожны с инвестициями.' }, ua: { love:'Глибокий зв\'язок та пристрасть. Бережіться ревнощів.', work:'Дослідницькі здібності допоможуть розкрити таємницю.', health:'Уникайте перевтоми.', money:'Фінансові таємниці можуть розкритися.' }},
+  Стрелец:  { emoji:'♐', ru: { love:'Авантюры и приключения сближают. Предложите партнёру что-то необычное.', work:'Ваш оптимизм заразителен — используйте его для мотивации команды.', health:'Бёдра и печень — умеренность в еде и алкоголе.', money:'Удача сопровождает смелые финансовые решения.' }, ua: { love:'Пригоди та захоплення зближують.', work:'Ваш оптимізм заразливий — використовуйте його.', health:'Стегна та печінка — помірність у їжі.', money:'Удача супроводжує сміливі рішення.' }},
+  Козерог:   { emoji:'♑', ru: { love:'Терпение — ваша суперсила в любви. Не торопите развитие событий.', work:'Дисциплина и упорство откроют новые карьерные горизонты.', health:'Кости и суставы — следите за осанкой, занимайтесь спортом.', money:'Долгосрочные инвестиции дадут отличный результат.' }, ua: { love:'Терпіння — ваша суперсила в коханні.', work:'Дисципліна відкриє нові кар\'єрні горизонти.', health:'Кістки та суглоби — стежте за поставою.', money:'Довгострокові інвестиції дадуть відмінний результат.' }},
+  Водолей:   { emoji:'♒', ru: { love:'Необычные связи и новые знакомства изменят вашу жизнь.', work:'Инновационные идеи будут услышаны — самое время их озвучить.', health:'Голени и кровообращение — движение жизненно необходимо.', money:'Нестандартный подход к заработку принесёт плоды.' }, ua: { love:'Незвичайні зв\'язки та нові знайомства змінять ваше життя.', work:'Інноваційні ідеї будуть почуті.', health:'Гомілки та кровообіг — рух необхідний.', money:'Нестандартний підхід до заробітку принесе плоди.' }},
+  Рыбы:      { emoji:'♓', ru: { love:'Романтика и мечты станут реальностью. Открывайте сердце.', work:'Интуиция подскажет верное решение там, где логика зашла в тупик.', health:'Иммунная система требует поддержки — сон и витамины.', money:'Финансовая интуиция на высоте — доверяйте предчувствию.' }, ua: { love:'Романтика та мрії стануть реальністю.', work:'Інтуїція підкаже вірне рішення.', health:'Імунна система потребує підтримки.', money:'Фінансова інтуїція на висоті.' }},
+};
+
+function loadHoroscopeScreen() {
+  const content = document.getElementById('horo-content');
+  const user = state.user;
+  const zodiacName = user?.astro?.zodiac?.name;
+  const lang = state.lang;
+
+  const weekRange = getWeekRange();
+
+  if (!zodiacName || !HOROSCOPE_DATA[zodiacName]) {
+    content.innerHTML = `<div class="empty-state"><p>Введите дату рождения для получения гороскопа.</p></div>`;
+    return;
+  }
+  const horo = HOROSCOPE_DATA[zodiacName];
+  const data = horo[lang] || horo.ru;
+
+  content.innerHTML = `
+    <div class="horo-hero">
+      <div class="horo-sign-emoji">${horo.emoji}</div>
+      <div class="horo-sign-name">${zodiacName}</div>
+      <div class="horo-week">${weekRange}</div>
+    </div>
+
+    <div class="horo-areas">
+      <div class="horo-area">
+        <div class="ha-icon">❤️</div>
+        <div class="ha-info"><div class="ha-title">Любовь</div><div class="ha-desc">${data.love}</div></div>
+      </div>
+      <div class="horo-area">
+        <div class="ha-icon">💼</div>
+        <div class="ha-info"><div class="ha-title">Работа</div><div class="ha-desc">${data.work}</div></div>
+      </div>
+      <div class="horo-area">
+        <div class="ha-icon">🌿</div>
+        <div class="ha-info"><div class="ha-title">Здоровье</div><div class="ha-desc">${data.health}</div></div>
+      </div>
+      <div class="horo-area">
+        <div class="ha-icon">💰</div>
+        <div class="ha-info"><div class="ha-title">Финансы</div><div class="ha-desc">${data.money}</div></div>
+      </div>
+    </div>
+
+    <div class="horo-all-signs">
+      <div class="horo-all-title">Все знаки</div>
+      <div class="horo-signs-grid">
+        ${Object.entries(HOROSCOPE_DATA).map(([name, d]) =>
+          `<div class="horo-sign-cell${name === zodiacName ? ' active' : ''}" data-sign="${name}">
+            <div class="hsc-emoji">${d.emoji}</div>
+            <div class="hsc-name">${name}</div>
+          </div>`
+        ).join('')}
+      </div>
+    </div>
+
+    <div style="height:32px"></div>
+  `;
+
+  content.querySelectorAll('.horo-sign-cell').forEach(el => {
+    el.addEventListener('click', () => {
+      const name = el.dataset.sign;
+      const h2 = HOROSCOPE_DATA[name];
+      const d2 = h2[lang] || h2.ru;
+      content.querySelector('.horo-sign-emoji').textContent = h2.emoji;
+      content.querySelector('.horo-sign-name').textContent = name;
+      const areas = content.querySelectorAll('.ha-desc');
+      areas[0].textContent = d2.love;
+      areas[1].textContent = d2.work;
+      areas[2].textContent = d2.health;
+      areas[3].textContent = d2.money;
+      content.querySelectorAll('.horo-sign-cell').forEach(c => c.classList.remove('active'));
+      el.classList.add('active');
+      tg?.HapticFeedback?.selectionChanged?.();
+    });
+  });
+}
+
+function getWeekRange() {
+  const now = new Date();
+  const monday = new Date(now);
+  monday.setDate(now.getDate() - ((now.getDay() + 6) % 7));
+  const sunday = new Date(monday);
+  sunday.setDate(monday.getDate() + 6);
+  const fmt = d => d.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' });
+  return `${fmt(monday)} — ${fmt(sunday)}`;
+}
+
+// ══ СУМІСНІСТЬ ══════════════════════════════════════════════════════════════
+
+const ELEMENT_COMPAT = {
+  'Огонь-Огонь':   { score: 85, desc: 'Страстная и энергичная пара. Много общих интересов и взаимного восхищения.' },
+  'Огонь-Воздух':  { score: 90, desc: 'Отличная совместимость! Воздух питает огонь. Вас ждут яркие приключения.' },
+  'Огонь-Земля':   { score: 55, desc: 'Разные темпераменты. Нужны терпение и уважение к различиям.' },
+  'Огонь-Вода':    { score: 60, desc: 'Противоположности притягиваются, но конфликты неизбежны. Нужен баланс.' },
+  'Земля-Земля':   { score: 80, desc: 'Надёжный и стабильный союз. Общие ценности и взгляды на жизнь.' },
+  'Земля-Вода':    { score: 88, desc: 'Очень гармоничная пара. Вода питает землю, создавая плодородную почву.' },
+  'Земля-Воздух':  { score: 50, desc: 'Сложная совместимость. Нужно учиться слышать друг друга.' },
+  'Воздух-Воздух': { score: 78, desc: 'Лёгкость, общение и интеллектуальная связь. Но не хватает глубины.' },
+  'Воздух-Вода':   { score: 65, desc: 'Эмоциональная и интеллектуальная связь. Разная скорость реакции.' },
+  'Вода-Вода':     { score: 82, desc: 'Глубокая эмоциональная связь. Интуитивное понимание без слов.' },
+};
+
+const ZODIAC_ELEMENTS = {
+  Овен:'Огонь', Лев:'Огонь', Стрелец:'Огонь',
+  Телец:'Земля', Дева:'Земля', Козерог:'Земля',
+  Близнецы:'Воздух', Весы:'Воздух', Водолей:'Воздух',
+  Рак:'Вода', Скорпион:'Вода', Рыбы:'Вода',
+};
+
+function getZodiacFromBirth(birthDate) {
+  const d = new Date(birthDate);
+  const month = d.getMonth() + 1;
+  const day   = d.getDate();
+  if ((month === 3 && day >= 21) || (month === 4 && day <= 19)) return 'Овен';
+  if ((month === 4 && day >= 20) || (month === 5 && day <= 20)) return 'Телец';
+  if ((month === 5 && day >= 21) || (month === 6 && day <= 20)) return 'Близнецы';
+  if ((month === 6 && day >= 21) || (month === 7 && day <= 22)) return 'Рак';
+  if ((month === 7 && day >= 23) || (month === 8 && day <= 22)) return 'Лев';
+  if ((month === 8 && day >= 23) || (month === 9 && day <= 22)) return 'Дева';
+  if ((month === 9 && day >= 23) || (month === 10 && day <= 22)) return 'Весы';
+  if ((month === 10 && day >= 23) || (month === 11 && day <= 21)) return 'Скорпион';
+  if ((month === 11 && day >= 22) || (month === 12 && day <= 21)) return 'Стрелец';
+  if ((month === 12 && day >= 22) || (month === 1 && day <= 19)) return 'Козерог';
+  if ((month === 1 && day >= 20) || (month === 2 && day <= 18)) return 'Водолей';
+  return 'Рыбы';
+}
+
+function calcLifePathClient(birthDate) {
+  const digits = birthDate.replace(/-/g, '').split('').map(Number);
+  let sum = digits.reduce((a, b) => a + b, 0);
+  while (sum > 9 && sum !== 11 && sum !== 22) {
+    sum = String(sum).split('').map(Number).reduce((a, b) => a + b, 0);
+  }
+  return sum;
+}
+
+function initCompatScreen() {
+  const btn = document.getElementById('btn-compat-calc');
+  const inp = document.getElementById('compat-birth');
+  if (!btn || !inp || btn.dataset.init) return;
+  btn.dataset.init = '1';
+  btn.addEventListener('click', () => {
+    if (!inp.value) { toast('Введите дату рождения партнёра'); return; }
+    calcCompatibility(inp.value);
+  });
+  inp.addEventListener('change', () => {
+    if (inp.value) calcCompatibility(inp.value);
+  });
+}
+
+function calcCompatibility(partnerBirth) {
+  const result = document.getElementById('compat-result');
+  const user = state.user;
+  if (!user?.birthDate || !user?.astro) { toast('Ваши данные не найдены'); return; }
+
+  const myZodiac      = user.astro.zodiac?.name || getZodiacFromBirth(user.birthDate);
+  const partnerZodiac = getZodiacFromBirth(partnerBirth);
+  const myLP          = user.astro.lifePath;
+  const partnerLP     = calcLifePathClient(partnerBirth);
+  const myElem        = ZODIAC_ELEMENTS[myZodiac] || 'Огонь';
+  const partnerElem   = ZODIAC_ELEMENTS[partnerZodiac] || 'Огонь';
+
+  const elemKey = [myElem, partnerElem].sort().join('-');
+  const elemKey2 = `${myElem}-${partnerElem}`;
+  const compat = ELEMENT_COMPAT[elemKey2] || ELEMENT_COMPAT[elemKey] || { score: 70, desc: 'Гармоничное сочетание с уникальными особенностями.' };
+
+  const lpDiff = Math.abs(myLP - partnerLP);
+  const lpBonus = lpDiff === 0 ? 10 : lpDiff <= 2 ? 5 : lpDiff >= 7 ? -5 : 0;
+  const finalScore = Math.min(99, Math.max(40, compat.score + lpBonus));
+
+  const myHoro = HOROSCOPE_DATA[myZodiac];
+  const partnerHoro = HOROSCOPE_DATA[partnerZodiac];
+
+  result.classList.remove('hidden');
+  result.innerHTML = `
+    <div class="compat-score-block">
+      <div class="csb-pair">
+        <div class="csb-person">
+          <div class="csb-emoji">${myHoro?.emoji || '⭐'}</div>
+          <div class="csb-name">${user.firstName || 'Вы'}</div>
+          <div class="csb-sign">${myZodiac} · ${myElem}</div>
+          <div class="csb-lp">Путь ${myLP}</div>
+        </div>
+        <div class="csb-heart">💞</div>
+        <div class="csb-person">
+          <div class="csb-emoji">${partnerHoro?.emoji || '⭐'}</div>
+          <div class="csb-name">Партнёр</div>
+          <div class="csb-sign">${partnerZodiac} · ${partnerElem}</div>
+          <div class="csb-lp">Путь ${partnerLP}</div>
+        </div>
+      </div>
+      <div class="csb-meter">
+        <div class="csb-score">${finalScore}%</div>
+        <div class="csb-bar"><div class="csb-bar-fill" style="width:${finalScore}%"></div></div>
+        <div class="csb-label">${finalScore >= 80 ? '💫 Очень высокая совместимость' : finalScore >= 65 ? '✨ Хорошая совместимость' : '⚡ Есть над чем работать'}</div>
+      </div>
+      <div class="csb-desc">${compat.desc}</div>
+    </div>
+
+    <div class="compat-spread-btn">
+      <button class="btn-primary" id="btn-compat-spread">
+        🃏 Расклад для пары
+      </button>
+    </div>
+    <div style="height:32px"></div>
+  `;
+  result.scrollIntoView({ behavior: 'smooth' });
+  tg?.HapticFeedback?.notificationOccurred?.('success');
+
+  document.getElementById('btn-compat-spread')?.addEventListener('click', () => {
+    openSpread('love');
+  });
+}
+
+// ══ МІСЯЧНИЙ ЩОДЕННИК ═══════════════════════════════════════════════════════
+
+function loadDiaryScreen() {
+  const content = document.getElementById('diary-content');
+  const moon = state.moonData?.moon;
+  const lang = state.lang;
+  const diaryKey = `diary_${state.userId}`;
+  const entries = JSON.parse(localStorage.getItem(diaryKey) || '[]');
+
+  content.innerHTML = `
+    <div class="diary-moon-phase">
+      <span class="dmp-emoji">${moon?.emoji || '🌙'}</span>
+      <span class="dmp-name">${moon?.name || 'Луна'}</span>
+      <span class="dmp-date">${todayDateStr()}</span>
+    </div>
+
+    <div class="diary-write-block">
+      <div class="dwb-title">Запись на сегодня</div>
+      <textarea id="diary-input" class="diary-textarea"
+        placeholder="${t('diaryPlaceholder', lang)}"
+        maxlength="1000" rows="4"></textarea>
+      <button class="btn-primary btn-sm diary-save-btn" id="btn-diary-save">
+        ${t('diarySave', lang)}
+      </button>
+    </div>
+
+    <div class="diary-entries" id="diary-entries">
+      ${entries.length ? `
+        <div class="diary-entries-title">Прошлые записи</div>
+        ${entries.map(e => `
+          <div class="diary-entry">
+            <div class="de-header">
+              <span class="de-phase">${e.phase || '🌙'} ${e.phaseName || ''}</span>
+              <span class="de-date">${fmtDate(e.date)}</span>
+            </div>
+            <div class="de-text">${e.text}</div>
+          </div>
+        `).join('')}
+      ` : `<div class="diary-empty">Записей пока нет. Начни вести лунный дневник!</div>`}
+    </div>
+    <div style="height:32px"></div>
+  `;
+
+  document.getElementById('btn-diary-save')?.addEventListener('click', () => {
+    const text = document.getElementById('diary-input')?.value?.trim();
+    if (!text) { toast('Напишите что-нибудь...'); return; }
+    const entries = JSON.parse(localStorage.getItem(diaryKey) || '[]');
+    entries.unshift({
+      phase: moon?.emoji || '🌙',
+      phaseName: moon?.name || '',
+      text,
+      date: new Date().toISOString(),
+    });
+    localStorage.setItem(diaryKey, JSON.stringify(entries.slice(0, 100)));
+    toast('Запись сохранена ✨');
+    document.getElementById('diary-input').value = '';
+    loadDiaryScreen();
+    tg?.HapticFeedback?.impactOccurred?.('light');
+  });
+}
+
+// ══ РЕФЕРАЛЬНИЙ ПРОГРЕС БАР ══════════════════════════════════════════════════
+
+function renderReferralProgress(refBonus) {
+  const counter = document.getElementById('fpb-counter');
+  if (!counter) return;
+  const goals = [1, 3, 7];
+  const next = goals.find(g => g > refBonus) || 7;
+  const prev = goals.filter(g => g <= refBonus).pop() || 0;
+  const pct = next === prev ? 100 : Math.round(((refBonus - prev) / (next - prev)) * 100);
+  counter.innerHTML = `
+    <div class="ref-progress-wrap">
+      <div class="ref-progress-bar">
+        <div class="ref-progress-fill" style="width:${Math.min(100, pct)}%"></div>
+      </div>
+      <div class="ref-progress-labels">
+        <span>${refBonus} приглашено</span>
+        <span>Следующая цель: ${next} 🎁</span>
+      </div>
+    </div>
+    <div class="ref-steps">
+      ${goals.map(g => `
+        <div class="ref-step${refBonus >= g ? ' done' : ''}">
+          <div class="rs-icon">${refBonus >= g ? '✅' : '👤'}</div>
+          <div class="rs-val">${g} ${g === 1 ? 'подруга' : 'подруги'}</div>
+          <div class="rs-reward">${g === 1 ? '1 день' : g === 3 ? '3 дня' : 'неделя!'}</div>
+        </div>
+      `).join('')}
+    </div>
+  `;
+}
+
+// ══ БЛЮР РОЗКЛАДІВ (превью для замкнутих) ════════════════════════════════════
+
+function renderBlurredSpreadPreview(spreadType) {
+  const fakeCards = ['🌟','🌙','⭐','✨','🔮'];
+  return `
+    <div class="blurred-preview">
+      ${fakeCards.slice(0, spreadType === 'celtic' ? 5 : 3).map(e => `
+        <div class="bp-card">
+          <div class="bp-card-inner">${e}</div>
+        </div>
+      `).join('')}
+      <div class="bp-overlay">
+        <div class="bp-lock">👑</div>
+        <div class="bp-text">Доступно в Премиум</div>
+      </div>
+    </div>
+  `;
 }
 
 // ── Helpers ────────────────────────────────────────────────────────────────

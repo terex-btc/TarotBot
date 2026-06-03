@@ -33,9 +33,9 @@
     <div id="screen-splash" class="screen">
       <div class="splash-wrap">
         <div class="splash-cards">
-          <img class="splash-card sc1" src="https://upload.wikimedia.org/wikipedia/commons/1/17/RWS_Tarot_19_Sun.jpg" alt="Sun">
-          <img class="splash-card sc2" src="https://upload.wikimedia.org/wikipedia/commons/d/db/RWS_Tarot_17_Star.jpg" alt="Star">
-          <img class="splash-card sc3" src="https://upload.wikimedia.org/wikipedia/commons/f/ff/RWS_Tarot_21_World.jpg" alt="World">
+          <img class="splash-card sc1" src="/assets/cards/card_19.jpg" alt="Sun">
+          <img class="splash-card sc2" src="/assets/cards/card_17.jpg" alt="Star">
+          <img class="splash-card sc3" src="/assets/cards/card_21.jpg" alt="World">
         </div>
         <div class="splash-content">
           <div class="splash-orb">🔮</div>
@@ -132,6 +132,26 @@
             <div class="nav-cell-emoji">👑</div>
             <div class="nav-cell-name">Премиум</div>
             <div class="nav-cell-sub">Все функции</div>
+          </div>
+        </div>
+
+        <!-- Персональний кабінет — другий ряд -->
+        <div class="nav-personal">
+          <div class="nav-cell nav-cell-sm" data-screen="numerology">
+            <div class="nav-cell-emoji">🔢</div>
+            <div class="nav-cell-name">Нумерология</div>
+          </div>
+          <div class="nav-cell nav-cell-sm" data-screen="horoscope">
+            <div class="nav-cell-emoji">🌟</div>
+            <div class="nav-cell-name">Гороскоп</div>
+          </div>
+          <div class="nav-cell nav-cell-sm" data-screen="compat">
+            <div class="nav-cell-emoji">💞</div>
+            <div class="nav-cell-name">Совместимость</div>
+          </div>
+          <div class="nav-cell nav-cell-sm" data-screen="diary">
+            <div class="nav-cell-emoji">📓</div>
+            <div class="nav-cell-name">Дневник</div>
           </div>
         </div>
 
@@ -471,6 +491,80 @@
 
         <div style="height:32px"></div>
       </div>
+    </div>
+
+    <!-- ══ ОНБОРДИНГ — WOW після реєстрації ═════════════════════════════════ -->
+    <div id="screen-onboarding" class="screen">
+      <div class="onboarding-wrap">
+        <div class="onb-hero">
+          <div class="onb-orb">🔮</div>
+          <h2 class="onb-title">Звёзды рассчитали<br>ваш расклад, <span id="onb-name">...</span></h2>
+          <p class="onb-sub">Это ваш уникальный магический профиль</p>
+        </div>
+        <div class="onb-grid" id="onb-grid"></div>
+        <div class="onb-lp-block" id="onb-lp-block"></div>
+        <button class="btn-primary onb-btn" id="btn-onboarding-done">
+          <span>Открыть мой кабинет</span>
+          <span class="btn-icon-r">🔮</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- ══ НУМЕРОЛОГІЯ ═══════════════════════════════════════════════════════ -->
+    <div id="screen-numerology" class="screen">
+      <header class="top-bar">
+        <button class="icon-btn back-btn" data-to="home">←</button>
+        <div class="top-bar-title">🔢 Нумерология</div>
+        <div style="width:40px"></div>
+      </header>
+      <div class="num-scroll" id="num-content"></div>
+    </div>
+
+    <!-- ══ ГОРОСКОП ══════════════════════════════════════════════════════════ -->
+    <div id="screen-horoscope" class="screen">
+      <header class="top-bar">
+        <button class="icon-btn back-btn" data-to="home">←</button>
+        <div class="top-bar-title">🌟 Гороскоп недели</div>
+        <div style="width:40px"></div>
+      </header>
+      <div class="horo-scroll" id="horo-content"></div>
+    </div>
+
+    <!-- ══ СУМІСНІСТЬ ════════════════════════════════════════════════════════ -->
+    <div id="screen-compat" class="screen">
+      <header class="top-bar">
+        <button class="icon-btn back-btn" data-to="home">←</button>
+        <div class="top-bar-title">💞 Совместимость</div>
+        <div style="width:40px"></div>
+      </header>
+      <div class="compat-scroll" id="compat-content">
+        <div class="compat-hero">
+          <div class="compat-hero-icon">💞</div>
+          <h2 class="compat-hero-title">Совместимость</h2>
+          <p class="compat-hero-sub">Введи дату рождения партнёра — узнайте насколько вы подходите друг другу</p>
+        </div>
+        <div class="compat-form">
+          <div class="field-wrap">
+            <label class="field-label">Дата рождения партнёра</label>
+            <input id="compat-birth" class="field-input" type="date" max="2010-01-01" min="1920-01-01">
+          </div>
+          <button class="btn-primary" id="btn-compat-calc">
+            <span>Рассчитать совместимость</span>
+            <span class="btn-icon-r">💞</span>
+          </button>
+        </div>
+        <div id="compat-result" class="compat-result hidden"></div>
+      </div>
+    </div>
+
+    <!-- ══ ДНЕВНИК ════════════════════════════════════════════════════════════ -->
+    <div id="screen-diary" class="screen">
+      <header class="top-bar">
+        <button class="icon-btn back-btn" data-to="home">←</button>
+        <div class="top-bar-title">📓 Лунный дневник</div>
+        <div style="width:40px"></div>
+      </header>
+      <div class="diary-scroll" id="diary-content"></div>
     </div>
 
   </div>
