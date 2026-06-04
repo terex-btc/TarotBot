@@ -5,6 +5,15 @@ const { pool } = require('../db');
 
 const ADMIN_KEY = process.env.ADMIN_KEY || '';
 
+// In-memory лічильник подій — оновлюється при кожній дії в боті
+let _activityCounter = 0;
+let _activityLastAt  = 0;
+function bumpActivity() {
+  _activityCounter++;
+  _activityLastAt = Date.now();
+}
+module.exports.bumpActivity = bumpActivity; // експортуємо для server.js
+
 // Middleware: перевіряємо ключ
 function auth(req, res, next) {
   const key = req.query.key || req.headers['x-admin-key'];
@@ -285,9 +294,22 @@ function showMsg(text, ok) {
   setTimeout(() => { el.style.display = 'none'; }, 4000);
 }
 
+let _lastKnownCounter = -1;
+
+async function checkPing() {
+  try {
+    const data = await apiFetch('/admin/api/ping');
+    if (!data.ok) return;
+    if (data.counter !== _lastKnownCounter) {
+      _lastKnownCounter = data.counter;
+      await loadActivity();
+    }
+  } catch (_) {}
+}
+
 loadAll();
-setInterval(loadActivity, 10000); // activity — кожні 10 сек
-setInterval(loadAll, 60000);      // повна статистика — кожну хвилину
+setInterval(checkPing, 30000);   // легкий ping кожні 30 сек — тільки лічильник (без DB)
+setInterval(loadAll, 86400000);  // повна статистика — раз на добу
 </script>
 </body>
 </html>`);
@@ -331,10 +353,14 @@ router.get('/api/users', auth, async (req, res) => {
   } catch (e) { res.status(500).json({ ok: false, error: e.message }); }
 });
 
-// GET /admin/api/activity — live feed останніх подій
+// GET /admin/api/ping — дуже легкий: повертає тільки лічильник подій (без DB!)
+router.get('/api/ping', auth, (req, res) => {
+  res.json({ ok: true, counter: _activityCounter, lastAt: _activityLastAt });
+});
+
+// GET /admin/api/activity — повний feed, викликається тільки коли є нові події
 router.get('/api/activity', auth, async (req, res) => {
   try {
-    // Об'єднуємо activity_log + payments_log в один feed
     const { rows } = await pool.query(`
       SELECT id, user_id, event_type, meta, NULL as stars, created_at FROM activity_log
       UNION ALL

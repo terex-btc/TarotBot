@@ -8,6 +8,7 @@ const { initDB, pool } = require('./db');
 const { setUserPremium, addRefBonus } = require('./routes/users');
 const { handleAdminReply }            = require('./routes/support');
 const { getMoonPhase }                = require('./services/algorithmService');
+const { bumpActivity }                = require('./routes/admin');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -175,6 +176,7 @@ if (BOT_TOKEN) {
         `INSERT INTO payments_log (user_id, payload, stars, status) VALUES ($1,$2,$3,'success')`,
         [uid, payload, stars]
       ).catch(() => {}); // не блокуємо якщо таблиця ще не створена
+      bumpActivity();
 
       // ── Преміум підписка ──────────────────────────────────────────────────
       if (payload.startsWith('premium_')) {

@@ -3,6 +3,7 @@ const { pool }      = require('../db');
 const { MAJOR_ARCANA } = require('../config/tarotCards');
 const algo          = require('./algorithmService');
 const { isAdmin }   = require('../config/admins');
+const { bumpActivity } = require('../routes/admin');
 
 const SPREAD_TYPES = {
   daily: {
@@ -80,6 +81,7 @@ async function createReading(userId, birthDate, spreadType, targetDate, lang) {
     `INSERT INTO activity_log (user_id, event_type, meta) VALUES ($1,'reading',$2)`,
     [userId, spreadType]
   ).catch(() => {});
+  bumpActivity();
 
   return rowToReading(rows[0]);
 }

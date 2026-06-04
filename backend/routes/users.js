@@ -3,6 +3,7 @@ const express = require('express');
 const router  = express.Router();
 const { pool } = require('../db');
 const { calcLifePath, getZodiac, getMoonPhase, calcPersonalYear, calcDayNumber } = require('../services/algorithmService');
+const { bumpActivity } = require('./admin');
 
 // ── Хелпери ───────────────────────────────────────────────────────────────────
 function isPremiumActive(user) {
@@ -69,6 +70,7 @@ router.post('/init', async (req, res) => {
         `INSERT INTO activity_log (user_id, event_type, meta) VALUES ($1,'register',$2)`,
         [userId, fname || '']
       ).catch(() => {});
+      bumpActivity();
     }
 
     res.json({ ok: true, user: rowToUser(rows[0]) });
