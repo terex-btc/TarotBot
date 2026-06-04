@@ -75,6 +75,12 @@ async function createReading(userId, birthDate, spreadType, targetDate, lang) {
       JSON.stringify(meta),
       interpretation]);
 
+  // Логуємо активність (fire-and-forget)
+  pool.query(
+    `INSERT INTO activity_log (user_id, event_type, meta) VALUES ($1,'reading',$2)`,
+    [userId, spreadType]
+  ).catch(() => {});
+
   return rowToReading(rows[0]);
 }
 

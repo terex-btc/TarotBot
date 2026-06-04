@@ -74,6 +74,14 @@ const PG_SCHEMA = `
     created_at TIMESTAMPTZ DEFAULT NOW()
   );
   CREATE INDEX IF NOT EXISTS diary_user_idx ON diary_entries(user_id, created_at DESC);
+  CREATE TABLE IF NOT EXISTS activity_log (
+    id          SERIAL PRIMARY KEY,
+    user_id     TEXT NOT NULL,
+    event_type  TEXT NOT NULL,
+    meta        TEXT DEFAULT '',
+    created_at  TIMESTAMPTZ DEFAULT NOW()
+  );
+  CREATE INDEX IF NOT EXISTS activity_log_created_idx ON activity_log(created_at DESC);
   CREATE TABLE IF NOT EXISTS payments_log (
     id          SERIAL PRIMARY KEY,
     user_id     TEXT NOT NULL,

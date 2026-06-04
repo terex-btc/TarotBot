@@ -208,12 +208,12 @@ if (BOT_TOKEN) {
 
       // ── Один заговор ──────────────────────────────────────────────────────
       } else if (payload.startsWith('spell:')) {
-        // payload формат: "spell:SPELL_ID"
         const spellId = payload.replace('spell:', '');
         await pool.query(
           `INSERT INTO spell_purchases (user_id, spell_id) VALUES ($1, $2) ON CONFLICT DO NOTHING`,
           [uid, spellId]
         );
+        pool.query(`INSERT INTO activity_log (user_id, event_type, meta) VALUES ($1,'spell',$2)`, [uid, spellId]).catch(() => {});
         await bot.sendMessage(chatId,
           `🕯️ *Заговор куплен!*\n\n` +
           `⭐ Оплачено: *${stars} Stars*\n\n` +

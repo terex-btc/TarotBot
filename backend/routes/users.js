@@ -60,8 +60,16 @@ router.post('/init', async (req, res) => {
         lang       = COALESCE($5, users.lang),
         astro      = CASE WHEN $4 IS NOT NULL THEN $6 ELSE users.astro END,
         updated_at = NOW()
-      RETURNING *
+      RETURNING *, (xmax = 0) AS is_new
     `, [userId, username || '', fname, birthDate || null, lang || 'ru', astro ? JSON.stringify(astro) : null]);
+
+    // Логуємо тільки нову реєстрацію
+    if (rows[0]?.is_new) {
+      pool.query(
+        `INSERT INTO activity_log (user_id, event_type, meta) VALUES ($1,'register',$2)`,
+        [userId, fname || '']
+      ).catch(() => {});
+    }
 
     res.json({ ok: true, user: rowToUser(rows[0]) });
   } catch (e) {

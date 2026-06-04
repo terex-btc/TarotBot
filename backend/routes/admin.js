@@ -110,6 +110,12 @@ router.get('/', (req, res) => {
   </div>
 </div>
 
+<!-- Live Activity Feed -->
+<div class="section">
+  <h2>⚡ Активность в реальном времени <span id="activity-dot" style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#6ac96a;margin-left:6px;vertical-align:middle"></span></h2>
+  <div id="activity-feed" style="display:flex;flex-direction:column;gap:6px;max-height:280px;overflow-y:auto"></div>
+</div>
+
 <!-- Платежи -->
 <div class="section">
   <h2>💳 Последние платежи</h2>
@@ -138,6 +144,45 @@ let allUsers = [];
 async function apiFetch(url) {
   const r = await fetch(url + (url.includes('?') ? '&' : '?') + 'key=' + KEY);
   return r.json();
+}
+
+const EVENT_ICONS = { register:'🌟', reading:'🃏', payment:'⭐', spell:'🕯️' };
+const EVENT_LABELS = { register:'Новый юзер', reading:'Расклад', payment:'Оплата', spell:'Заговор' };
+let _lastActivityId = 0;
+
+async function loadActivity() {
+  const data = await apiFetch('/admin/api/activity');
+  if (!data.ok) return;
+  const feed = document.getElementById('activity-feed');
+  if (!feed) return;
+
+  // Підсвічуємо нові події
+  const newItems = data.events.filter(e => e.id > _lastActivityId);
+  if (newItems.length > 0) {
+    _lastActivityId = data.events[0]?.id || _lastActivityId;
+    const dot = document.getElementById('activity-dot');
+    if (dot) { dot.style.background = '#f0c040'; setTimeout(() => dot.style.background = '#6ac96a', 800); }
+  }
+
+  feed.innerHTML = data.events.length ? data.events.map(e => \`
+    <div style="display:flex;align-items:center;gap:10px;padding:8px 12px;background:#120824;border-radius:10px;border-left:3px solid \${e.event_type==='register'?'#c9a0ff':e.event_type==='payment'?'#f0c040':'#4a7aff'}">
+      <span style="font-size:18px">\${EVENT_ICONS[e.event_type]||'•'}</span>
+      <div style="flex:1">
+        <span style="font-size:13px;color:#c0b8d8">\${EVENT_LABELS[e.event_type]||e.event_type}</span>
+        \${e.meta ? \`<span style="font-size:12px;color:#6a5a8a;margin-left:6px">\${e.meta}</span>\` : ''}
+        \${e.event_type==='payment' ? \`<span style="font-size:12px;color:#f0c040;margin-left:6px">⭐ \${e.stars||''}</span>\` : ''}
+      </div>
+      <span style="font-size:11px;color:#4a3a6a">\${timeSince(e.created_at)}</span>
+    </div>
+  \`).join('') : '<div style="color:#4a3a6a;font-size:13px;padding:12px">Активности пока нет</div>';
+}
+
+function timeSince(dateStr) {
+  const sec = Math.floor((Date.now() - new Date(dateStr)) / 1000);
+  if (sec < 60) return sec + 'с';
+  if (sec < 3600) return Math.floor(sec/60) + 'м';
+  if (sec < 86400) return Math.floor(sec/3600) + 'ч';
+  return Math.floor(sec/86400) + 'д';
 }
 
 async function loadAll() {
@@ -177,6 +222,7 @@ async function loadAll() {
     \`).join('');
   }
 
+  await loadActivity();
   document.getElementById('last-updated').textContent = 'Обновлено: ' + new Date().toLocaleTimeString('ru-RU');
 }
 
@@ -240,7 +286,8 @@ function showMsg(text, ok) {
 }
 
 loadAll();
-setInterval(loadAll, 60000);
+setInterval(loadActivity, 10000); // activity — кожні 10 сек
+setInterval(loadAll, 60000);      // повна статистика — кожну хвилину
 </script>
 </body>
 </html>`);
@@ -281,6 +328,20 @@ router.get('/api/users', auth, async (req, res) => {
        FROM users ORDER BY created_at DESC LIMIT 500`
     );
     res.json({ ok: true, users: rows });
+  } catch (e) { res.status(500).json({ ok: false, error: e.message }); }
+});
+
+// GET /admin/api/activity — live feed останніх подій
+router.get('/api/activity', auth, async (req, res) => {
+  try {
+    // Об'єднуємо activity_log + payments_log в один feed
+    const { rows } = await pool.query(`
+      SELECT id, user_id, event_type, meta, NULL as stars, created_at FROM activity_log
+      UNION ALL
+      SELECT id, user_id, 'payment' as event_type, payload as meta, stars, created_at FROM payments_log WHERE status='success'
+      ORDER BY created_at DESC LIMIT 50
+    `);
+    res.json({ ok: true, events: rows });
   } catch (e) { res.status(500).json({ ok: false, error: e.message }); }
 });
 
