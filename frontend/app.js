@@ -35,11 +35,13 @@ const delay = ms => new Promise(r => setTimeout(r, ms));
 async function pollUntil(fetchFn, predicate, { interval = 900, maxMs = 9000 } = {}) {
   const deadline = Date.now() + maxMs;
   while (Date.now() < deadline) {
-    const data = await fetchFn();
-    if (predicate(data)) return data;
+    try {
+      const data = await fetchFn();
+      if (predicate(data)) return data;
+    } catch (_) { /* мережева помилка — продовжуємо спробу */ }
     await delay(interval);
   }
-  return null; // таймаут — повертаємо null, UI вже показав toast
+  return null; // таймаут — повертаємо null
 }
 
 // ── API ────────────────────────────────────────────────────────────────────
@@ -696,7 +698,7 @@ function showSpellPaywall(spellId) {
     await buySpell('spell_single', spellId);
   });
   document.getElementById('spw-buy-pack')?.addEventListener('click', async () => {
-    await buySpell('spell_pack5', null);
+    await buySpell('spell_pack5', spellId);
   });
   document.getElementById('spw-premium')?.addEventListener('click', async () => {
     showScreen('premium'); await loadPremiumScreen();
