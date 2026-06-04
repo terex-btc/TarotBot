@@ -1,13 +1,24 @@
 'use strict';
 const express = require('express');
 const router  = express.Router();
-const Anthropic = require('@anthropic-ai/sdk');
 
-const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+// Lazy init — щоб не крашити сервер якщо ANTHROPIC_API_KEY не задано
+let _anthropic = null;
+function getClient() {
+  if (!_anthropic) {
+    const Anthropic = require('@anthropic-ai/sdk');
+    if (!process.env.ANTHROPIC_API_KEY) throw new Error('ANTHROPIC_API_KEY not set');
+    _anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+  }
+  return _anthropic;
+}
 
 // POST /api/ai/interpret — персональна AI-інтерпретація розкладу
 router.post('/interpret', async (req, res) => {
   try {
+    if (!process.env.ANTHROPIC_API_KEY) {
+      return res.status(503).json({ ok: false, error: 'AI not configured' });
+    }
     const { cards, positions, spreadName, question, userAstro, lang } = req.body;
     if (!cards || !cards.length) return res.status(400).json({ ok: false, error: 'cards required' });
 
@@ -43,7 +54,7 @@ router.post('/interpret', async (req, res) => {
     parts.push(`\nКарты:\n${cardList}`);
     parts.push(`\nДай глубокое персональное толкование${userQuestion ? ' в контексте этого вопроса' : ''}. Сначала общий посыл, затем главный совет.`);
 
-    const stream = anthropic.messages.stream({
+    const stream = getClient().messages.stream({
       model: 'claude-haiku-4-5',
       max_tokens: 500,
       system: systemPrompt,

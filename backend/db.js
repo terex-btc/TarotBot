@@ -38,10 +38,16 @@ if (USE_PG) {
   db.pragma('foreign_keys = ON');
 
   // Конвертація PostgreSQL-синтаксису → SQLite
-  function pgToSqlite(sql) {
-    return sql
-      // $1 $2 ... → ?
-      .replace(/\$\d+/g, '?')
+  // Повертає { sql, paramMap } де paramMap — масив індексів (0-based) оригінальних params
+  // наприклад для "VALUES ($1,$2) ON CONFLICT SET b=$2" → paramMap=[0,1,1]
+  function pgToSqlite(sql, originalParams) {
+    const paramMap = [];
+    // Спочатку замінюємо $N → ?, збираючи порядок посилань
+    const converted = sql
+      .replace(/\$(\d+)/g, (_, n) => {
+        paramMap.push(Number(n) - 1); // 0-based index
+        return '?';
+      })
       // TIMESTAMPTZ, JSONB, BOOLEAN → TEXT / INTEGER
       .replace(/TIMESTAMPTZ/gi, 'TEXT')
       .replace(/JSONB/gi, 'TEXT')
@@ -51,9 +57,19 @@ if (USE_PG) {
       .replace(/BIGINT/gi, 'INTEGER')
       // NOW() → datetime('now')
       .replace(/NOW\(\)/gi, "datetime('now')")
-      // COALESCE(NULLIF(?,\s*''),\s*\w+) — залишаємо як є (SQLite підтримує)
-      // RETURNING * — відрізаємо (обробляємо після)
+      // to_timestamp(x/1000) → datetime(x/1000,'unixepoch')
+      .replace(/to_timestamp\(([^)]+)\/1000\)/gi, "datetime($1/1000,'unixepoch')")
+      // GREATEST(a, b) → max(a, b)
+      .replace(/GREATEST\(/gi, 'max(')
+      // RETURNING * — відрізаємо
       .replace(/\s+RETURNING\s+\*/gi, ' __RETURNING__');
+
+    // Розширюємо params згідно з порядком $N-посилань
+    const expandedParams = paramMap.length > 0
+      ? paramMap.map(i => originalParams[i])
+      : originalParams;
+
+    return { sql: converted, expandedParams };
   }
 
   // Визначаємо тип запиту
@@ -104,16 +120,13 @@ if (USE_PG) {
   pool = {
     query: function(sql, params = []) {
       try {
-        const converted = pgToSqlite(sql);
+        const { sql: converted, expandedParams } = pgToSqlite(sql, serializeParams(params));
         const hasReturning = converted.includes('__RETURNING__');
         const cleanSql = converted.replace(' __RETURNING__', '');
         const type = queryType(cleanSql);
-        const serialized = serializeParams(params);
 
         // DDL (CREATE TABLE, CREATE INDEX) — може бути кілька statements
         if (type === 'ddl') {
-          // better-sqlite3 не підтримує кілька statements в одному exec через query,
-          // але exec() підтримує
           db.exec(cleanSql);
           return Promise.resolve({ rows: [], rowCount: 0 });
         }
@@ -121,20 +134,20 @@ if (USE_PG) {
         // SELECT
         if (type === 'select') {
           const stmt  = db.prepare(cleanSql);
-          const rows  = stmt.all(...serialized).map(deserializeRow);
+          const rows  = stmt.all(...expandedParams).map(deserializeRow);
           return Promise.resolve({ rows, rowCount: rows.length });
         }
 
         // INSERT / UPDATE / DELETE з RETURNING
         const stmt   = db.prepare(cleanSql);
-        const result = stmt.run(...serialized);
+        const result = stmt.run(...expandedParams);
 
         if (hasReturning) {
           const { table, pk } = getTableAndPK(sql);
           if (table && pk) {
             // Для INSERT — lastInsertRowid може не відповідати TEXT PK, шукаємо по параметру
-            // Простіше: беремо перший параметр (user_id / id)
-            const pkVal = serialized[0];
+            // Простіше: беремо перший параметр (user_id / id) — з оригінальних params
+            const pkVal = serializeParams(params)[0];
             const selStmt = db.prepare(`SELECT * FROM ${table} WHERE ${pk} = ?`);
             const row     = selStmt.get(pkVal);
             return Promise.resolve({ rows: row ? [deserializeRow(row)] : [], rowCount: result.changes });
