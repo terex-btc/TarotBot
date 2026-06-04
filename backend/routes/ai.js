@@ -13,13 +13,34 @@ function getClient() {
   return _anthropic;
 }
 
+// Rate limiter: 5 запитів/хв на юзера (in-memory, без зовнішніх залежностей)
+const _rl = new Map(); // userId → [timestamp, ...]
+const RL_MAX = 5, RL_WINDOW = 60_000;
+function checkRateLimit(userId) {
+  const now = Date.now();
+  const times = (_rl.get(userId) || []).filter(t => now - t < RL_WINDOW);
+  if (times.length >= RL_MAX) return false;
+  times.push(now);
+  _rl.set(userId, times);
+  // Очищаємо старі записи кожні 1000 юзерів
+  if (_rl.size > 1000) {
+    for (const [k, v] of _rl) {
+      if (v.every(t => now - t >= RL_WINDOW)) _rl.delete(k);
+    }
+  }
+  return true;
+}
+
 // POST /api/ai/interpret — персональна AI-інтерпретація розкладу
 router.post('/interpret', async (req, res) => {
   try {
     if (!process.env.ANTHROPIC_API_KEY) {
       return res.status(503).json({ ok: false, error: 'AI not configured' });
     }
-    const { cards, positions, spreadName, question, userAstro, lang } = req.body;
+    const { cards, positions, spreadName, question, userAstro, lang, userId } = req.body;
+    if (userId && !checkRateLimit(String(userId))) {
+      return res.status(429).json({ ok: false, error: 'rate_limit', message: 'Не більше 5 запитів на хвилину' });
+    }
     if (!cards || !cards.length) return res.status(400).json({ ok: false, error: 'cards required' });
 
     const l = lang || 'ru';

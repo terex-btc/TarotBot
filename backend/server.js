@@ -2,9 +2,12 @@ require('dotenv').config({ path: __dirname + '/.env' });
 const express = require('express');
 const cors    = require('cors');
 const path    = require('path');
-const TelegramBot = require('node-telegram-bot-api');
-const cron    = require('node-cron');
-const { initDB } = require('./db');
+const TelegramBot   = require('node-telegram-bot-api');
+const cron          = require('node-cron');
+const { initDB, pool } = require('./db');
+const { setUserPremium, addRefBonus } = require('./routes/users');
+const { handleAdminReply }            = require('./routes/support');
+const { getMoonPhase }                = require('./services/algorithmService');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -13,7 +16,16 @@ const BOT_TOKEN = process.env.BOT_TOKEN;
 // ─── Middleware ───────────────────────────────────────────────────────────────
 app.use(cors());
 app.use(express.json());
-app.use(express.static(path.join(__dirname, '../frontend')));
+// Статика: JS/CSS кешуємо на 1 годину, index.html — ніколи (щоб оновлення одразу доходили)
+app.use(express.static(path.join(__dirname, '../frontend'), {
+  setHeaders(res, filePath) {
+    if (filePath.endsWith('.html')) {
+      res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+    } else if (/\.(js|css|png|jpg|svg|ico|woff2?)$/.test(filePath)) {
+      res.setHeader('Cache-Control', 'public, max-age=3600');
+    }
+  },
+}));
 
 // ─── Telegram Bot ─────────────────────────────────────────────────────────────
 let bot;
@@ -70,8 +82,6 @@ if (BOT_TOKEN) {
   bot.onText(/\/moon/, async (msg) => {
     const chatId = msg.chat.id;
     const webAppUrl = process.env.WEBAPP_URL || `http://localhost:${PORT}`;
-
-    const { getMoonPhase } = require('./services/algorithmService');
     const moon = getMoonPhase(new Date().toISOString().split('T')[0]);
 
     await bot.sendMessage(chatId,
@@ -101,7 +111,8 @@ if (BOT_TOKEN) {
   bot.onText(/\/ref/, async (msg) => {
     const chatId = msg.chat.id;
     const webAppUrl = process.env.WEBAPP_URL || `http://localhost:${PORT}`;
-    const refLink = `https://t.me/${(await bot.getMe()).username}?start=ref_${chatId}`;
+    if (!_cachedBotUsername) { try { _cachedBotUsername = (await bot.getMe()).username; } catch (_) {} }
+    const refLink = `https://t.me/${_cachedBotUsername || 'bot'}?start=ref_${chatId}`;
     await bot.sendMessage(chatId,
       `🎁 *Пригласи подругу — получи Премиум!*\n\nТвоя реферальная ссылка:\n\`${refLink}\`\n\n✨ За каждую подругу которая зарегистрируется — ты получаешь *1 день Премиума* бесплатно!\n3 подруги = *3 дня* 🔮`,
       { parse_mode: 'Markdown' }
@@ -115,7 +126,6 @@ if (BOT_TOKEN) {
     const webAppUrl = process.env.WEBAPP_URL || `http://localhost:${PORT}`;
     if (String(chatId) === refUserId) return;
 
-    const { addRefBonus } = require('./routes/users');
     try {
       await addRefBonus(refUserId, 1);
       await bot.sendMessage(refUserId,
@@ -155,9 +165,6 @@ if (BOT_TOKEN) {
     console.log(`[Pay] successful_payment — uid=${uid} stars=${stars} payload=${payload}`);
 
     try {
-      const { setUserPremium } = require('./routes/users');
-      const { pool } = require('./db');
-
       // Гарантуємо що юзер існує в БД
       await pool.query(
         `INSERT INTO users (user_id) VALUES ($1) ON CONFLICT DO NOTHING`,
@@ -260,7 +267,6 @@ if (BOT_TOKEN) {
   bot.on('message', async (msg) => {
     if (String(msg.from?.id) !== ADMIN_ID) return;
     if (!msg.reply_to_message || !msg.text) return;
-    const { handleAdminReply } = require('./routes/support');
     const webAppUrl = process.env.WEBAPP_URL || `http://localhost:${PORT}`;
     try {
       const userId = await handleAdminReply(bot, msg.reply_to_message.message_id, msg.text, msg.message_id, webAppUrl);
@@ -277,42 +283,60 @@ if (BOT_TOKEN) {
   });
 
   // ── Щоденні сповіщення: 9:00 ранку кожен день ────────────────────────────
+  // Кеш фази місяця — оновлюємо раз на день (використовується і в cron, і в /moon команді)
+  let _moonCache = null;
+  let _moonCacheDate = '';
+  function getCachedMoon() {
+    const today = new Date().toISOString().split('T')[0];
+    if (_moonCacheDate !== today) {
+      _moonCache = getMoonPhase(today);
+      _moonCacheDate = today;
+    }
+    return _moonCache;
+  }
+
   cron.schedule('0 9 * * *', async () => {
     try {
-      const { pool } = require('./db');
-      const { getMoonPhase } = require('./services/algorithmService');
       const webAppUrl = process.env.WEBAPP_URL || `http://localhost:${PORT}`;
-      const moon = getMoonPhase(new Date().toISOString().split('T')[0]);
+      const moon = getCachedMoon();
 
       // Вибираємо активних юзерів (реєструвалися за останні 60 днів)
       const cutoff = Date.now() - 60 * 24 * 60 * 60 * 1000;
       const { rows } = await pool.query(
-        `SELECT user_id, first_name FROM users WHERE created_at > to_timestamp($1/1000) AND birth_date IS NOT NULL LIMIT 5000`,
+        `SELECT user_id, first_name FROM users
+         WHERE created_at > to_timestamp($1/1000.0) AND birth_date IS NOT NULL
+         LIMIT 5000`,
         [cutoff]
       );
 
       const msgs = [
-        `🔮 Карта дня уже готова для тебя!`,
+        `🔮 Карта дня уже готова для тебя`,
         `✨ Звёзды приготовили послание на сегодня`,
         `🌟 Твоя карта дня ждёт — что скажут карты?`,
         `🃏 Начни день с Таро — открой карту дня!`,
       ];
       const moonMsg = `\n\n${moon.emoji} Луна сегодня: *${moon.name}*`;
 
-      for (const user of rows) {
-        try {
-          const greeting = `${msgs[Math.floor(Math.random() * msgs.length)]}, ${user.first_name || 'дорогая'}!${moonMsg}`;
-          await bot.sendMessage(user.user_id, greeting, {
-            parse_mode: 'Markdown',
-            reply_markup: { inline_keyboard: [[
-              { text: '🔮 Открыть карту дня', web_app: { url: webAppUrl } },
-            ]]},
-          });
-          // Невелика затримка щоб не спамити Telegram API
-          await new Promise(r => setTimeout(r, 50));
-        } catch (_) { /* юзер заблокував бота — пропускаємо */ }
+      let sent = 0, failed = 0;
+      // Telegram дозволяє ~30 msg/сек. Відправляємо батчами по 25 з паузою 1 сек.
+      const BATCH = 25;
+      for (let i = 0; i < rows.length; i += BATCH) {
+        const batch = rows.slice(i, i + BATCH);
+        await Promise.allSettled(batch.map(async user => {
+          try {
+            const greeting = `${msgs[Math.floor(Math.random() * msgs.length)]}, ${user.first_name || 'дорогая'}!${moonMsg}`;
+            await bot.sendMessage(user.user_id, greeting, {
+              parse_mode: 'Markdown',
+              reply_markup: { inline_keyboard: [[
+                { text: '🔮 Открыть карту дня', web_app: { url: webAppUrl } },
+              ]]},
+            });
+            sent++;
+          } catch (_) { failed++; } // юзер заблокував бота
+        }));
+        if (i + BATCH < rows.length) await new Promise(r => setTimeout(r, 1100));
       }
-      console.log(`[Cron] Щоденні сповіщення відправлено ${rows.length} юзерам`);
+      console.log(`[Cron] Сповіщення: відправлено ${sent}, пропущено ${failed}, всього ${rows.length}`);
     } catch (e) {
       console.error('[Cron] Помилка щоденних сповіщень:', e.message);
     }

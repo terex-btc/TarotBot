@@ -87,7 +87,10 @@ router.post('/:userId/premium', async (req, res) => {
 // GET /api/users/:userId/premium-status
 router.get('/:userId/premium-status', async (req, res) => {
   try {
-    const { rows } = await pool.query(`SELECT * FROM users WHERE user_id=$1`, [req.params.userId]);
+    const { rows } = await pool.query(
+      `SELECT is_premium, premium_expiry, ref_bonus, spell_credits FROM users WHERE user_id=$1`,
+      [req.params.userId]
+    );
     if (!rows.length) return res.json({ ok: true, isPremium: false, premiumExpiry: null, refBonus: 0, daysLeft: null, spellCredits: 0 });
     const user   = rows[0];
     const active = isPremiumActive(user);
@@ -106,7 +109,10 @@ router.get('/:userId/premium-status', async (req, res) => {
 // GET /api/users/:userId/ref
 router.get('/:userId/ref', async (req, res) => {
   try {
-    const { rows } = await pool.query(`SELECT * FROM users WHERE user_id=$1`, [req.params.userId]);
+    const { rows } = await pool.query(
+      `SELECT is_premium, premium_expiry, ref_bonus FROM users WHERE user_id=$1`,
+      [req.params.userId]
+    );
     if (!rows.length) return res.status(404).json({ ok: false, error: 'User not found' });
     const u = rows[0];
     res.json({ ok: true, refBonus: u.ref_bonus || 0, premiumExpiry: u.premium_expiry, isPremium: isPremiumActive(u) });

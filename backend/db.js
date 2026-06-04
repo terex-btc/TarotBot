@@ -12,6 +12,9 @@ const pool = new Pool({
   ssl: process.env.DATABASE_URL?.includes('railway') || process.env.DATABASE_URL?.includes('amazonaws')
     ? { rejectUnauthorized: false }
     : false,
+  max:              5,    // Railway Free: максимум 5 одночасних з'єднань
+  idleTimeoutMillis: 30000, // закриваємо idle-з'єднання через 30 сек
+  connectionTimeoutMillis: 5000, // таймаут на підключення 5 сек
 });
 
 const PG_SCHEMA = `

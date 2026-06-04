@@ -86,8 +86,14 @@ function initStars() {
     hue: Math.random() > 0.5 ? 270 : 45,
     a: Math.random() * 0.5 + 0.2, sp: Math.random() * 0.003 + 0.001, ph: Math.random() * Math.PI * 2,
   }));
-  let t = 0;
-  (function draw() {
+  let t = 0, _rafId = null, _paused = false;
+  document.addEventListener('visibilitychange', () => {
+    _paused = document.hidden;
+    if (!_paused && !_rafId) { _rafId = requestAnimationFrame(draw); }
+  });
+  function draw() {
+    _rafId = null;
+    if (_paused) return;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     t += 0.016;
     stars.forEach(s => {
@@ -100,8 +106,9 @@ function initStars() {
       ctx.beginPath(); ctx.arc(s.x * canvas.width, s.y * canvas.height, s.r, 0, Math.PI * 2);
       ctx.fillStyle = `hsla(${s.hue},80%,70%,${alpha})`; ctx.fill();
     });
-    requestAnimationFrame(draw);
-  })();
+    _rafId = requestAnimationFrame(draw);
+  }
+  _rafId = requestAnimationFrame(draw);
 }
 
 // ── Splash ─────────────────────────────────────────────────────────────────
@@ -181,17 +188,7 @@ async function renderHome() {
   document.getElementById('top-astro').textContent = z ? `${z.emoji} ${z.name} · Путь ${user.astro.lifePath}` : '';
   renderAstroStrip(user);
 
-  // Луна сегодня
-  const moonData = await api('GET', `/spells/today/${state.userId}`);
-  if (moonData.ok) {
-    state.moonData = moonData;
-    const pill = document.getElementById('today-moon-pill');
-    pill.innerHTML = `${moonData.moon.emoji} ${moonData.moon.name}`;
-    document.querySelector('.today-hint').textContent = getMoonTip(moonData.moon.energy);
-    renderSpellsPreview(moonData.spells);
-  }
-
-  // Таро: копіюємо мету
+  // Таро: метадані (синхронно, без запиту)
   const tarotMeta = document.getElementById('tarot-meta');
   if (tarotMeta && user.astro) {
     const m = user.astro;
@@ -202,8 +199,20 @@ async function renderHome() {
     ].join('');
   }
 
-  // Преміум статус з сервера (перевіряє expiry)
-  const ps = await api('GET', `/users/${state.userId}/premium-status`);
+  // Паралельні запити: місяць+заговори, преміум-статус, карта дня
+  const [moonData, ps] = await Promise.all([
+    api('GET', `/spells/today/${state.userId}`),
+    api('GET', `/users/${state.userId}/premium-status`),
+  ]);
+
+  if (moonData.ok) {
+    state.moonData = moonData;
+    const pill = document.getElementById('today-moon-pill');
+    pill.innerHTML = `${moonData.moon.emoji} ${moonData.moon.name}`;
+    document.querySelector('.today-hint').textContent = getMoonTip(moonData.moon.energy);
+    renderSpellsPreview(moonData.spells);
+  }
+
   if (ps.ok) {
     state.premiumStatus  = ps;
     state.user.isPremium = ps.isPremium;
@@ -216,8 +225,10 @@ async function renderHome() {
     updateThreeCardLock(user.isPremium);
   }
 
-  await loadDailyCard('daily-zone', 'tap-daily');
-  await loadDailyCard('daily-zone-tarot', 'tap-daily-tarot');
+  await Promise.all([
+    loadDailyCard('daily-zone', 'tap-daily'),
+    loadDailyCard('daily-zone-tarot', 'tap-daily-tarot'),
+  ]);
 }
 
 function updatePremiumBadge(ps) {
