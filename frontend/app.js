@@ -124,6 +124,16 @@ function initIntroScreen() {
   nameIn.addEventListener('input', check);
   birthIn.addEventListener('change', check);
   check();
+
+  // Закриваємо клавіатуру при тапі поза полем
+  document.getElementById('screen-intro')?.addEventListener('click', e => {
+    if (!e.target.closest('input') && !e.target.closest('button')) {
+      nameIn.blur(); birthIn.blur();
+    }
+  });
+
+  // Закриваємо клавіатуру після вибору дати
+  birthIn.addEventListener('change', () => { birthIn.blur(); });
   const resetBtn = () => {
     btn.disabled = false;
     btn.innerHTML = `<span>${t('openBtn', state.lang)}</span><span class="btn-icon-r">🔮</span>`;

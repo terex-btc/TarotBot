@@ -4,13 +4,14 @@
 const { Pool } = require('pg');
 
 if (!process.env.DATABASE_URL) {
-  console.error('[DB] DATABASE_URL не задана! Встановіть змінну оточення.');
-  process.exit(1);
+  console.error('[DB] УВАГА: DATABASE_URL не задана! Запити до БД будуть падати.');
 }
 
 const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  ssl: { rejectUnauthorized: false },
+  connectionString: process.env.DATABASE_URL || 'postgresql://localhost/tarot',
+  ssl: process.env.DATABASE_URL?.includes('railway') || process.env.DATABASE_URL?.includes('amazonaws')
+    ? { rejectUnauthorized: false }
+    : false,
 });
 
 const PG_SCHEMA = `
