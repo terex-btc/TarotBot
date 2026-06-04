@@ -81,7 +81,7 @@ async function createReading(userId, birthDate, spreadType, targetDate, lang) {
     `INSERT INTO activity_log (user_id, event_type, meta) VALUES ($1,'reading',$2)`,
     [userId, spreadType]
   ).catch(() => {});
-  bumpActivity();
+  bumpActivity?.();
 
   return rowToReading(rows[0]);
 }

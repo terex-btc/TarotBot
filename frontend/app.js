@@ -8,6 +8,7 @@ if (tg) {
   tg.expand();
   tg.setHeaderColor?.('#07030f');
   tg.setBackgroundColor?.('#07030f');
+  tg.disableVerticalSwipes?.(); // Не закривати WebApp свайпом вниз (Telegram 7.7+)
 }
 
 // ── State ──────────────────────────────────────────────────────────────────
@@ -166,14 +167,15 @@ function initIntroScreen() {
   birthIn.addEventListener('change', check);
   check();
 
-  // Закриваємо клавіатуру при тапі поза полем
+  // Закриваємо клавіатуру тільки для текстового поля при тапі поза ним
+  // birthIn.blur() тут не викликаємо — він закриває нативний датапікер при виборі року
   document.getElementById('screen-intro')?.addEventListener('click', e => {
     if (!e.target.closest('input') && !e.target.closest('button')) {
-      nameIn.blur(); birthIn.blur();
+      nameIn.blur();
     }
   });
 
-  // Закриваємо клавіатуру після вибору дати
+  // Закриваємо датапікер тільки після повного вибору дати (change = юзер підтвердив)
   birthIn.addEventListener('change', () => { birthIn.blur(); });
   const resetBtn = () => {
     btn.disabled = false;

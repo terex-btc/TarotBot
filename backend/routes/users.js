@@ -70,7 +70,7 @@ router.post('/init', async (req, res) => {
         `INSERT INTO activity_log (user_id, event_type, meta) VALUES ($1,'register',$2)`,
         [userId, fname || '']
       ).catch(() => {});
-      bumpActivity();
+      bumpActivity?.();
     }
 
     res.json({ ok: true, user: rowToUser(rows[0]) });

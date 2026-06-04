@@ -176,7 +176,7 @@ if (BOT_TOKEN) {
         `INSERT INTO payments_log (user_id, payload, stars, status) VALUES ($1,$2,$3,'success')`,
         [uid, payload, stars]
       ).catch(() => {}); // не блокуємо якщо таблиця ще не створена
-      bumpActivity();
+      bumpActivity?.();
 
       // ── Преміум підписка ──────────────────────────────────────────────────
       if (payload.startsWith('premium_')) {

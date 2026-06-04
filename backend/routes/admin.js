@@ -12,7 +12,6 @@ function bumpActivity() {
   _activityCounter++;
   _activityLastAt = Date.now();
 }
-module.exports.bumpActivity = bumpActivity; // експортуємо для server.js
 
 // Middleware: перевіряємо ключ
 function auth(req, res, next) {
@@ -415,3 +414,4 @@ router.delete('/api/delete-user', auth, async (req, res) => {
 });
 
 module.exports = router;
+module.exports.bumpActivity = bumpActivity;
