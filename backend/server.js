@@ -132,61 +132,126 @@ if (BOT_TOKEN) {
   });
 
   // ── Платежі Telegram Stars ────────────────────────────────────────────────
+
+  // pre_checkout — обов'язково відповісти протягом 10 секунд
   bot.on('pre_checkout_query', async (query) => {
-    await bot.answerPreCheckoutQuery(query.id, true);
+    try {
+      await bot.answerPreCheckoutQuery(query.id, true);
+      console.log(`[Pay] pre_checkout OK — user=${query.from.id} payload=${query.invoice_payload}`);
+    } catch (e) {
+      console.error('[Pay] pre_checkout error:', e.message);
+      try { await bot.answerPreCheckoutQuery(query.id, false, 'Ошибка. Попробуйте позже.'); } catch (_) {}
+    }
   });
 
   bot.on('successful_payment', async (msg) => {
     const chatId  = msg.chat.id;
-    const payload = msg.successful_payment.invoice_payload;
-    const stars   = msg.successful_payment.total_amount;
-
+    const uid     = String(chatId);
+    const payment = msg.successful_payment;
+    const payload = payment.invoice_payload;
+    const stars   = payment.total_amount;
     const webAppUrl = process.env.WEBAPP_URL || `http://localhost:${PORT}`;
-    const uid = String(chatId);
-    const { setUserPremium } = require('./routes/users');
-    const { pool } = require('./db');
 
-    // Upsert юзера
-    await pool.query(`INSERT INTO users (user_id) VALUES ($1) ON CONFLICT DO NOTHING`, [uid]);
+    console.log(`[Pay] successful_payment — uid=${uid} stars=${stars} payload=${payload}`);
 
-    if (payload.startsWith('premium_')) {
-      const days = payload === 'premium_30' ? 30 : payload === 'premium_90' ? 90 : 365;
-      const { rows } = await pool.query(`SELECT premium_expiry FROM users WHERE user_id=$1`, [uid]);
-      const base = Math.max(rows[0]?.premium_expiry ? Number(rows[0].premium_expiry) : Date.now(), Date.now());
-      await setUserPremium(uid, base + days * 86400000);
+    try {
+      const { setUserPremium } = require('./routes/users');
+      const { pool } = require('./db');
 
-      await bot.sendMessage(chatId,
-        `👑 *Премиум активирован!*\n\n⭐ ${stars} Stars — оплачено\n✨ Срок: *${days} дней*\n\nТеперь тебе доступны все расклады и заговоры без ограничений!`,
-        { parse_mode: 'Markdown', reply_markup: { inline_keyboard: [[{ text: '🔮 Открыть кабинет', web_app: { url: webAppUrl } }]] } }
+      // Гарантуємо що юзер існує в БД
+      await pool.query(
+        `INSERT INTO users (user_id) VALUES ($1) ON CONFLICT DO NOTHING`,
+        [uid]
       );
 
-    } else if (payload.startsWith('{')) {
-      // JSON payload — мікроплатіж за заговор
-      try {
-        const data = JSON.parse(payload);
-        if (data.type === 'spell' && data.spellId) {
-          await pool.query(
-            `INSERT INTO spell_purchases (user_id, spell_id) VALUES ($1, $2) ON CONFLICT DO NOTHING`,
-            [uid, data.spellId]
-          );
-          await bot.sendMessage(chatId,
-            `🕯️ *Заговор куплен!*\n\n⭐ ${stars} Stars — оплачено\n✨ Теперь откройте приложение и найдите ваш заговор — он разблокирован!`,
-            { parse_mode: 'Markdown', reply_markup: { inline_keyboard: [[{ text: '🔮 Открыть кабинет', web_app: { url: webAppUrl } }]] } }
-          );
-        } else if (data.type === 'spell_pack') {
-          // 5 кредитів на заговори
-          await pool.query(
-            `UPDATE users SET spell_credits = COALESCE(spell_credits, 0) + 5 WHERE user_id = $1`,
-            [uid]
-          );
-          await bot.sendMessage(chatId,
-            `✨ *Пак заговоров куплен!*\n\n⭐ ${stars} Stars — оплачено\n🕯️ *5 заговоров* добавлено на ваш счёт!\n\nОткройте любой заговор в приложении — он спишется автоматически.`,
-            { parse_mode: 'Markdown', reply_markup: { inline_keyboard: [[{ text: '🔮 Открыть кабинет', web_app: { url: webAppUrl } }]] } }
-          );
-        }
-      } catch (e) {
-        console.error('[Payments] JSON payload parse error:', e.message);
+      // ── Преміум підписка ──────────────────────────────────────────────────
+      if (payload.startsWith('premium_')) {
+        const days = payload === 'premium_30' ? 30 : payload === 'premium_90' ? 90 : 365;
+
+        // Продовжуємо від поточного expiry якщо вже є преміум
+        const { rows } = await pool.query(`SELECT premium_expiry FROM users WHERE user_id=$1`, [uid]);
+        const current  = rows[0]?.premium_expiry ? Number(rows[0].premium_expiry) : 0;
+        const base     = Math.max(current, Date.now());
+        await setUserPremium(uid, base + days * 86400000);
+
+        const expireDate = new Date(base + days * 86400000).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' });
+        await bot.sendMessage(chatId,
+          `👑 *Премиум активирован!*\n\n` +
+          `⭐ Оплачено: *${stars} Stars*\n` +
+          `📅 Срок: *${days} дней* — до ${expireDate}\n\n` +
+          `✨ Теперь доступно:\n` +
+          `🃏 Все расклады Таро\n` +
+          `🕯️ 55 заговоров и ритуалов\n` +
+          `🌙 Полный лунный дневник\n` +
+          `🔮 Полное толкование снов\n\n` +
+          `Открой кабинет — всё уже разблокировано! 👇`,
+          {
+            parse_mode: 'Markdown',
+            reply_markup: { inline_keyboard: [[
+              { text: '🔮 Открыть Магический кабинет', web_app: { url: webAppUrl } }
+            ]]}
+          }
+        );
+        console.log(`[Pay] Premium ${days}d activated for uid=${uid}`);
+
+      // ── Один заговор ──────────────────────────────────────────────────────
+      } else if (payload.startsWith('spell:')) {
+        // payload формат: "spell:SPELL_ID"
+        const spellId = payload.replace('spell:', '');
+        await pool.query(
+          `INSERT INTO spell_purchases (user_id, spell_id) VALUES ($1, $2) ON CONFLICT DO NOTHING`,
+          [uid, spellId]
+        );
+        await bot.sendMessage(chatId,
+          `🕯️ *Заговор куплен!*\n\n` +
+          `⭐ Оплачено: *${stars} Stars*\n\n` +
+          `✨ Заговор разблокирован навсегда!\nОткрой приложение и найди его в разделе Заговоры 👇`,
+          {
+            parse_mode: 'Markdown',
+            reply_markup: { inline_keyboard: [[
+              { text: '🕯️ Открыть заговоры', web_app: { url: webAppUrl } }
+            ]]}
+          }
+        );
+        console.log(`[Pay] Spell ${spellId} purchased by uid=${uid}`);
+
+      // ── Пак 5 заговорів ───────────────────────────────────────────────────
+      } else if (payload === 'spell_pack5') {
+        await pool.query(
+          `UPDATE users SET spell_credits = COALESCE(spell_credits, 0) + 5 WHERE user_id = $1`,
+          [uid]
+        );
+        const { rows: u } = await pool.query(`SELECT spell_credits FROM users WHERE user_id=$1`, [uid]);
+        const total = u[0]?.spell_credits || 5;
+        await bot.sendMessage(chatId,
+          `✨ *Пак заговоров куплен!*\n\n` +
+          `⭐ Оплачено: *${stars} Stars*\n` +
+          `🕯️ Добавлено: *5 кредитов*\n` +
+          `💎 Всего на счету: *${total}*\n\n` +
+          `Открой любой заговор в приложении — кредит спишется автоматически 👇`,
+          {
+            parse_mode: 'Markdown',
+            reply_markup: { inline_keyboard: [[
+              { text: '🕯️ Открыть заговоры', web_app: { url: webAppUrl } }
+            ]]}
+          }
+        );
+        console.log(`[Pay] Spell pack (+5 credits) purchased by uid=${uid}, total=${total}`);
+
+      } else {
+        // Невідомий payload — логуємо
+        console.warn(`[Pay] Unknown payload: ${payload} from uid=${uid}`);
       }
+
+    } catch (e) {
+      console.error(`[Pay] successful_payment ERROR uid=${uid}:`, e.message);
+      // Намагаємось повідомити юзера
+      try {
+        await bot.sendMessage(chatId,
+          `✅ Оплата получена (${stars} ⭐), но возникла ошибка активации.\nНапишите в поддержку — мы активируем вручную.`,
+          { reply_markup: { inline_keyboard: [[{ text: '💬 Поддержка', web_app: { url: webAppUrl } }]] }}
+        );
+      } catch (_) {}
     }
   });
 

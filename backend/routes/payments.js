@@ -56,7 +56,9 @@ router.post('/invoice/spell', async (req, res) => {
   if (!bot) return res.status(503).json({ ok: false, error: 'Bot not initialized' });
 
   try {
-    const payload = JSON.stringify({ type: purchase.type, purchaseId, userId, spellId: spellId || null });
+    const payload = purchaseId === 'spell_single'
+      ? `spell:${spellId || 'unknown'}`
+      : 'spell_pack5';
     const link = await bot.createInvoiceLink(
       `${purchase.emoji} ${purchase.label}`,
       purchaseId === 'spell_single'
