@@ -41,11 +41,45 @@ router.get('/:id', async (req, res) => {
   try {
     const spell = getSpellById(req.params.id);
     if (!spell) return res.status(404).json({ ok: false, error: 'Not found' });
+
     const uid = req.query.userId || '';
     const user = await loadUser(uid);
-    const premiumOk = isPremiumActive(user) || isAdmin(uid);
-    if (spell.premium && !premiumOk) return res.status(403).json({ ok: false, error: 'premium_required' });
-    res.json({ ok: true, spell });
+
+    // Безкоштовний заговор — завжди доступний
+    if (!spell.premium) return res.json({ ok: true, spell });
+
+    // Преміум або адмін — завжди доступний
+    if (isPremiumActive(user) || isAdmin(uid)) return res.json({ ok: true, spell });
+
+    if (uid) {
+      const { pool } = require('../db');
+
+      // Перевіряємо індивідуальну покупку
+      const { rows: purchased } = await pool.query(
+        'SELECT 1 FROM spell_purchases WHERE user_id=$1 AND spell_id=$2',
+        [uid, spell.id]
+      );
+      if (purchased.length) return res.json({ ok: true, spell });
+
+      // Перевіряємо кредити (spell_pack5) — списуємо 1 кредит автоматично
+      const { rows: uRows } = await pool.query(
+        'SELECT spell_credits FROM users WHERE user_id=$1', [uid]
+      );
+      const credits = uRows[0]?.spell_credits || 0;
+      if (credits > 0) {
+        await pool.query(
+          'UPDATE users SET spell_credits = spell_credits - 1 WHERE user_id=$1 AND spell_credits > 0',
+          [uid]
+        );
+        await pool.query(
+          'INSERT INTO spell_purchases (user_id, spell_id) VALUES ($1, $2) ON CONFLICT DO NOTHING',
+          [uid, spell.id]
+        );
+        return res.json({ ok: true, spell, usedCredit: true, creditsLeft: Math.max(0, credits - 1) });
+      }
+    }
+
+    return res.status(403).json({ ok: false, error: 'premium_required' });
   } catch (e) { res.status(500).json({ ok: false, error: e.message }); }
 });
 

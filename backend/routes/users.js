@@ -88,18 +88,19 @@ router.post('/:userId/premium', async (req, res) => {
 router.get('/:userId/premium-status', async (req, res) => {
   try {
     const { rows } = await pool.query(`SELECT * FROM users WHERE user_id=$1`, [req.params.userId]);
-    if (!rows.length) return res.json({ ok: true, isPremium: false, premiumExpiry: null, refBonus: 0, daysLeft: null });
+    if (!rows.length) return res.json({ ok: true, isPremium: false, premiumExpiry: null, refBonus: 0, daysLeft: null, spellCredits: 0 });
     const user   = rows[0];
     const active = isPremiumActive(user);
     const expiry = user.premium_expiry ? Number(user.premium_expiry) : null;
     res.json({
-      ok: true,
-      isPremium:     active,
+      ok:           true,
+      isPremium:    active,
       premiumExpiry: expiry,
-      refBonus:      user.ref_bonus || 0,
-      daysLeft:      expiry ? Math.max(0, Math.ceil((expiry - Date.now()) / 86400000)) : null,
+      refBonus:     user.ref_bonus    || 0,
+      spellCredits: user.spell_credits || 0,
+      daysLeft:     expiry ? Math.max(0, Math.ceil((expiry - Date.now()) / 86400000)) : null,
     });
-  } catch (e) { res.json({ ok: true, isPremium: false, daysLeft: null, refBonus: 0 }); }
+  } catch (e) { res.json({ ok: true, isPremium: false, daysLeft: null, refBonus: 0, spellCredits: 0 }); }
 });
 
 // GET /api/users/:userId/ref

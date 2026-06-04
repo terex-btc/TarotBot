@@ -205,8 +205,9 @@ async function renderHome() {
   // Преміум статус з сервера (перевіряє expiry)
   const ps = await api('GET', `/users/${state.userId}/premium-status`);
   if (ps.ok) {
-    state.premiumStatus = ps;
+    state.premiumStatus  = ps;
     state.user.isPremium = ps.isPremium;
+    state.spellCredits   = ps.spellCredits || 0;
     updatePremiumBadge(ps);
     updatePremiumCards(ps.isPremium);
     updateThreeCardLock(ps.isPremium);
@@ -594,25 +595,44 @@ async function openSpellById(spellId) {
   const data = await api('GET', `/spells/${spellId}?userId=${state.userId}`);
   if (!data.ok) {
     if (data.error === 'premium_required') {
-      // Показати вибір: купити один заговор або преміум
       showSpellPaywall(spellId);
       return;
     }
     toast('Заговор не найден'); return;
   }
+  // Якщо був автоматично списаний кредит — показуємо toast
+  if (data.usedCredit) {
+    state.spellCredits = data.creditsLeft ?? Math.max(0, (state.spellCredits || 0) - 1);
+    toast(`🕯️ Использован 1 кредит. Осталось: ${state.spellCredits}`);
+    tg?.HapticFeedback?.impactOccurred?.('light');
+  }
   openSpellDetail(data.spell, false);
 }
 
 function showSpellPaywall(spellId) {
-  // Показуємо спеціальний екран з двома варіантами оплати
+  const credits = state.spellCredits || 0;
   const content = document.getElementById('spell-detail-content');
   document.getElementById('spell-detail-title').textContent = '🔒 Заговор закрыт';
+
+  // Якщо є кредити — пропонуємо використати
+  const creditsBlock = credits > 0 ? `
+    <div class="spw-option spw-credits" id="spw-use-credit">
+      <div class="spwo-emoji">🕯️</div>
+      <div class="spwo-info">
+        <div class="spwo-title">Использовать кредит</div>
+        <div class="spwo-sub">У вас ${credits} кредит${credits === 1 ? '' : credits < 5 ? 'а' : 'ов'} — открыть бесплатно</div>
+      </div>
+      <div class="spwo-price" style="color:var(--gold)">✨ ЕСТЬ</div>
+    </div>
+  ` : '';
+
   content.innerHTML = `
     <div class="spell-paywall">
       <div class="spw-icon">🕯️</div>
       <div class="spw-title">Этот заговор доступен<br>в Премиум</div>
-      <div class="spw-sub">Выберите как открыть:</div>
+      <div class="spw-sub">${credits > 0 ? `У вас ${credits} кредита — можно открыть сейчас` : 'Выберите как открыть:'}</div>
       <div class="spw-options">
+        ${creditsBlock}
         <div class="spw-option spw-single" id="spw-buy-single" data-spell-id="${spellId}">
           <div class="spwo-emoji">🕯️</div>
           <div class="spwo-info">
@@ -642,6 +662,11 @@ function showSpellPaywall(spellId) {
     </div>
   `;
 
+  // Використати кредит (якщо є)
+  document.getElementById('spw-use-credit')?.addEventListener('click', async () => {
+    await openSpellById(spellId);
+  });
+
   document.getElementById('spw-buy-single')?.addEventListener('click', async () => {
     await buySpell('spell_single', spellId);
   });
@@ -656,19 +681,38 @@ function showSpellPaywall(spellId) {
 }
 
 async function buySpell(purchaseId, spellId) {
+  const btn = purchaseId === 'spell_single'
+    ? document.getElementById('spw-buy-single')
+    : document.getElementById('spw-buy-pack');
+  if (btn) { btn.disabled = true; btn.style.opacity = '0.6'; }
+
   try {
     const data = await api('POST', '/payments/invoice/spell', { purchaseId, userId: state.userId, spellId });
     if (!data.ok) throw new Error(data.error);
     tg?.openInvoice?.(data.link, async (status) => {
       if (status === 'paid') {
-        toast('✨ Оплачено! Заговор открыт.');
-        if (spellId) openSpellById(spellId);
+        tg?.HapticFeedback?.notificationOccurred?.('success');
+        if (purchaseId === 'spell_single' && spellId) {
+          toast('✨ Заговор открыт!');
+          await openSpellById(spellId);
+        } else if (purchaseId === 'spell_pack5') {
+          // Оновлюємо кількість кредитів
+          const ps = await api('GET', `/users/${state.userId}/premium-status`);
+          if (ps.ok) {
+            state.spellCredits = ps.spellCredits || 0;
+            toast(`✨ 5 заговоров на счету! Кредиты: ${state.spellCredits} 🕯️`);
+          }
+          // Відкриваємо заговор якщо він був вибраний
+          if (spellId) await openSpellById(spellId);
+        }
       } else if (status === 'cancelled') {
         toast('Оплата отменена');
+        if (btn) { btn.disabled = false; btn.style.opacity = ''; }
       }
     });
   } catch (e) {
-    toast('Ошибка. Попробуйте позже.');
+    toast('Ошибка создания счёта. Попробуй позже.');
+    if (btn) { btn.disabled = false; btn.style.opacity = ''; }
   }
 }
 
@@ -1024,9 +1068,18 @@ function initNav() {
       if (!data.ok) throw new Error(data.error);
       tg?.openInvoice?.(data.link, async (status) => {
         if (status === 'paid') {
-          toast('✨ Премиум активирован!');
+          tg?.HapticFeedback?.notificationOccurred?.('success');
+          toast('✨ Премиум активирован! Все функции открыты 👑');
           const ps = await api('GET', `/users/${state.userId}/premium-status`);
-          if (ps.ok) { state.user.isPremium = ps.isPremium; updatePremiumBadge(ps); updatePremiumCards(ps.isPremium); updateThreeCardLock(ps.isPremium); }
+          if (ps.ok) {
+            state.user.isPremium = ps.isPremium;
+            state.spellCredits   = ps.spellCredits || 0;
+            updatePremiumBadge(ps);
+            updatePremiumCards(ps.isPremium);
+            updateThreeCardLock(ps.isPremium);
+            // Оновлюємо превью спелів на головній
+            if (state.moonData?.spells) renderSpellsPreview(state.moonData.spells);
+          }
           showScreen('home', 'left');
         } else if (status === 'cancelled') {
           toast('Оплата отменена');

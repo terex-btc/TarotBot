@@ -1583,6 +1583,7 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   transition: border-color .15s, background .15s;
 }
 .spw-option:active { background: var(--surf2); border-color: var(--purple2); }
+.spw-credits { border-color: var(--gold); background: rgba(240,192,64,.1); order: -1; }
 .spw-popular { border-color: var(--purple); background: rgba(124,58,237,.1); }
 .spwo-badge {
   position: absolute; top: -9px; left: 14px;
