@@ -31,6 +31,17 @@ const state = {
 // ── Helpers ────────────────────────────────────────────────────────────────
 const delay = ms => new Promise(r => setTimeout(r, ms));
 
+// Поллінг після оплати: чекаємо поки predicate(data) стане true (webhook може прийти з затримкою)
+async function pollUntil(fetchFn, predicate, { interval = 900, maxMs = 9000 } = {}) {
+  const deadline = Date.now() + maxMs;
+  while (Date.now() < deadline) {
+    const data = await fetchFn();
+    if (predicate(data)) return data;
+    await delay(interval);
+  }
+  return null; // таймаут — повертаємо null, UI вже показав toast
+}
+
 // ── API ────────────────────────────────────────────────────────────────────
 async function api(method, path, body) {
   const r = await fetch(`/api${path}`, {
@@ -706,16 +717,33 @@ async function buySpell(purchaseId, spellId) {
     tg?.openInvoice?.(data.link, async (status) => {
       if (status === 'paid') {
         tg?.HapticFeedback?.notificationOccurred?.('success');
-        // Чекаємо поки бот запише в БД (successful_payment хендлер)
-        await delay(1500);
+        toast('✨ Оплата прошла! Открываем...');
+
         if (purchaseId === 'spell_single' && spellId) {
-          toast('✨ Заговор открыт!');
-          await openSpellById(spellId);
+          // Чекаємо поки з'явиться в spell_purchases (перевіряємо через /spells/:id)
+          const result = await pollUntil(
+            () => api('GET', `/spells/${spellId}?userId=${state.userId}`),
+            d => d.ok && !d.error
+          );
+          if (result) {
+            toast('🕯️ Заговор открыт навсегда!');
+            openSpellDetail(result.spell, false);
+          } else {
+            toast('✅ Оплата принята. Заговор откроется через минуту.');
+          }
+
         } else if (purchaseId === 'spell_pack5') {
-          const ps = await api('GET', `/users/${state.userId}/premium-status`);
-          if (ps.ok) {
+          const prevCredits = state.spellCredits || 0;
+          // Чекаємо поки кредити збільшаться
+          const ps = await pollUntil(
+            () => api('GET', `/users/${state.userId}/premium-status`),
+            d => d.ok && (d.spellCredits || 0) > prevCredits
+          );
+          if (ps) {
             state.spellCredits = ps.spellCredits || 0;
-            toast(`✨ 5 заговоров на счету! Кредиты: ${state.spellCredits} 🕯️`);
+            toast(`✨ ${state.spellCredits} заговоров на счету! 🕯️`);
+          } else {
+            toast('✅ Оплата принята. Кредиты появятся через минуту.');
           }
           if (spellId) await openSpellById(spellId);
         }
@@ -1083,17 +1111,22 @@ function initNav() {
       tg?.openInvoice?.(data.link, async (status) => {
         if (status === 'paid') {
           tg?.HapticFeedback?.notificationOccurred?.('success');
-          toast('✨ Премиум активирован! Все функции открыты 👑');
-          // Чекаємо поки бот обробить successful_payment і запише в БД
-          await delay(1500);
-          const ps = await api('GET', `/users/${state.userId}/premium-status`);
-          if (ps.ok) {
+          toast('✨ Оплата прошла! Активируем...');
+          // Поллінг: чекаємо isPremium=true (webhook може прийти з затримкою до 9с)
+          const ps = await pollUntil(
+            () => api('GET', `/users/${state.userId}/premium-status`),
+            d => d.ok && d.isPremium
+          );
+          if (ps) {
             state.user.isPremium = ps.isPremium;
             state.spellCredits   = ps.spellCredits || 0;
             updatePremiumBadge(ps);
             updatePremiumCards(ps.isPremium);
             updateThreeCardLock(ps.isPremium);
             if (state.moonData?.spells) renderSpellsPreview(state.moonData.spells);
+            toast('👑 Премиум активирован! Все функции открыты');
+          } else {
+            toast('✅ Оплата принята. Обновите страницу через минуту.');
           }
           showScreen('home', 'left');
         } else if (status === 'cancelled') {
