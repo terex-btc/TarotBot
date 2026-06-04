@@ -28,6 +28,9 @@ const state = {
   moonData:        null,
 };
 
+// ── Helpers ────────────────────────────────────────────────────────────────
+const delay = ms => new Promise(r => setTimeout(r, ms));
+
 // ── API ────────────────────────────────────────────────────────────────────
 async function api(method, path, body) {
   const r = await fetch(`/api${path}`, {
@@ -703,17 +706,17 @@ async function buySpell(purchaseId, spellId) {
     tg?.openInvoice?.(data.link, async (status) => {
       if (status === 'paid') {
         tg?.HapticFeedback?.notificationOccurred?.('success');
+        // Чекаємо поки бот запише в БД (successful_payment хендлер)
+        await delay(1500);
         if (purchaseId === 'spell_single' && spellId) {
           toast('✨ Заговор открыт!');
           await openSpellById(spellId);
         } else if (purchaseId === 'spell_pack5') {
-          // Оновлюємо кількість кредитів
           const ps = await api('GET', `/users/${state.userId}/premium-status`);
           if (ps.ok) {
             state.spellCredits = ps.spellCredits || 0;
             toast(`✨ 5 заговоров на счету! Кредиты: ${state.spellCredits} 🕯️`);
           }
-          // Відкриваємо заговор якщо він був вибраний
           if (spellId) await openSpellById(spellId);
         }
       } else if (status === 'cancelled') {
@@ -1081,6 +1084,8 @@ function initNav() {
         if (status === 'paid') {
           tg?.HapticFeedback?.notificationOccurred?.('success');
           toast('✨ Премиум активирован! Все функции открыты 👑');
+          // Чекаємо поки бот обробить successful_payment і запише в БД
+          await delay(1500);
           const ps = await api('GET', `/users/${state.userId}/premium-status`);
           if (ps.ok) {
             state.user.isPremium = ps.isPremium;
@@ -1088,7 +1093,6 @@ function initNav() {
             updatePremiumBadge(ps);
             updatePremiumCards(ps.isPremium);
             updateThreeCardLock(ps.isPremium);
-            // Оновлюємо превью спелів на головній
             if (state.moonData?.spells) renderSpellsPreview(state.moonData.spells);
           }
           showScreen('home', 'left');

@@ -33,8 +33,9 @@ router.post('/invoice', async (req, res) => {
     const link = await bot.createInvoiceLink(
       `${plan.emoji} Магический Премиум — ${plan.label}`,
       `Все расклады Таро, заговоры и ритуалы на ${plan.days} дней. Персонально по вашей дате рождения.`,
-      planId,          // payload — обробляємо в successful_payment
-      'XTR',           // Telegram Stars
+      planId,  // payload
+      '',      // providerToken — порожній для Telegram Stars
+      'XTR',   // currency
       [{ label: `Премиум ${plan.label}`, amount: plan.stars }]
     );
     res.json({ ok: true, link });
@@ -65,7 +66,8 @@ router.post('/invoice/spell', async (req, res) => {
         ? 'Купить один заговор и получить доступ к нему навсегда.'
         : 'Купить 5 любых заговоров из базы.',
       payload,
-      'XTR',
+      '',      // providerToken — порожній для Telegram Stars
+      'XTR',   // currency
       [{ label: purchase.label, amount: purchase.stars }]
     );
     res.json({ ok: true, link });
