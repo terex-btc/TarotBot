@@ -170,6 +170,11 @@ if (BOT_TOKEN) {
         `INSERT INTO users (user_id) VALUES ($1) ON CONFLICT DO NOTHING`,
         [uid]
       );
+      // Логуємо платіж в analytics
+      await pool.query(
+        `INSERT INTO payments_log (user_id, payload, stars, status) VALUES ($1,$2,$3,'success')`,
+        [uid, payload, stars]
+      ).catch(() => {}); // не блокуємо якщо таблиця ще не створена
 
       // ── Преміум підписка ──────────────────────────────────────────────────
       if (payload.startsWith('premium_')) {
@@ -252,7 +257,17 @@ if (BOT_TOKEN) {
 
     } catch (e) {
       console.error(`[Pay] successful_payment ERROR uid=${uid}:`, e.message);
-      // Намагаємось повідомити юзера
+      // Логуємо помилку
+      pool.query(`INSERT INTO payments_log (user_id, payload, stars, status) VALUES ($1,$2,$3,'error')`,
+        [uid, payload, stars]).catch(() => {});
+      // Алерт адміну
+      try {
+        await bot.sendMessage(ADMIN_ID,
+          `🚨 *Помилка оплати!*\nUID: \`${uid}\`\nPayload: \`${payload}\`\nStars: ${stars}\nПомилка: ${e.message}`,
+          { parse_mode: 'Markdown' }
+        );
+      } catch (_) {}
+      // Повідомляємо юзера
       try {
         await bot.sendMessage(chatId,
           `✅ Оплата получена (${stars} ⭐), но возникла ошибка активации.\nНапишите в поддержку — мы активируем вручную.`,
@@ -357,6 +372,8 @@ app.use('/api/payments', require('./routes/payments'));
 app.use('/api/support', require('./routes/support'));
 app.use('/api/ai', require('./routes/ai'));
 app.use('/api/horoscope', require('./routes/horoscope'));
+app.use('/api/diary', require('./routes/diary'));
+app.use('/admin', require('./routes/admin'));
 
 // ─── Status ───────────────────────────────────────────────────────────────────
 let _cachedBotUsername = null;

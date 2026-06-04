@@ -64,6 +64,25 @@ const PG_SCHEMA = `
     purchased_at TIMESTAMPTZ DEFAULT NOW(),
     PRIMARY KEY (user_id, spell_id)
   );
+  CREATE TABLE IF NOT EXISTS diary_entries (
+    id         SERIAL PRIMARY KEY,
+    user_id    TEXT NOT NULL,
+    text       TEXT NOT NULL,
+    moon_emoji TEXT DEFAULT '🌙',
+    moon_name  TEXT DEFAULT '',
+    entry_date TEXT NOT NULL,
+    created_at TIMESTAMPTZ DEFAULT NOW()
+  );
+  CREATE INDEX IF NOT EXISTS diary_user_idx ON diary_entries(user_id, created_at DESC);
+  CREATE TABLE IF NOT EXISTS payments_log (
+    id          SERIAL PRIMARY KEY,
+    user_id     TEXT NOT NULL,
+    payload     TEXT NOT NULL,
+    stars       INTEGER NOT NULL,
+    status      TEXT DEFAULT 'success',
+    created_at  TIMESTAMPTZ DEFAULT NOW()
+  );
+  CREATE INDEX IF NOT EXISTS payments_log_user_idx ON payments_log(user_id, created_at DESC);
 `;
 
 async function initDB() {

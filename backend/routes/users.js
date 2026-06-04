@@ -119,6 +119,43 @@ router.get('/:userId/ref', async (req, res) => {
   } catch (e) { res.status(500).json({ ok: false, error: e.message }); }
 });
 
+// PATCH /api/users/:userId — оновити ім'я та/або дату народження
+router.patch('/:userId', async (req, res) => {
+  try {
+    const { firstName, birthDate } = req.body;
+    const uid = req.params.userId;
+    if (!firstName && !birthDate) return res.status(400).json({ ok: false, error: 'nothing to update' });
+
+    let astro = null;
+    if (birthDate) {
+      try {
+        const today        = new Date().toISOString().split('T')[0];
+        const { calcLifePath, getZodiac, getMoonPhase, calcPersonalYear } = require('../services/algorithmService');
+        const zodiac       = getZodiac(birthDate);
+        const lifePath     = calcLifePath(birthDate);
+        const personalYear = calcPersonalYear(birthDate, new Date().getFullYear());
+        const moonPhase    = getMoonPhase(today);
+        astro = { zodiac, lifePath, personalYear, moonPhase };
+      } catch (_) {}
+    }
+
+    const sets = ['updated_at=NOW()'];
+    const vals = [uid];
+    if (firstName) { vals.push(firstName.slice(0, 30)); sets.push(`first_name=$${vals.length}`); }
+    if (birthDate) { vals.push(birthDate); sets.push(`birth_date=$${vals.length}`); }
+    if (astro)     { vals.push(JSON.stringify(astro)); sets.push(`astro=$${vals.length}`); }
+
+    const { rows } = await pool.query(
+      `UPDATE users SET ${sets.join(',')} WHERE user_id=$1 RETURNING *`, vals
+    );
+    if (!rows.length) return res.status(404).json({ ok: false, error: 'User not found' });
+    res.json({ ok: true, user: rowToUser(rows[0]) });
+  } catch (e) {
+    console.error('[users/patch] error:', e.message);
+    res.status(500).json({ ok: false, error: 'db_error' });
+  }
+});
+
 // GET /api/users/:userId
 router.get('/:userId', async (req, res) => {
   try {
@@ -126,6 +163,24 @@ router.get('/:userId', async (req, res) => {
     if (!rows.length) return res.status(404).json({ ok: false, error: 'User not found' });
     res.json({ ok: true, user: rowToUser(rows[0]) });
   } catch (e) { res.status(500).json({ ok: false, error: e.message }); }
+});
+
+// DELETE /api/users/:userId/self — GDPR self-delete
+router.delete('/:userId/self', async (req, res) => {
+  try {
+    const uid = req.params.userId;
+    await pool.query(`DELETE FROM diary_entries WHERE user_id=$1`, [uid]);
+    await pool.query(`DELETE FROM spell_purchases WHERE user_id=$1`, [uid]);
+    await pool.query(`DELETE FROM readings WHERE user_id=$1`, [uid]);
+    await pool.query(`DELETE FROM support_messages WHERE user_id=$1`, [uid]);
+    await pool.query(`DELETE FROM payments_log WHERE user_id=$1`, [uid]);
+    await pool.query(`DELETE FROM tg_msg_map WHERE user_id=$1`, [uid]);
+    await pool.query(`DELETE FROM users WHERE user_id=$1`, [uid]);
+    res.json({ ok: true });
+  } catch (e) {
+    console.error('[users/self-delete] error:', e.message);
+    res.status(500).json({ ok: false, error: 'db_error' });
+  }
 });
 
 // ── Функції для внутрішнього використання ────────────────────────────────────

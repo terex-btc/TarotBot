@@ -31,6 +31,24 @@ const state = {
 // ── Helpers ────────────────────────────────────────────────────────────────
 const delay = ms => new Promise(r => setTimeout(r, ms));
 
+// XSS sanitize — екрануємо HTML у рядках з користувацьких полів
+function esc(str) {
+  return String(str ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+// Блокуємо повторний клік до завершення (anti-duplicate payment guard)
+const _inFlight = new Set();
+function guardedCall(key, fn) {
+  if (_inFlight.has(key)) return;
+  _inFlight.add(key);
+  Promise.resolve(fn()).finally(() => _inFlight.delete(key));
+}
+
 // Поллінг після оплати: чекаємо поки predicate(data) стане true (webhook може прийти з затримкою)
 async function pollUntil(fetchFn, predicate, { interval = 900, maxMs = 9000 } = {}) {
   const deadline = Date.now() + maxMs;
@@ -1103,7 +1121,7 @@ function initNav() {
   });
   document.getElementById('btn-buy-label').textContent = 'Оплатить 3 месяца — ⭐ 699 👑';
 
-  document.getElementById('btn-buy-premium').addEventListener('click', async () => {
+  document.getElementById('btn-buy-premium').addEventListener('click', () => guardedCall('buy_premium', async () => {
     const btn = document.getElementById('btn-buy-premium');
     btn.disabled = true;
     document.getElementById('btn-buy-label').textContent = '⭐ Создаём счёт...';
@@ -1141,7 +1159,7 @@ function initNav() {
       btn.disabled = false;
       document.getElementById('btn-buy-label').textContent = 'Оплатить 👑';
     }
-  });
+  }));
 
   // ── Кнопка "Пригласить подругу" на преміум-екрані ────────────────────────
   document.getElementById('btn-share-ref')?.addEventListener('click', () => shareRefLink());
@@ -1156,6 +1174,11 @@ function initNav() {
       const sym = e.target.value.trim();
       if (sym) searchDream(sym);
     }
+  });
+
+  // Профіль
+  document.getElementById('btn-profile')?.addEventListener('click', () => {
+    showScreen('profile'); loadProfileScreen();
   });
 
   // Підтримка
@@ -1805,12 +1828,42 @@ function calcCompatibility(partnerBirth) {
 
 // ══ МІСЯЧНИЙ ЩОДЕННИК ═══════════════════════════════════════════════════════
 
-function loadDiaryScreen() {
+async function loadDiaryScreen() {
   const content = document.getElementById('diary-content');
   const moon = state.moonData?.moon;
   const lang = state.lang;
-  const diaryKey = `diary_${state.userId}`;
-  const entries = JSON.parse(localStorage.getItem(diaryKey) || '[]');
+
+  content.innerHTML = `<div style="padding:32px;text-align:center;color:var(--text2)">Загрузка...</div>`;
+
+  // Мігруємо старі записи з localStorage → БД (одноразово)
+  const migrateKey = `diary_migrated_${state.userId}`;
+  if (!localStorage.getItem(migrateKey)) {
+    const old = JSON.parse(localStorage.getItem(`diary_${state.userId}`) || '[]');
+    if (old.length) {
+      await Promise.allSettled(old.map(e => api('POST', `/diary/${state.userId}`, {
+        text: e.text, moonEmoji: e.phase, moonName: e.phaseName,
+      })));
+      localStorage.removeItem(`diary_${state.userId}`);
+    }
+    localStorage.setItem(migrateKey, '1');
+  }
+
+  const data = await api('GET', `/diary/${state.userId}`);
+  const entries = data.ok ? data.entries : [];
+
+  const renderEntries = (list) => list.length ? `
+    <div class="diary-entries-title">Прошлые записи</div>
+    ${list.map(e => `
+      <div class="diary-entry" data-id="${e.id}">
+        <div class="de-header">
+          <span class="de-phase">${esc(e.moon_emoji || '🌙')} ${esc(e.moon_name || '')}</span>
+          <span class="de-date">${fmtDate(e.entry_date)}</span>
+          <button class="de-del" data-id="${e.id}" title="Удалить">✕</button>
+        </div>
+        <div class="de-text">${esc(e.text)}</div>
+      </div>
+    `).join('')}
+  ` : `<div class="diary-empty">Записей пока нет. Начни вести лунный дневник!</div>`;
 
   content.innerHTML = `
     <div class="diary-moon-phase">
@@ -1818,7 +1871,6 @@ function loadDiaryScreen() {
       <span class="dmp-name">${moon?.name || 'Луна'}</span>
       <span class="dmp-date">${todayDateStr()}</span>
     </div>
-
     <div class="diary-write-block">
       <div class="dwb-title">Запись на сегодня</div>
       <textarea id="diary-input" class="diary-textarea"
@@ -1828,39 +1880,114 @@ function loadDiaryScreen() {
         ${t('diarySave', lang)}
       </button>
     </div>
-
     <div class="diary-entries" id="diary-entries">
-      ${entries.length ? `
-        <div class="diary-entries-title">Прошлые записи</div>
-        ${entries.map(e => `
-          <div class="diary-entry">
-            <div class="de-header">
-              <span class="de-phase">${e.phase || '🌙'} ${e.phaseName || ''}</span>
-              <span class="de-date">${fmtDate(e.date)}</span>
-            </div>
-            <div class="de-text">${e.text}</div>
-          </div>
-        `).join('')}
-      ` : `<div class="diary-empty">Записей пока нет. Начни вести лунный дневник!</div>`}
+      ${renderEntries(entries)}
     </div>
     <div style="height:32px"></div>
   `;
 
-  document.getElementById('btn-diary-save')?.addEventListener('click', () => {
+  document.getElementById('btn-diary-save')?.addEventListener('click', async () => {
     const text = document.getElementById('diary-input')?.value?.trim();
     if (!text) { toast('Напишите что-нибудь...'); return; }
-    const entries = JSON.parse(localStorage.getItem(diaryKey) || '[]');
-    entries.unshift({
-      phase: moon?.emoji || '🌙',
-      phaseName: moon?.name || '',
-      text,
-      date: new Date().toISOString(),
+    const btn = document.getElementById('btn-diary-save');
+    btn.disabled = true;
+    const res = await api('POST', `/diary/${state.userId}`, {
+      text, moonEmoji: moon?.emoji || '🌙', moonName: moon?.name || '',
     });
-    localStorage.setItem(diaryKey, JSON.stringify(entries.slice(0, 100)));
-    toast('Запись сохранена ✨');
-    document.getElementById('diary-input').value = '';
-    loadDiaryScreen();
-    tg?.HapticFeedback?.impactOccurred?.('light');
+    btn.disabled = false;
+    if (res.ok) {
+      toast('Запись сохранена ✨');
+      tg?.HapticFeedback?.impactOccurred?.('light');
+      await loadDiaryScreen();
+    } else { toast('Ошибка сохранения'); }
+  });
+
+  content.querySelectorAll('.de-del').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const id = btn.dataset.id;
+      await api('DELETE', `/diary/${state.userId}/${id}`);
+      btn.closest('.diary-entry').remove();
+    });
+  });
+}
+
+// ══ ПРОФІЛЬ ══════════════════════════════════════════════════════════════════
+
+async function loadProfileScreen() {
+  const content = document.getElementById('profile-content');
+  if (!content) return;
+  const user = state.user;
+  const ps   = state.premiumStatus;
+
+  const premBlock = ps?.isPremium
+    ? `<div class="profile-premium-block">
+        <div class="ppb-status">👑 Премиум активен</div>
+        <div class="ppb-sub">${ps.daysLeft !== null ? `Осталось ${ps.daysLeft} дней` : 'Активен'}</div>
+      </div>`
+    : `<div class="profile-premium-block" style="background:rgba(255,255,255,.04)">
+        <div class="ppb-status" style="color:var(--text2)">Бесплатный план</div>
+        <div class="ppb-sub"><button class="btn-link" id="profile-go-premium">Улучшить до Премиум →</button></div>
+      </div>`;
+
+  content.innerHTML = `
+    <div class="profile-card">
+      <h3>✏️ Редактировать профиль</h3>
+      <div class="profile-field">
+        <label>Ваше имя</label>
+        <input id="pf-name" type="text" maxlength="30" value="${esc(user?.firstName || '')}" placeholder="Имя">
+      </div>
+      <div class="profile-field">
+        <label>Дата рождения</label>
+        <input id="pf-birth" type="date" value="${esc(user?.birthDate || '')}" max="${new Date(Date.now()-441504e6).toISOString().split('T')[0]}" min="1920-01-01">
+      </div>
+      <button class="btn-primary" id="btn-profile-save">Сохранить изменения</button>
+    </div>
+
+    ${premBlock}
+
+    <div class="profile-card">
+      <h3>📄 Документы</h3>
+      <button class="btn-link" id="profile-terms" style="font-size:14px;color:var(--text2)">Условия использования и Конфиденциальность →</button>
+    </div>
+
+    <div class="profile-danger">
+      <p>Удаление аккаунта необратимо — все данные, расклады и дневник будут удалены.</p>
+      <button class="btn-danger" id="btn-delete-account">🗑️ Удалить мой аккаунт</button>
+    </div>
+    <div style="height:32px"></div>
+  `;
+
+  document.getElementById('btn-profile-save')?.addEventListener('click', async () => {
+    const name  = document.getElementById('pf-name')?.value?.trim();
+    const birth = document.getElementById('pf-birth')?.value;
+    if (!name && !birth) { toast('Нечего сохранять'); return; }
+    const btn = document.getElementById('btn-profile-save');
+    btn.disabled = true; btn.textContent = 'Сохраняем...';
+    const res = await api('PATCH', `/users/${state.userId}`, { firstName: name, birthDate: birth || undefined });
+    btn.disabled = false; btn.textContent = 'Сохранить изменения';
+    if (res.ok) {
+      state.user = res.user;
+      toast('✅ Профиль обновлён!');
+      tg?.HapticFeedback?.notificationOccurred?.('success');
+    } else { toast('Ошибка сохранения'); }
+  });
+
+  document.getElementById('profile-go-premium')?.addEventListener('click', async () => {
+    showScreen('premium'); await loadPremiumScreen();
+  });
+
+  document.getElementById('profile-terms')?.addEventListener('click', () => {
+    showScreen('terms');
+  });
+
+  document.getElementById('btn-delete-account')?.addEventListener('click', async () => {
+    if (!confirm('Удалить аккаунт и все данные? Это нельзя отменить.')) return;
+    const res = await api('DELETE', `/users/${state.userId}/self`);
+    if (res.ok) {
+      toast('Аккаунт удалён. До свидания 🌙');
+      localStorage.clear();
+      setTimeout(() => tg?.close?.(), 2000);
+    } else { toast('Ошибка. Напишите в поддержку.'); }
   });
 }
 
