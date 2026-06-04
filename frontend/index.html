@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="ru" id="html-root">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
@@ -25,7 +25,7 @@
           <div class="orb-ring r2"></div>
           <div class="orb-ring r3"></div>
         </div>
-        <p class="loading-text">Магический кабинет</p>
+        <p class="loading-text" data-i18n="loading">Магический кабинет</p>
       </div>
     </div>
 
@@ -39,19 +39,19 @@
         </div>
         <div class="splash-content">
           <div class="splash-orb">🔮</div>
-          <h1 class="splash-title">Магический<br><span>Кабинет</span></h1>
-          <p class="splash-sub">Карты Таро · Заговоры · Лунная магия<br>Персонально по дате рождения</p>
+          <h1 class="splash-title" id="splash-title">Магический<br><span>Кабинет</span></h1>
+          <p class="splash-sub" id="splash-sub">Карты Таро · Заговоры · Лунная магия<br>Персонально по дате рождения</p>
           <div class="splash-features">
-            <div class="sf-item">🃏 <span>Карта дня — каждый день новый совет</span></div>
-            <div class="sf-item">🕯️ <span>Заговоры под текущую фазу луны</span></div>
-            <div class="sf-item">🌙 <span>Лунный календарь магических дел</span></div>
-            <div class="sf-item">🔢 <span>Нумерология по дате рождения</span></div>
+            <div class="sf-item">🃏 <span data-i18n="splashF1">Карта дня — каждый день новый совет</span></div>
+            <div class="sf-item">🕯️ <span data-i18n="splashF2">Заговоры под текущую фазу луны</span></div>
+            <div class="sf-item">🌙 <span data-i18n="splashF3">Лунный календарь магических дел</span></div>
+            <div class="sf-item">🔢 <span data-i18n="splashF4">Нумерология по дате рождения</span></div>
           </div>
           <button class="btn-primary btn-splash" id="btn-splash-start">
-            <span>Начать — это бесплатно</span>
+            <span data-i18n="splashStart">Начать — это бесплатно</span>
             <span class="btn-icon-r">✨</span>
           </button>
-          <p class="splash-note">Более 22 карт Старшего Аркана · Rider-Waite</p>
+          <p class="splash-note" data-i18n="splashNote">Более 22 карт Старшего Аркана · Rider-Waite</p>
         </div>
       </div>
     </div>
@@ -60,19 +60,19 @@
     <div id="screen-intro" class="screen">
       <div class="intro-wrap">
         <div class="intro-orb">🔮</div>
-        <h1 class="intro-title">Настройка<br><span>кабинета</span></h1>
-        <p class="intro-sub">Введи данные — звёзды рассчитают<br>твой персональный расклад</p>
+        <h1 class="intro-title" id="intro-title">Настройка<br><span>кабинета</span></h1>
+        <p class="intro-sub" id="intro-sub">Введи данные — звёзды рассчитают<br>твой персональный расклад</p>
         <div class="form-card">
           <div class="field-wrap">
-            <label class="field-label">Ваше имя</label>
-            <input id="input-name" class="field-input" type="text" placeholder="Имя" maxlength="30" autocomplete="off">
+            <label class="field-label" data-i18n="nameLabel">Ваше имя</label>
+            <input id="input-name" class="field-input" type="text" placeholder="Имя" data-i18n-ph="namePlaceholder" maxlength="30" autocomplete="off">
           </div>
           <div class="field-wrap">
-            <label class="field-label">Дата рождения</label>
+            <label class="field-label" data-i18n="birthLabel">Дата рождения</label>
             <input id="input-birth" class="field-input" type="date" max="2010-01-01" min="1920-01-01">
           </div>
           <button id="btn-start" class="btn-primary" disabled>
-            <span>Открыть кабинет</span>
+            <span data-i18n="openBtn">Открыть кабинет</span>
             <span class="btn-icon-r">🔮</span>
           </button>
         </div>
@@ -116,23 +116,19 @@
           </div>
           <div class="nav-cell" data-screen="spells">
             <div class="nav-cell-emoji">🕯️</div>
-            <div class="nav-cell-name">Заговоры</div>
-            <div class="nav-cell-sub">Ритуалы</div>
+            <div class="nav-cell-name" data-i18n="spellsScreen">🕯️ Заговоры</div>
           </div>
           <div class="nav-cell" data-screen="moon">
             <div class="nav-cell-emoji">🌔</div>
-            <div class="nav-cell-name">Луна</div>
-            <div class="nav-cell-sub">Календарь</div>
+            <div class="nav-cell-name" data-i18n="moonSub">Календарь</div>
           </div>
           <div class="nav-cell" data-screen="dreams">
             <div class="nav-cell-emoji">😴</div>
-            <div class="nav-cell-name">Сонник</div>
-            <div class="nav-cell-sub">Тлум. снів</div>
+            <div class="nav-cell-name" data-i18n="dreamsScreen">😴 Сонник</div>
           </div>
           <div class="nav-cell" data-screen="premium">
             <div class="nav-cell-emoji">👑</div>
-            <div class="nav-cell-name">Премиум</div>
-            <div class="nav-cell-sub">Все функции</div>
+            <div class="nav-cell-name" data-i18n="premiumScreen">👑 Премиум</div>
           </div>
         </div>
 
@@ -140,19 +136,19 @@
         <div class="nav-personal">
           <div class="nav-cell nav-cell-sm" data-screen="numerology">
             <div class="nav-cell-emoji">🔢</div>
-            <div class="nav-cell-name">Нумерология</div>
+            <div class="nav-cell-name" data-i18n="numScreen">🔢 Нумерология</div>
           </div>
           <div class="nav-cell nav-cell-sm" data-screen="horoscope">
             <div class="nav-cell-emoji">🌟</div>
-            <div class="nav-cell-name">Гороскоп</div>
+            <div class="nav-cell-name" data-i18n="horoScreen">🌟 Гороскоп</div>
           </div>
           <div class="nav-cell nav-cell-sm" data-screen="compat">
             <div class="nav-cell-emoji">💞</div>
-            <div class="nav-cell-name">Совместимость</div>
+            <div class="nav-cell-name" data-i18n="compatScreen">💞 Совместимость</div>
           </div>
           <div class="nav-cell nav-cell-sm" data-screen="diary">
             <div class="nav-cell-emoji">📓</div>
-            <div class="nav-cell-name">Дневник</div>
+            <div class="nav-cell-name" data-i18n="diaryScreen">📓 Дневник</div>
           </div>
         </div>
 
@@ -160,8 +156,8 @@
         <section class="home-section">
           <div class="section-head">
             <span class="section-icon">✨</span>
-            <span class="section-label">Карта дня</span>
-            <span class="badge-free">БЕСПЛАТНО</span>
+            <span class="section-label" data-i18n="cardOfDay">Карта дня</span>
+            <span class="badge-free" data-i18n="free">БЕСПЛАТНО</span>
           </div>
           <div id="daily-zone" class="daily-zone">
             <div class="tap-card" id="tap-daily">
@@ -178,8 +174,8 @@
         <section class="home-section">
           <div class="section-head">
             <span class="section-icon">🕯️</span>
-            <span class="section-label">Заговоры на сегодня</span>
-            <button class="btn-link" id="btn-all-spells">Все →</button>
+            <span class="section-label" data-i18n="spellsToday">Заговоры на сегодня</span>
+            <button class="btn-link" id="btn-all-spells" data-i18n="allSpells">Все →</button>
           </div>
           <div id="spells-preview" class="spells-preview"></div>
         </section>
@@ -192,7 +188,7 @@
     <div id="screen-tarot" class="screen">
       <header class="top-bar">
         <button class="icon-btn back-btn" data-to="home">←</button>
-        <div class="top-bar-title">🃏 Таро</div>
+        <div class="top-bar-title" data-i18n="taroScreen">🃏 Таро</div>
         <div style="width:40px"></div>
       </header>
       <div class="tarot-scroll">
@@ -203,15 +199,15 @@
         <section class="home-section">
           <div class="section-head">
             <span class="section-icon">✨</span>
-            <span class="section-label">Карта дня</span>
-            <span class="badge-free">БЕСПЛАТНО</span>
+            <span class="section-label" data-i18n="cardOfDay">Карта дня</span>
+            <span class="badge-free" data-i18n="free">БЕСПЛАТНО</span>
           </div>
           <div id="daily-zone-tarot" class="daily-zone">
             <div class="tap-card" id="tap-daily-tarot">
               <div class="tap-card-glow"></div>
               <div class="tap-card-body">
                 <span class="tap-card-emoji">🌟</span>
-                <span class="tap-card-text">Нажмите, чтобы<br>открыть карту</span>
+                <span class="tap-card-text" data-i18n="tapCardText">Нажмите, чтобы открыть карту</span>
               </div>
             </div>
           </div>
@@ -221,15 +217,14 @@
         <section class="home-section">
           <div class="section-head">
             <span class="section-icon">🃏</span>
-            <span class="section-label">Три карты</span>
-            <span class="badge-premium" id="three-card-badge">👑 ПРЕМИУМ</span>
+            <span class="section-label" data-i18n="spreads">Расклады</span>
           </div>
           <div class="spread-btn" data-spread="three_card">
             <div class="spread-btn-left">
               <div class="spread-emojis">🃏🃏🃏</div>
               <div>
-                <div class="spread-name">Прошлое · Настоящее · Будущее</div>
-                <div class="spread-desc">Общий расклад на сейчас</div>
+                <div class="spread-name" data-i18n="threeCardSpread">Прошлое · Настоящее · Будущее</div>
+                <div class="spread-desc" data-i18n="threeCardDesc">Общий расклад на сейчас</div>
               </div>
             </div>
             <div class="spread-arrow" id="three-card-lock">🔒</div>
@@ -240,26 +235,26 @@
         <section class="home-section">
           <div class="section-head">
             <span class="section-icon">👑</span>
-            <span class="section-label">Премиум расклады</span>
+            <span class="section-label" data-i18n="premiumSpreads">Премиум расклады</span>
           </div>
           <div class="premium-grid">
             <div class="premium-card" data-spread="love">
               <div class="pcard-lock">🔒</div>
               <div class="pcard-emoji">❤️</div>
-              <div class="pcard-name">Любовь</div>
-              <div class="pcard-desc">4 карты</div>
+              <div class="pcard-name" data-i18n="loveName">Любовь</div>
+              <div class="pcard-desc" data-i18n="cards4">4 карты</div>
             </div>
             <div class="premium-card" data-spread="month">
               <div class="pcard-lock">🔒</div>
               <div class="pcard-emoji">📅</div>
-              <div class="pcard-name">Месяц</div>
-              <div class="pcard-desc">4 карты</div>
+              <div class="pcard-name" data-i18n="monthName">Месяц</div>
+              <div class="pcard-desc" data-i18n="cards4">4 карты</div>
             </div>
             <div class="premium-card" data-spread="year">
               <div class="pcard-lock">🔒</div>
               <div class="pcard-emoji">🌟</div>
-              <div class="pcard-name">Год</div>
-              <div class="pcard-desc">6 карт</div>
+              <div class="pcard-name" data-i18n="yearName">Год</div>
+              <div class="pcard-desc" data-i18n="cards6">6 карт</div>
             </div>
           </div>
         </section>
@@ -271,13 +266,13 @@
     <div id="question-modal" class="modal-overlay hidden">
       <div class="modal-card">
         <div class="modal-icon">🔮</div>
-        <div class="modal-title">Задай вопрос картам</div>
-        <div class="modal-sub">Что тебя волнует? Карты дадут ответ,<br>персональный именно для тебя.</div>
-        <textarea id="question-input" class="question-textarea" placeholder="Например: Стоит ли мне менять работу? Как развиваются наши отношения?..." maxlength="300" rows="3"></textarea>
-        <div class="modal-note">Можно пропустить — карты читают мысли ✨</div>
+        <div class="modal-title" data-i18n="questionTitle">Задай вопрос картам</div>
+        <div class="modal-sub" id="modal-sub">Что тебя волнует? Карты дадут ответ,<br>персональный именно для тебя.</div>
+        <textarea id="question-input" class="question-textarea" placeholder="Например: Стоит ли мне менять работу?..." maxlength="300" rows="3"></textarea>
+        <div class="modal-note" data-i18n="questionNote">Можно пропустить — карты читают мысли ✨</div>
         <div class="modal-btns">
-          <button class="btn-secondary" id="btn-skip-question">Пропустить</button>
-          <button class="btn-primary" id="btn-ask-cards">Спросить карты 🃏</button>
+          <button class="btn-secondary" id="btn-skip-question" data-i18n="skipQuestion">Пропустить</button>
+          <button class="btn-primary" id="btn-ask-cards" data-i18n="askQuestion">Спросить карты 🃏</button>
         </div>
       </div>
     </div>
@@ -330,7 +325,7 @@
     <div id="screen-spells" class="screen">
       <header class="top-bar">
         <button class="icon-btn back-btn" data-to="home">←</button>
-        <div class="top-bar-title">🕯️ Заговоры</div>
+        <div class="top-bar-title" data-i18n="spellsScreen">🕯️ Заговоры</div>
         <div style="width:40px"></div>
       </header>
       <div class="spells-scroll">
@@ -338,7 +333,7 @@
         <div class="spell-moon-banner" id="spell-moon-banner"></div>
 
         <!-- Категории -->
-        <div class="spell-cats-title">Выберите категорию</div>
+        <div class="spell-cats-title" data-i18n="spellSelectCat">Выберите категорию</div>
         <div class="spell-cats" id="spell-cats"></div>
 
         <div style="height:32px"></div>
@@ -369,7 +364,7 @@
     <div id="screen-moon" class="screen">
       <header class="top-bar">
         <button class="icon-btn back-btn" data-to="home">←</button>
-        <div class="top-bar-title">🌙 Лунный календарь</div>
+        <div class="top-bar-title" data-i18n="moonScreen">🌙 Лунный календарь</div>
         <div style="width:40px"></div>
       </header>
       <div class="moon-scroll" id="moon-content"></div>
@@ -379,18 +374,18 @@
     <div id="screen-support" class="screen">
       <header class="top-bar">
         <button class="icon-btn back-btn" data-to="home">←</button>
-        <div class="top-bar-title">💬 Поддержка</div>
+        <div class="top-bar-title" data-i18n="supportScreen">💬 Поддержка</div>
         <div style="width:40px"></div>
       </header>
       <div class="support-wrap">
         <div class="support-messages" id="support-messages">
           <div class="support-intro">
             <div class="support-intro-icon">🔮</div>
-            <div class="support-intro-text">Задайте любой вопрос — мы ответим в ближайшее время</div>
+            <div class="support-intro-text" data-i18n="supportIntro">Задайте любой вопрос — мы ответим в ближайшее время</div>
           </div>
         </div>
         <div class="support-input-bar">
-          <textarea id="support-input" class="support-textarea" placeholder="Напишите сообщение..." rows="1" maxlength="1000"></textarea>
+          <textarea id="support-input" class="support-textarea" placeholder="Напишите сообщение..." data-i18n-ph="supportPlaceholder" rows="1" maxlength="1000"></textarea>
           <button class="support-send-btn" id="support-send">→</button>
         </div>
       </div>
@@ -400,7 +395,7 @@
     <div id="screen-history" class="screen">
       <header class="top-bar">
         <button class="icon-btn back-btn" data-to="home">←</button>
-        <div class="top-bar-title">Мои расклады</div>
+        <div class="top-bar-title" data-i18n="historyScreen">Мои расклады</div>
         <div style="width:40px"></div>
       </header>
       <div class="history-scroll" id="history-content"></div>
@@ -410,14 +405,14 @@
     <div id="screen-dreams" class="screen">
       <header class="top-bar">
         <button class="icon-btn back-btn" data-to="home">←</button>
-        <div class="top-bar-title">🌙 Сонник</div>
+        <div class="top-bar-title" data-i18n="dreamsScreen">🌙 Сонник</div>
         <div style="width:40px"></div>
       </header>
       <div class="dreams-scroll">
         <div class="dreams-hero">
           <div class="dreams-moon-icon">🌙</div>
-          <h2 class="dreams-title">Тлумачення снів</h2>
-          <p class="dreams-sub">Дізнайся що означає твій сон<br>через призму карт Таро</p>
+          <h2 class="dreams-title" data-i18n="dreamsTitle">Тлумачення снів</h2>
+          <p class="dreams-sub" id="dreams-sub">Дізнайся що означає твій сон<br>через призму карт Таро</p>
         </div>
 
         <!-- Пошук символу -->
@@ -426,8 +421,9 @@
             <span class="dreams-search-icon">🔍</span>
             <input id="dream-input" class="dreams-search-input" type="text"
               placeholder="Введи символ: вода, змея, деньги..."
+              data-i18n-ph="dreamSearch"
               autocomplete="off" maxlength="40">
-            <button class="dreams-search-btn" id="btn-dream-search">Узнать</button>
+            <button class="dreams-search-btn" id="btn-dream-search" data-i18n="dreamBtn">Узнать</button>
           </div>
         </div>
 
@@ -435,11 +431,11 @@
         <div id="dream-result" class="dream-result hidden"></div>
 
         <!-- Популярні символи -->
-        <div class="dreams-section-label">Популярные символы</div>
+        <div class="dreams-section-label" data-i18n="dreamPopular">Популярные символы</div>
         <div class="dreams-chips" id="dreams-chips"></div>
 
         <!-- Список всіх символів -->
-        <div class="dreams-section-label">Все символы</div>
+        <div class="dreams-section-label" data-i18n="dreamAll">Все символы</div>
         <div class="dreams-list" id="dreams-list"></div>
 
         <div style="height:32px"></div>
@@ -450,14 +446,14 @@
     <div id="screen-premium" class="screen">
       <header class="top-bar">
         <button class="icon-btn back-btn" data-to="home">←</button>
-        <div class="top-bar-title">👑 Премиум</div>
+        <div class="top-bar-title" data-i18n="premiumScreen">👑 Премиум</div>
         <div style="width:40px"></div>
       </header>
       <div class="premium-scroll">
         <div class="premium-hero">
           <div class="premium-crown">👑</div>
-          <h2 class="premium-title">Магический Премиум</h2>
-          <p class="premium-sub">Полная сила магии — персонально<br>по вашему знаку и нумерологии</p>
+          <h2 class="premium-title" data-i18n="premiumTitle">Магический Премиум</h2>
+          <p class="premium-sub" id="premium-hero-sub">Полная сила магии — персонально<br>по вашему знаку и нумерологии</p>
         </div>
 
         <!-- Бесплатный премиум через реферал — ГЛАВНЫЙ БЛОК -->
@@ -465,61 +461,61 @@
           <div class="fpb-header">
             <span class="fpb-gift">🎁</span>
             <div>
-              <div class="fpb-title">Получи Премиум бесплатно!</div>
-              <div class="fpb-sub">Пригласи подругу — получи 1 день Премиума</div>
+              <div class="fpb-title" data-i18n="fpbTitle">Получи Премиум бесплатно!</div>
+              <div class="fpb-sub" data-i18n="fpbSub">Пригласи подругу — получи 1 день Премиума</div>
             </div>
           </div>
           <div class="fpb-counter" id="fpb-counter">
-            <div class="fpb-step" id="fpb-step1">👤 1 подруга = 1 день</div>
-            <div class="fpb-step" id="fpb-step3">👥 3 подруги = 3 дня</div>
-            <div class="fpb-step" id="fpb-step7">🌟 7 подруг = неделя!</div>
+            <div class="fpb-step" id="fpb-step1" data-i18n="fpb1">👤 1 подруга = 1 день</div>
+            <div class="fpb-step" id="fpb-step3" data-i18n="fpb3">👥 3 подруги = 3 дня</div>
+            <div class="fpb-step" id="fpb-step7" data-i18n="fpb7">🌟 7 подруг = неделя!</div>
           </div>
           <div class="fpb-invited" id="fpb-invited"></div>
-          <button class="btn-primary btn-free-prem" id="btn-share-ref">
+          <button class="btn-primary btn-free-prem" id="btn-share-ref" data-i18n="inviteBtn">
             📲 Пригласить подругу
           </button>
         </div>
 
-        <div class="premium-divider">— или купить —</div>
+        <div class="premium-divider" data-i18n="premiumDivider">— или купить —</div>
 
         <div class="premium-features">
-          <div class="pf-item"><span class="pf-emoji">🃏</span><div><b>Все расклады Таро</b><div class="pf-desc">Любовь · Месяц · Год — 22 карты судьбы</div></div></div>
-          <div class="pf-item"><span class="pf-emoji">🕯️</span><div><b>Все заговоры и ритуалы</b><div class="pf-desc">Привороты · Деньги · Красота · Защита</div></div></div>
-          <div class="pf-item"><span class="pf-emoji">🌙</span><div><b>Лунный магический дневник</b><div class="pf-desc">Ритуалы на каждую фазу луны</div></div></div>
-          <div class="pf-item"><span class="pf-emoji">🔮</span><div><b>Алгоритм судьбы</b><div class="pf-desc">Персонально по дате рождения</div></div></div>
-          <div class="pf-item"><span class="pf-emoji">❤️</span><div><b>Привороты силы</b><div class="pf-desc">Любовная магия · Верность · Возврат</div></div></div>
-          <div class="pf-item"><span class="pf-emoji">💰</span><div><b>Денежная магия</b><div class="pf-desc">Мощные ритуалы на богатство</div></div></div>
+          <div class="pf-item"><span class="pf-emoji">🃏</span><div data-i18n-html="premiumF1"><b>Все расклады Таро</b><div class="pf-desc">Любовь · Месяц · Год — 22 карты судьбы</div></div></div>
+          <div class="pf-item"><span class="pf-emoji">🕯️</span><div data-i18n-html="premiumF2"><b>Все заговоры и ритуалы</b><div class="pf-desc">Привороты · Деньги · Красота · Защита</div></div></div>
+          <div class="pf-item"><span class="pf-emoji">🌙</span><div data-i18n-html="premiumF3"><b>Лунный магический дневник</b><div class="pf-desc">Ритуалы на каждую фазу луны</div></div></div>
+          <div class="pf-item"><span class="pf-emoji">🔮</span><div data-i18n-html="premiumF4"><b>Алгоритм судьбы</b><div class="pf-desc">Персонально по дате рождения</div></div></div>
+          <div class="pf-item"><span class="pf-emoji">❤️</span><div data-i18n-html="premiumF5"><b>Привороты силы</b><div class="pf-desc">Любовная магия · Верность · Возврат</div></div></div>
+          <div class="pf-item"><span class="pf-emoji">💰</span><div data-i18n-html="premiumF6"><b>Денежная магия</b><div class="pf-desc">Мощные ритуалы на богатство</div></div></div>
         </div>
 
         <!-- Плани -->
         <div class="plans-wrap">
           <div class="plan-card" data-plan="premium_30">
             <div class="plan-emoji">🌙</div>
-            <div class="plan-label">1 месяц</div>
+            <div class="plan-label" data-i18n="planMonth">1 месяц</div>
             <div class="plan-price">⭐ 299</div>
             <div class="plan-per">≈ 10 ⭐/день</div>
           </div>
           <div class="plan-card plan-popular" data-plan="premium_90">
-            <div class="plan-badge">ВЫГОДНО</div>
+            <div class="plan-badge" data-i18n="planPopular">ВЫГОДНО</div>
             <div class="plan-emoji">🌟</div>
-            <div class="plan-label">3 месяца</div>
+            <div class="plan-label" data-i18n="plan3mo">3 месяца</div>
             <div class="plan-price">⭐ 699</div>
             <div class="plan-per">≈ 8 ⭐/день</div>
           </div>
           <div class="plan-card" data-plan="premium_365">
             <div class="plan-emoji">👑</div>
-            <div class="plan-label">1 год</div>
+            <div class="plan-label" data-i18n="planYear">1 год</div>
             <div class="plan-price">⭐ 1990</div>
             <div class="plan-per">≈ 5 ⭐/день</div>
           </div>
         </div>
 
         <button class="btn-primary btn-gold" id="btn-buy-premium">
-          <span id="btn-buy-label">Выбрать план 👑</span>
+          <span id="btn-buy-label" data-i18n="buyBtn">Выбрать план 👑</span>
         </button>
-        <p class="premium-note">Оплата через Telegram Stars · Безопасно</p>
+        <p class="premium-note" data-i18n="payNote">Оплата через Telegram Stars · Безопасно</p>
 
-        <p class="premium-note-bottom">Оплачивая вы соглашаетесь с условиями сервиса</p>
+        <p class="premium-note-bottom" data-i18n="payNoteBottom">Оплачивая вы соглашаетесь с условиями сервиса</p>
 
         <div style="height:32px"></div>
       </div>
@@ -530,13 +526,13 @@
       <div class="onboarding-wrap">
         <div class="onb-hero">
           <div class="onb-orb">🔮</div>
-          <h2 class="onb-title">Звёзды рассчитали<br>ваш расклад, <span id="onb-name">...</span></h2>
-          <p class="onb-sub">Это ваш уникальный магический профиль</p>
+          <h2 class="onb-title" id="onb-title">Звёзды рассчитали<br>ваш расклад, <span id="onb-name">...</span></h2>
+          <p class="onb-sub" data-i18n="onbSub">Это ваш уникальный магический профиль</p>
         </div>
         <div class="onb-grid" id="onb-grid"></div>
         <div class="onb-lp-block" id="onb-lp-block"></div>
         <button class="btn-primary onb-btn" id="btn-onboarding-done">
-          <span>Открыть мой кабинет</span>
+          <span data-i18n="onbBtn">Открыть мой кабинет</span>
           <span class="btn-icon-r">🔮</span>
         </button>
       </div>
@@ -546,7 +542,7 @@
     <div id="screen-numerology" class="screen">
       <header class="top-bar">
         <button class="icon-btn back-btn" data-to="home">←</button>
-        <div class="top-bar-title">🔢 Нумерология</div>
+        <div class="top-bar-title" data-i18n="numScreen">🔢 Нумерология</div>
         <div style="width:40px"></div>
       </header>
       <div class="num-scroll" id="num-content"></div>
@@ -556,7 +552,7 @@
     <div id="screen-horoscope" class="screen">
       <header class="top-bar">
         <button class="icon-btn back-btn" data-to="home">←</button>
-        <div class="top-bar-title">🌟 Гороскоп недели</div>
+        <div class="top-bar-title" data-i18n="horoScreen">🌟 Гороскоп недели</div>
         <div style="width:40px"></div>
       </header>
       <div class="horo-scroll" id="horo-content"></div>
@@ -566,22 +562,22 @@
     <div id="screen-compat" class="screen">
       <header class="top-bar">
         <button class="icon-btn back-btn" data-to="home">←</button>
-        <div class="top-bar-title">💞 Совместимость</div>
+        <div class="top-bar-title" data-i18n="compatScreen">💞 Совместимость</div>
         <div style="width:40px"></div>
       </header>
       <div class="compat-scroll" id="compat-content">
         <div class="compat-hero">
           <div class="compat-hero-icon">💞</div>
-          <h2 class="compat-hero-title">Совместимость</h2>
-          <p class="compat-hero-sub">Введи дату рождения партнёра — узнайте насколько вы подходите друг другу</p>
+          <h2 class="compat-hero-title" data-i18n="compatHeroTitle">Совместимость</h2>
+          <p class="compat-hero-sub" data-i18n="compatHeroSub">Введи дату рождения партнёра — узнайте насколько вы подходите друг другу</p>
         </div>
         <div class="compat-form">
           <div class="field-wrap">
-            <label class="field-label">Дата рождения партнёра</label>
+            <label class="field-label" data-i18n="compatPartnerLabel">Дата рождения партнёра</label>
             <input id="compat-birth" class="field-input" type="date" max="2010-01-01" min="1920-01-01">
           </div>
           <button class="btn-primary" id="btn-compat-calc">
-            <span>Рассчитать совместимость</span>
+            <span data-i18n="compatBtn">Рассчитать совместимость</span>
             <span class="btn-icon-r">💞</span>
           </button>
         </div>
@@ -593,7 +589,7 @@
     <div id="screen-diary" class="screen">
       <header class="top-bar">
         <button class="icon-btn back-btn" data-to="home">←</button>
-        <div class="top-bar-title">📓 Лунный дневник</div>
+        <div class="top-bar-title" data-i18n="diaryScreen">📓 Лунный дневник</div>
         <div style="width:40px"></div>
       </header>
       <div class="diary-scroll" id="diary-content"></div>
@@ -603,7 +599,7 @@
     <div id="screen-profile" class="screen">
       <header class="top-bar">
         <button class="icon-btn back-btn" data-to="home">←</button>
-        <div class="top-bar-title">👤 Профиль</div>
+        <div class="top-bar-title" data-i18n="profileScreen">👤 Профиль</div>
         <div style="width:40px"></div>
       </header>
       <div class="profile-scroll" id="profile-content"></div>
@@ -613,7 +609,7 @@
     <div id="screen-terms" class="screen">
       <header class="top-bar">
         <button class="icon-btn back-btn" data-to="home">←</button>
-        <div class="top-bar-title">📄 Условия и конфиденциальность</div>
+        <div class="top-bar-title" data-i18n="termsScreen">📄 Условия и конфиденциальность</div>
         <div style="width:40px"></div>
       </header>
       <div class="terms-scroll">

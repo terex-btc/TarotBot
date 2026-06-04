@@ -1,6 +1,6 @@
 // ══ Магический кабинет — App ══════════════════════════════════════════════
 'use strict';
-import { t } from './i18n.js';
+import { t, T } from './i18n.js';
 
 const tg = window.Telegram?.WebApp;
 if (tg) {
@@ -61,6 +61,50 @@ async function pollUntil(fetchFn, predicate, { interval = 900, maxMs = 9000 } = 
     await delay(interval);
   }
   return null; // таймаут — повертаємо null
+}
+
+// ── i18n shorthand ─────────────────────────────────────────────────────────
+const L = key => t(key, state.lang);
+
+// ── DOM локалізація — оновлює всі [data-i18n] елементи ────────────────────
+function localizeDOM() {
+  const lang = state.lang;
+  // Текстовий вміст
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const val = t(el.dataset.i18n, lang);
+    if (val) el.textContent = val;
+  });
+  // innerHTML (для елементів з HTML-розміткою)
+  document.querySelectorAll('[data-i18n-html]').forEach(el => {
+    const val = t(el.dataset.i18nHtml, lang);
+    if (val) el.innerHTML = val;
+  });
+  // Placeholder
+  document.querySelectorAll('[data-i18n-ph]').forEach(el => {
+    const val = t(el.dataset.i18nPh, lang);
+    if (val) el.placeholder = val;
+  });
+
+  // HTML lang attribute
+  document.getElementById('html-root')?.setAttribute('lang', lang === 'ua' ? 'uk' : 'ru');
+
+  // Елементи з <br> і <span> — оновлюємо окремо
+  if (lang === 'ua') {
+    const splashTitle = document.getElementById('splash-title');
+    if (splashTitle) splashTitle.innerHTML = 'Магічний<br><span>Кабінет</span>';
+    const splashSub = document.getElementById('splash-sub');
+    if (splashSub) splashSub.innerHTML = 'Карти Таро · Заговори · Місячна магія<br>Персонально за датою народження';
+    const introTitle = document.getElementById('intro-title');
+    if (introTitle) introTitle.innerHTML = 'Налаштування<br><span>кабінету</span>';
+    const introSub = document.getElementById('intro-sub');
+    if (introSub) introSub.innerHTML = 'Введи дані — зірки розрахують<br>твій персональний розклад';
+    const premHeroSub = document.getElementById('premium-hero-sub');
+    if (premHeroSub) premHeroSub.innerHTML = 'Повна сила магії — персонально<br>за вашим знаком та нумерологією';
+    const modalSub = document.getElementById('modal-sub');
+    if (modalSub) modalSub.innerHTML = 'Що тебе хвилює? Карти дадуть відповідь,<br>персональну саме для тебе.';
+    const dreamsSub = document.getElementById('dreams-sub');
+    if (dreamsSub) dreamsSub.innerHTML = 'Дізнайся що означає твій сон<br>через призму карт Таро';
+  }
 }
 
 // ── API ────────────────────────────────────────────────────────────────────
@@ -206,11 +250,11 @@ function initIntroScreen() {
         }
       } else {
         resetBtn();
-        toast(data.error || 'Ошибка. Попробуйте ещё раз.');
+        toast(data.error || L('connError'));
       }
     } catch (err) {
       resetBtn();
-      toast('Нет соединения. Попробуйте позже.');
+      toast(L('noConnection'));
     }
   };
 }
@@ -219,7 +263,7 @@ function initIntroScreen() {
 async function renderHome() {
   const user = state.user;
   if (!user) return;
-  document.getElementById('top-name').textContent = user.firstName || 'Провидец';
+  document.getElementById('top-name').textContent = user.firstName || L('defaultName');
   const z = user.astro?.zodiac;
   document.getElementById('top-astro').textContent = z ? `${z.emoji} ${z.name} · Путь ${user.astro.lifePath}` : '';
   renderAstroStrip(user);
@@ -273,7 +317,7 @@ function updatePremiumBadge(ps) {
   if (ps.isPremium) {
     badge.classList.remove('hidden');
     badge.textContent = ps.daysLeft !== null ? `👑 ${ps.daysLeft}д` : '👑';
-    badge.title = ps.daysLeft !== null ? `Премиум — осталось ${ps.daysLeft} дней` : 'Премиум активен';
+    badge.title = ps.daysLeft !== null ? `${L('premiumBadgeDaysTitle')} ${ps.daysLeft} ${L('premiumBadgeDaysSuffix')}` : L('premiumBadgeTitle');
   } else {
     badge.classList.add('hidden');
   }
@@ -282,13 +326,13 @@ function updatePremiumBadge(ps) {
 function updateThreeCardLock(isPremium) {
   const badge = document.getElementById('three-card-badge');
   const lock  = document.getElementById('three-card-lock');
-  if (badge) badge.textContent = isPremium ? '✓ ОТКРЫТО' : '👑 ПРЕМИУМ';
+  if (badge) badge.textContent = isPremium ? L('threeCardOpen') : L('threeCardPremium');
   if (badge) badge.className = isPremium ? 'badge-free' : 'badge-premium';
   if (lock)  lock.textContent = isPremium ? '→' : '🔒';
 }
 
 function getMoonTip(energy) {
-  const tips = {
+  const tipsRu = {
     new:     'новых начал и желаний 🌑',
     waxing:  'роста, привлечения и успеха 🌒',
     first:   'активных действий 🌓',
@@ -298,7 +342,18 @@ function getMoonTip(energy) {
     last:    'завершения и отпускания 🌗',
     dark:    'защиты и тайных дел 🌘',
   };
-  return 'Сегодня особый день для ' + (tips[energy] || 'магии');
+  const tipsUa = {
+    new:     'нових починань і бажань 🌑',
+    waxing:  'зростання, притягнення і успіху 🌒',
+    first:   'активних дій 🌓',
+    gibbous: 'завершення справ і удачі 🌔',
+    full:    'сили, краси і магії 🌕',
+    waning:  'очищення і позбавлення 🌖',
+    last:    'завершення і відпускання 🌗',
+    dark:    'захисту і таємних справ 🌘',
+  };
+  const tips = state.lang === 'ua' ? tipsUa : tipsRu;
+  return `${L('moonTipPrefix')} ` + (tips[energy] || L('moonTipMagic'));
 }
 
 function renderAstroStrip(user) {
@@ -306,12 +361,12 @@ function renderAstroStrip(user) {
   if (!user.astro) { strip.innerHTML = ''; return; }
   const { zodiac, lifePath, personalYear, moonPhase } = user.astro;
   strip.innerHTML = [
-    { icon: zodiac.emoji, label: 'Знак', val: zodiac.name },
-    { icon: '🔢', label: 'Путь', val: lifePath },
-    { icon: '🌀', label: 'Год', val: personalYear },
-    { icon: moonPhase.emoji, label: 'Луна', val: moonPhase.name },
-    { icon: '🌍', label: 'Стихия', val: zodiac.element },
-    { icon: '🪐', label: 'Планета', val: zodiac.planet },
+    { icon: zodiac.emoji, label: L('zodiacSign'), val: zodiac.name },
+    { icon: '🔢', label: L('zodiacPath'), val: lifePath },
+    { icon: '🌀', label: L('zodiacYear'), val: personalYear },
+    { icon: moonPhase.emoji, label: L('zodiacMoon'), val: moonPhase.name },
+    { icon: '🌍', label: L('zodiacElement'), val: zodiac.element },
+    { icon: '🪐', label: L('zodiacPlanet'), val: zodiac.planet },
   ].map(p => `
     <div class="astro-pill">
       <span class="astro-pill-icon">${p.icon}</span>
@@ -330,8 +385,8 @@ function renderSpellsPreview(spells) {
     wrap.innerHTML = `
       <div class="spells-locked-banner" id="spells-locked-banner">
         <div class="slb-icon">🔒</div>
-        <div class="slb-text"><b>Заговоры — Премиум</b><br>55 ритуалов, привороты, защита</div>
-        <button class="btn-primary btn-sm slb-btn" id="btn-unlock-spells">Открыть 👑</button>
+        <div class="slb-text"><b>${L('spellsTeaserTitle')}</b><br>${L('spellsTeaserSub')}</div>
+        <button class="btn-primary btn-sm slb-btn" id="btn-unlock-spells">${L('spellsTeaserBtn')}</button>
       </div>
     `;
     document.getElementById('btn-unlock-spells')?.addEventListener('click', async () => {
@@ -346,7 +401,7 @@ function renderSpellsPreview(spells) {
       <div class="spc-emoji">${s.emoji}</div>
       <div class="spc-title">${s.title}</div>
       <div class="spc-sub">${s.subtitle}</div>
-      <div class="spc-moon">${s.moon[0] !== 'any' ? '🌙 Сегодня' : ''}</div>
+      <div class="spc-moon">${s.moon[0] !== 'any' ? L('spellMoonToday') : ''}</div>
     </div>
   `).join('');
   wrap.querySelectorAll('.spell-preview-card').forEach(el => {
@@ -376,10 +431,10 @@ async function loadDailyCard(zoneId, tapId) {
   if (!zone || !tap) return;
   tap.onclick = async () => {
     tap.onclick = null;
-    zone.innerHTML = '<div style="text-align:center;padding:50px 0;color:var(--text2);font-size:14px;">🔮 Карты шепчут...</div>';
+    zone.innerHTML = `<div style="text-align:center;padding:50px 0;color:var(--text2);font-size:14px;">${L('cardLoading')}</div>`;
     const data = await api('POST', `/readings/${state.userId}`, { spreadType: 'daily', lang: state.lang });
     if (data.ok && data.reading) renderDailyRevealed(zone, data.reading);
-    else zone.innerHTML = '<div style="text-align:center;padding:30px;color:var(--text2);">Ошибка 😢</div>';
+    else zone.innerHTML = `<div style="text-align:center;padding:30px;color:var(--text2);">${L('cardError')}</div>`;
   };
 }
 
@@ -401,10 +456,10 @@ function renderDailyRevealed(zone, reading) {
     ${personalLabel}
     ${cardImg(card, 'daily-card-img')}
     <div class="dr-name">${name}</div>
-    ${card.isReversed ? '<div class="dr-reversed"><span class="reversed-tag">🔄 Перевёрнута</span></div>' : ''}
+    ${card.isReversed ? `<div class="dr-reversed"><span class="reversed-tag">${L('reversedTag')}</span></div>` : ''}
     <div class="dr-meaning">${meaning}</div>
     <div class="dr-actions">
-      <div class="dr-hint">Нажмите для подробностей →</div>
+      <div class="dr-hint">${L('cardTapHint')}</div>
       <button class="dr-share-btn" id="dr-share-${zone.id}">📲</button>
     </div>
   </div>`;
@@ -451,7 +506,7 @@ async function startReading(spreadType, question) {
   showScreen('reading');
   state.flippedCount = 0;
   document.getElementById('reading-meta').innerHTML = '';
-  document.getElementById('reading-interpretation').textContent = '🔮 Тасуем карты...';
+  document.getElementById('reading-interpretation').textContent = L('shuffling');
   document.getElementById('reading-cards-wrap').innerHTML = '';
   document.getElementById('reading-summary-btn').classList.add('hidden');
   document.getElementById('ai-interpretation-block')?.classList.add('hidden');
@@ -463,7 +518,7 @@ async function startReading(spreadType, question) {
   }
 
   const data = await api('POST', `/readings/${state.userId}`, { spreadType, lang: state.lang });
-  if (!data.ok) { document.getElementById('reading-interpretation').textContent = 'Ошибка.'; return; }
+  if (!data.ok) { document.getElementById('reading-interpretation').textContent = L('readingError'); return; }
   state.currentReading = data.reading;
   renderReading(data.reading);
 }
@@ -494,7 +549,7 @@ function buildFlipCard(card, position, index) {
   return `<div class="flip-card-outer"><div class="flip-card" data-index="${index}" style="min-height:108px;">
     <div class="flip-front"><div class="card-back-face">
       <div class="cbf-pos">${ru(position)}</div><div class="cbf-star">✦</div>
-      <div class="cbf-tap">Коснитесь, чтобы открыть</div>
+      <div class="cbf-tap">${L('flipHint')}</div>
     </div></div>
     <div class="flip-back"></div>
   </div></div>`;
@@ -539,11 +594,11 @@ function openCardDetail(card) {
       ${card.image ? `<img src="${card.image}" alt="${card.nameRu||card.name}" class="card-img cd-card-img" ${card.isReversed?'style="transform:rotate(180deg)"':''}>` : `<span class="cd-emoji">${card.emoji}</span>`}
       <div class="cd-name">${card.name}</div>
       ${card.nameUa ? `<div class="cd-name-sub">${card.nameUa}</div>` : ''}
-      ${card.isReversed ? '<span class="reversed-tag">🔄 Перевёрнутая</span>' : ''}
+      ${card.isReversed ? `<span class="reversed-tag">${L('reversedTagFull')}</span>` : ''}
     </div>
-    <div class="cd-block"><div class="cd-block-title t-desc">📖 Описание</div><p>${ru(card.description)}</p></div>
-    <div class="cd-block"><div class="cd-block-title t-upright">⬆️ Прямое положение</div><p>${ru(card.upright)}</p></div>
-    <div class="cd-block"><div class="cd-block-title t-rev">🔄 Перевёрнутое положение</div><p>${ru(card.reversed)}</p></div>
+    <div class="cd-block"><div class="cd-block-title t-desc">${L('cardDescLabel')}</div><p>${ru(card.description)}</p></div>
+    <div class="cd-block"><div class="cd-block-title t-upright">${L('cardUprightLabel')}</div><p>${ru(card.upright)}</p></div>
+    <div class="cd-block"><div class="cd-block-title t-rev">${L('cardRevLabel')}</div><p>${ru(card.reversed)}</p></div>
   `;
   showScreen('card');
 }
@@ -556,7 +611,7 @@ async function openSpellsScreen() {
   if (!isPremium) {
     showScreen('premium');
     await loadPremiumScreen();
-    toast('🔒 Заговоры доступны только в Премиум');
+    toast(L('spellsLockedToast'));
     return;
   }
   showScreen('spells');
@@ -588,7 +643,7 @@ async function openSpellsScreen() {
 }
 
 function getMoonMagicDesc(energy) {
-  const desc = {
+  const descRu = {
     new:     'Время загадывать желания и начинать новые ритуалы. Новолуние — самое мощное время для притяжения.',
     waxing:  'Растущая луна усиливает привороты, заговоры на деньги и красоту. Всё, что вы начнёте — будет расти.',
     first:   'Время активных действий и решений. Ритуалы на успех и карьеру сейчас особенно сильны.',
@@ -598,7 +653,18 @@ function getMoonMagicDesc(energy) {
     last:    'Время завершения и отпускания. Ритуалы для освобождения от плохих связей.',
     dark:    'Тёмная луна — время тайных дел, защиты и работы с подсознанием.',
   };
-  return desc[energy] || 'Время магии и ритуалов.';
+  const descUa = {
+    new:     'Час загадувати бажання і починати нові ритуали. Новолуння — найпотужніший час для притягнення.',
+    waxing:  'Місяць, що росте, посилює привороти, заговори на гроші і красу. Все, що почнете — буде рости.',
+    first:   'Час активних дій і рішень. Ритуали на успіх і карʼєру зараз особливо сильні.',
+    gibbous: 'Місяць майже повний. Заговори досягають піку сили. Ідеально для любовної магії.',
+    full:    'Повнолуння — максимальна сила. Всі заговори працюють на повну потужність. Магічний час!',
+    waning:  'Спадний місяць — час очищення, позбавлення від негативу і зняття псування.',
+    last:    'Час завершення і відпускання. Ритуали для звільнення від поганих звʼязків.',
+    dark:    'Темний місяць — час таємних справ, захисту і роботи з підсвідомістю.',
+  };
+  const desc = state.lang === 'ua' ? descUa : descRu;
+  return desc[energy] || (state.lang === 'ua' ? 'Час магії і ритуалів.' : 'Время магии и ритуалов.');
 }
 
 async function openSpellCategory(categoryId, categoryName) {
@@ -645,12 +711,12 @@ async function openSpellById(spellId) {
       showSpellPaywall(spellId);
       return;
     }
-    toast('Заговор не найден'); return;
+    toast(L('spellNotFound')); return;
   }
   // Якщо був автоматично списаний кредит — показуємо toast
   if (data.usedCredit) {
     state.spellCredits = data.creditsLeft ?? Math.max(0, (state.spellCredits || 0) - 1);
-    toast(`🕯️ Использован 1 кредит. Осталось: ${state.spellCredits}`);
+    toast(`${L('spellCreditUsedMsg')} ${state.spellCredits}`);
     tg?.HapticFeedback?.impactOccurred?.('light');
   }
   openSpellDetail(data.spell, false);
@@ -659,51 +725,51 @@ async function openSpellById(spellId) {
 function showSpellPaywall(spellId) {
   const credits = state.spellCredits || 0;
   const content = document.getElementById('spell-detail-content');
-  document.getElementById('spell-detail-title').textContent = '🔒 Заговор закрыт';
+  document.getElementById('spell-detail-title').textContent = L('spellClosed');
 
   // Якщо є кредити — пропонуємо використати
   const creditsBlock = credits > 0 ? `
     <div class="spw-option spw-credits" id="spw-use-credit">
       <div class="spwo-emoji">🕯️</div>
       <div class="spwo-info">
-        <div class="spwo-title">Использовать кредит</div>
-        <div class="spwo-sub">У вас ${credits} кредит${credits === 1 ? '' : credits < 5 ? 'а' : 'ов'} — открыть бесплатно</div>
+        <div class="spwo-title">${L('spellUseCreditBtn')}</div>
+        <div class="spwo-sub">У вас ${credits} ${L('spellUseCreditSub')}</div>
       </div>
-      <div class="spwo-price" style="color:var(--gold)">✨ ЕСТЬ</div>
+      <div class="spwo-price" style="color:var(--gold)">✨</div>
     </div>
   ` : '';
 
   content.innerHTML = `
     <div class="spell-paywall">
       <div class="spw-icon">🕯️</div>
-      <div class="spw-title">Этот заговор доступен<br>в Премиум</div>
-      <div class="spw-sub">${credits > 0 ? `У вас ${credits} кредита — можно открыть сейчас` : 'Выберите как открыть:'}</div>
+      <div class="spw-title">${L('spellLockedTitle').replace('\n','<br>')}</div>
+      <div class="spw-sub">${credits > 0 ? `У вас ${credits} ${L('spellHasCreditsNow')}` : L('spellChooseHow')}</div>
       <div class="spw-options">
         ${creditsBlock}
         <div class="spw-option spw-single" id="spw-buy-single" data-spell-id="${spellId}">
           <div class="spwo-emoji">🕯️</div>
           <div class="spwo-info">
-            <div class="spwo-title">Один заговор</div>
-            <div class="spwo-sub">Купить только этот</div>
+            <div class="spwo-title">${L('spellBuyOne')}</div>
+            <div class="spwo-sub">${L('spellBuyOneSub')}</div>
           </div>
           <div class="spwo-price">⭐ 30</div>
         </div>
         <div class="spw-option spw-popular" id="spw-buy-pack">
-          <div class="spwo-badge">ВЫГОДНО</div>
+          <div class="spwo-badge">${L('spellPackBadge')}</div>
           <div class="spwo-emoji">✨</div>
           <div class="spwo-info">
-            <div class="spwo-title">Пак 5 заговоров</div>
-            <div class="spwo-sub">Любые 5 на выбор</div>
+            <div class="spwo-title">${L('spellBuyPack')}</div>
+            <div class="spwo-sub">${L('spellBuyPackSub')}</div>
           </div>
           <div class="spwo-price">⭐ 99</div>
         </div>
         <div class="spw-option" id="spw-premium">
           <div class="spwo-emoji">👑</div>
           <div class="spwo-info">
-            <div class="spwo-title">Премиум</div>
-            <div class="spwo-sub">Все 55 заговоров</div>
+            <div class="spwo-title">${L('spellPremium')}</div>
+            <div class="spwo-sub">${L('spellPremiumSub')}</div>
           </div>
-          <div class="spwo-price">от ⭐ 299</div>
+          <div class="spwo-price">від ⭐ 299</div>
         </div>
       </div>
     </div>
@@ -739,7 +805,7 @@ async function buySpell(purchaseId, spellId) {
     tg?.openInvoice?.(data.link, async (status) => {
       if (status === 'paid') {
         tg?.HapticFeedback?.notificationOccurred?.('success');
-        toast('✨ Оплата прошла! Открываем...');
+        toast(L('paymentSuccess'));
 
         if (purchaseId === 'spell_single' && spellId) {
           // Чекаємо поки з'явиться в spell_purchases (перевіряємо через /spells/:id)
@@ -748,10 +814,10 @@ async function buySpell(purchaseId, spellId) {
             d => d.ok && !d.error
           );
           if (result) {
-            toast('🕯️ Заговор открыт навсегда!');
+            toast(L('spellOpenForever'));
             openSpellDetail(result.spell, false);
           } else {
-            toast('✅ Оплата принята. Заговор откроется через минуту.');
+            toast(L('spellOpenSoon'));
           }
 
         } else if (purchaseId === 'spell_pack5') {
@@ -763,19 +829,19 @@ async function buySpell(purchaseId, spellId) {
           );
           if (ps) {
             state.spellCredits = ps.spellCredits || 0;
-            toast(`✨ ${state.spellCredits} заговоров на счету! 🕯️`);
+            toast(`✨ ${state.spellCredits} ${L('spellCreditsOnAccount')}`);
           } else {
-            toast('✅ Оплата принята. Кредиты появятся через минуту.');
+            toast(L('spellPackCredits'));
           }
           if (spellId) await openSpellById(spellId);
         }
       } else if (status === 'cancelled') {
-        toast('Оплата отменена');
+        toast(L('paymentCancelled'));
         if (btn) { btn.disabled = false; btn.style.opacity = ''; }
       }
     });
   } catch (e) {
-    toast('Ошибка создания счёта. Попробуй позже.');
+    toast(L('invoiceError'));
     if (btn) { btn.disabled = false; btn.style.opacity = ''; }
   }
 }
@@ -809,35 +875,35 @@ function openSpellDetail(spell, locked) {
     </div>
 
     <div class="sd-block">
-      <div class="sd-block-title ingr">✦ Что нужно</div>
+      <div class="sd-block-title ingr">${L('spellIngrTitle')}</div>
       <ul class="sd-ingredients">${ingredientsHtml}</ul>
     </div>
 
     <div class="sd-block">
-      <div class="sd-block-title steps">📋 Как проводить</div>
+      <div class="sd-block-title steps">${L('spellStepsTitle')}</div>
       <ol class="sd-steps">${stepsHtml}</ol>
     </div>
 
     <!-- Таймер читання заговору -->
     <div class="sd-timer-block" id="spell-timer-block">
-      <div class="timer-label">Читайте заговор вслух</div>
+      <div class="timer-label">${L('spellTimerLabel')}</div>
       <div class="timer-display" id="timer-display">0:00</div>
-      <div class="timer-repeat" id="timer-repeat">Прочитайте ${spell.steps.length > 3 ? '3' : '7'} раз подряд</div>
-      <button class="timer-btn" id="timer-btn" onclick="toggleTimer()">▶ Начать читать</button>
+      <div class="timer-repeat" id="timer-repeat">${spell.steps.length > 3 ? L('spellTimerRepeat3') : L('spellTimerRepeat7')}</div>
+      <button class="timer-btn" id="timer-btn" onclick="toggleTimer()">${L('spellTimerStart')}</button>
     </div>
 
     <div class="sd-block">
-      <div class="sd-block-title spell-text">🔮 Текст заговора</div>
+      <div class="sd-block-title spell-text">${L('spellTextTitle')}</div>
       <div class="sd-spell-text">${spell.spell}</div>
     </div>
 
     ${spell.warning ? `<div class="sd-block">
-      <div class="sd-block-title warn">⚠️ Важно</div>
+      <div class="sd-block-title warn">${L('spellWarningTitle')}</div>
       <div class="sd-warning">${spell.warning}</div>
     </div>` : ''}
 
     ${spell.tip ? `<div class="sd-block">
-      <div class="sd-block-title tip">💡 Совет</div>
+      <div class="sd-block-title tip">${L('spellTipTitle')}</div>
       <div class="sd-tip">${spell.tip}</div>
     </div>` : ''}
 
@@ -854,10 +920,10 @@ window.toggleTimer = function() {
   if (state.spellTimer) {
     clearInterval(state.spellTimer);
     state.spellTimer = null;
-    btn.textContent = '▶ Продолжить';
+    btn.textContent = L('spellTimerResume');
     btn.classList.remove('running');
   } else {
-    btn.textContent = '⏸ Пауза';
+    btn.textContent = L('spellTimerPause');
     btn.classList.add('running');
     state.spellTimer = setInterval(() => {
       state.spellTimerSec++;
@@ -877,7 +943,7 @@ function resetTimer() {
 // ══ ЛУННЫЙ КАЛЕНДАРЬ ════════════════════════════════════════════════════════
 async function renderMoonCalendar() {
   const content = document.getElementById('moon-content');
-  content.innerHTML = '<div style="padding:40px;text-align:center;color:var(--text2);">🌙 Загрузка...</div>';
+  content.innerHTML = `<div style="padding:40px;text-align:center;color:var(--text2);">${L('moonCalLoading')}</div>`;
 
   const data = await api('GET', `/spells/today/${state.userId}`);
   if (!data.ok) return;
@@ -911,16 +977,16 @@ async function renderMoonCalendar() {
       <div class="mt-energy">${getMoonMagicDesc(moon.energy)}</div>
     </div>
 
-    <div class="moon-section-title">7 дней — фазы луны</div>
+    <div class="moon-section-title">${L('moonWeekTitle')}</div>
     <div class="moon-week">${weekPills}</div>
 
-    <div class="moon-section-title">✅ Что можно сегодня</div>
+    <div class="moon-section-title">${L('moonDoTitle')}</div>
     <div class="moon-do-list">${doItems}</div>
 
-    <div class="moon-section-title">❌ Чего избегать</div>
+    <div class="moon-section-title">${L('moonDontTitle')}</div>
     <div class="moon-dont-list">${dontItems}</div>
 
-    <div class="moon-section-title">🕯️ Заговоры на сегодня</div>
+    <div class="moon-section-title">${L('moonSpellsTitle')}</div>
     <div class="moon-spells-today">${todaySpells}</div>
 
     <div style="height:32px"></div>
@@ -947,7 +1013,7 @@ function calcMoonEmoji(date) {
 }
 
 function generateWeekForecast() {
-  const days = ['Вс','Пн','Вт','Ср','Чт','Пт','Сб'];
+  const days = T[state.lang]?.days || T.ru.days;
   const today = new Date();
   return Array.from({ length: 7 }, (_, i) => {
     const d = new Date(today);
@@ -961,7 +1027,7 @@ function generateWeekForecast() {
 }
 
 function getMoonDoList(energy) {
-  const lists = {
+  const listsRu = {
     new:     ['Загадывать желания', 'Начинать новые дела', 'Ставить финансовые цели', 'Медитации на притяжение', 'Покупать новые вещи'],
     waxing:  ['Привороты и заговоры на любовь', 'Ритуалы на деньги', 'Заговоры на красоту', 'Посадка растений', 'Начинать проекты'],
     first:   ['Активные действия', 'Карьерные ритуалы', 'Заговоры на успех', 'Подписание договоров', 'Делать покупки'],
@@ -971,11 +1037,22 @@ function getMoonDoList(energy) {
     last:    ['Завершение отношений', 'Уборка и очищение', 'Снятие блоков', 'Посты и голодание'],
     dark:    ['Тайные ритуалы', 'Защита и обереги', 'Работа с интуицией', 'Очищение кристаллов'],
   };
+  const listsUa = {
+    new:     ['Загадувати бажання', 'Починати нові справи', 'Ставити фінансові цілі', 'Медитації на притягнення', 'Купувати нові речі'],
+    waxing:  ['Привороти і заговори на кохання', 'Ритуали на гроші', 'Заговори на красу', 'Посадка рослин', 'Починати проекти'],
+    first:   ['Активні дії', 'Карʼєрні ритуали', 'Заговори на успіх', 'Підписання договорів', 'Робити покупки'],
+    gibbous: ['Завершувати ритуали', 'Любовна магія', 'Ритуали на достаток', 'Практики вдячності'],
+    full:    ['Потужні ритуали на бажання', 'Зарядка води', 'Ритуали на красу', 'Медитації', 'Всі види магії'],
+    waning:  ['Зняття псування', 'Очищення дому', 'Заговори від хвороби', 'Позбавлення від боргів', 'Розрив поганих звʼязків'],
+    last:    ['Завершення стосунків', 'Прибирання і очищення', 'Зняття блоків', 'Піст і голодування'],
+    dark:    ['Таємні ритуали', 'Захист і обереги', 'Робота з інтуїцією', 'Очищення кристалів'],
+  };
+  const lists = state.lang === 'ua' ? listsUa : listsRu;
   return lists[energy] || lists.full;
 }
 
 function getMoonDontList(energy) {
-  const lists = {
+  const listsRu = {
     new:     ['Стричь волосы', 'Давать деньги в долг', 'Проводить очистительные ритуалы'],
     waxing:  ['Ритуалы на избавление', 'Снятие порчи', 'Давать деньги взаймы'],
     first:   ['Затяжные медитации', 'Ритуалы на прошлое'],
@@ -985,25 +1062,37 @@ function getMoonDontList(energy) {
     last:    ['Свадьбы и сватовство', 'Начинать бизнес', 'Крупные покупки'],
     dark:    ['Привлекать новых людей', 'Публичные выступления', 'Подписывать договоры'],
   };
-  return lists[energy] || ['Принимать важные решения'];
+  const listsUa = {
+    new:     ['Стригти волосся', 'Давати гроші в борг', 'Проводити очищувальні ритуали'],
+    waxing:  ['Ритуали на позбавлення', 'Зняття псування', 'Давати гроші позику'],
+    first:   ['Тривалі медитації', 'Ритуали на минуле'],
+    gibbous: ['Конфліктувати', 'Починати дієти'],
+    full:    ['Давати гроші в борг', 'Приймати важливі рішення', 'Конфліктувати'],
+    waning:  ['Привороти на кохання', 'Заговори на гроші', 'Нові починання'],
+    last:    ['Весілля і сватання', 'Починати бізнес', 'Великі покупки'],
+    dark:    ['Залучати нових людей', 'Публічні виступи', 'Підписувати договори'],
+  };
+  const lists = state.lang === 'ua' ? listsUa : listsRu;
+  return lists[energy] || (state.lang === 'ua' ? ['Приймати важливі рішення'] : ['Принимать важные решения']);
 }
 
 function moonPhaseName(energy) {
-  const n = { new:'Новолуние', waxing:'Растущая', first:'I четверть', gibbous:'Растущая', full:'Полнолуние', waning:'Убывающая', last:'IV четверть', dark:'Тёмная' };
+  const n = T[state.lang]?.moonPhaseNames || T.ru.moonPhaseNames;
   return n[energy] || energy;
 }
 
 function todayDateStr() {
-  return new Date().toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' });
+  const locale = state.lang === 'ua' ? 'uk-UA' : 'ru-RU';
+  return new Date().toLocaleDateString(locale, { day: 'numeric', month: 'long', year: 'numeric' });
 }
 
 // ── История ────────────────────────────────────────────────────────────────
 async function loadHistory() {
   const el = document.getElementById('history-content');
-  el.innerHTML = '<div style="padding:40px;text-align:center;color:var(--text2);">Загрузка...</div>';
+  el.innerHTML = `<div style="padding:40px;text-align:center;color:var(--text2);">${L('loading2')}</div>`;
   const data = await api('GET', `/readings/${state.userId}`);
   if (!data.ok || !data.readings?.length) {
-    el.innerHTML = `<div class="empty-state"><div class="empty-state-icon">🃏</div><h3>Нет расскладов</h3><p>Сделайте первый расклад — он сохранится здесь</p></div>`;
+    el.innerHTML = `<div class="empty-state"><div class="empty-state-icon">🃏</div><h3>${L('noReadings')}</h3><p>${L('noReadingsDesc')}</p></div>`;
     return;
   }
   el.innerHTML = data.readings.map(r => {
@@ -1070,7 +1159,7 @@ function initNav() {
 
     summaryBtn.classList.add('hidden');
     aiBlock.classList.remove('hidden');
-    aiText.innerHTML = '<div class="aib-loading"><div class="aib-spinner"></div><span>Карты говорят...</span></div>';
+    aiText.innerHTML = `<div class="aib-loading"><div class="aib-spinner"></div><span>${L('aiLoading')}</span></div>`;
 
     tg?.HapticFeedback?.impactOccurred?.('medium');
 
@@ -1087,10 +1176,10 @@ function initNav() {
         aiText.textContent = data.interpretation;
         tg?.HapticFeedback?.notificationOccurred?.('success');
       } else {
-        aiText.textContent = r.interpretation || 'Карты дали свой ответ. Доверься интуиции.';
+        aiText.textContent = r.interpretation || L('aiDefault');
       }
     } catch (_) {
-      aiText.textContent = r.interpretation || 'Карты дали свой ответ. Доверься интуиции.';
+      aiText.textContent = r.interpretation || L('aiDefault');
     }
 
     // Кнопка "Поделиться" після AI
@@ -1115,25 +1204,25 @@ function initNav() {
       document.querySelectorAll('.plan-card').forEach(c => c.classList.remove('selected'));
       el.classList.add('selected');
       selectedPlan = el.dataset.plan;
-      const labels = { premium_30: '1 месяц — ⭐ 299', premium_90: '3 месяца — ⭐ 699', premium_365: '1 год — ⭐ 1990' };
-      document.getElementById('btn-buy-label').textContent = `Оплатить ${labels[selectedPlan]} 👑`;
+      const labels = T[state.lang]?.premiumPlanLabels || T.ru.premiumPlanLabels;
+      document.getElementById('btn-buy-label').textContent = `${L('premiumPayBtn').replace(' 👑', '')} ${labels[selectedPlan]} 👑`;
       tg?.HapticFeedback?.selectionChanged?.();
     });
     if (el.dataset.plan === selectedPlan) el.classList.add('selected');
   });
-  document.getElementById('btn-buy-label').textContent = 'Оплатить 3 месяца — ⭐ 699 👑';
+  document.getElementById('btn-buy-label').textContent = L('premiumDefaultPlan');
 
   document.getElementById('btn-buy-premium').addEventListener('click', () => guardedCall('buy_premium', async () => {
     const btn = document.getElementById('btn-buy-premium');
     btn.disabled = true;
-    document.getElementById('btn-buy-label').textContent = '⭐ Создаём счёт...';
+    document.getElementById('btn-buy-label').textContent = L('premiumCreatingInvoice');
     try {
       const data = await api('POST', '/payments/invoice', { planId: selectedPlan, userId: state.userId });
       if (!data.ok) throw new Error(data.error);
       tg?.openInvoice?.(data.link, async (status) => {
         if (status === 'paid') {
           tg?.HapticFeedback?.notificationOccurred?.('success');
-          toast('✨ Оплата прошла! Активируем...');
+          toast(L('premiumPaySuccess'));
           // Поллінг: чекаємо isPremium=true (webhook може прийти з затримкою до 9с)
           const ps = await pollUntil(
             () => api('GET', `/users/${state.userId}/premium-status`),
@@ -1146,20 +1235,20 @@ function initNav() {
             updatePremiumCards(ps.isPremium);
             updateThreeCardLock(ps.isPremium);
             if (state.moonData?.spells) renderSpellsPreview(state.moonData.spells);
-            toast('👑 Премиум активирован! Все функции открыты');
+            toast(L('premiumActivated'));
           } else {
-            toast('✅ Оплата принята. Обновите страницу через минуту.');
+            toast(L('premiumPayPending'));
           }
           showScreen('home', 'left');
         } else if (status === 'cancelled') {
-          toast('Оплата отменена');
+          toast(L('paymentCancelled'));
         }
       });
     } catch (_) {
-      toast('Ошибка создания счёта. Попробуй позже.');
+      toast(L('invoiceError'));
     } finally {
       btn.disabled = false;
-      document.getElementById('btn-buy-label').textContent = 'Оплатить 👑';
+      document.getElementById('btn-buy-label').textContent = L('premiumPayBtn');
     }
   }));
 
@@ -1209,11 +1298,13 @@ async function loadPremiumScreen() {
   renderReferralProgress(ps.refBonus || 0);
   const invited = document.getElementById('fpb-invited');
   if (invited && ps.refBonus > 0) {
-    invited.innerHTML = `✨ Уже пригласила: <b>${ps.refBonus}</b> ${ps.refBonus === 1 ? 'подругу' : 'подруг'} — заработала <b>${ps.refBonus}</b> дн. Премиума`;
+    const single = L('premiumInvitedSingle');
+    const many   = L('premiumInvitedMany');
+    invited.innerHTML = `${L('premiumInvitedTxt')} <b>${ps.refBonus}</b> ${ps.refBonus === 1 ? single : many} — заробила <b>${ps.refBonus}</b> ${L('premiumEarnedDays')}`;
   }
   if (ps.isPremium && ps.daysLeft !== null) {
     const hero = document.querySelector('.premium-hero .premium-sub');
-    if (hero) hero.innerHTML = `✅ Премиум активен · осталось <b>${ps.daysLeft}</b> дней`;
+    if (hero) hero.innerHTML = `${L('premiumStatusActive')} <b>${ps.daysLeft}</b> ${L('premiumStatusDays')}`;
   }
 }
 
@@ -1223,16 +1314,16 @@ async function shareRefLink() {
     const botInfo = await api('GET', '/status');
     const botName = botInfo.botUsername || 'MagicCabinetBot';
     const refLink = `https://t.me/${botName}?start=ref_${state.userId}`;
-    const text    = '🔮 Присоединяйся к Магическому кабинету — карты Таро, заговоры и лунный календарь персонально по дате рождения!';
+    const text    = L('refText');
     if (tg?.shareURL) {
       tg.shareURL(refLink, text);
     } else if (navigator.share) {
       await navigator.share({ text: `${text}\n${refLink}` });
     } else {
       await navigator.clipboard.writeText(refLink);
-      toast('Ссылка скопирована! 🔗');
+      toast(L('refCopied'));
     }
-  } catch (_) { toast('Не удалось поделиться'); }
+  } catch (_) { toast(L('shareErr')); }
 }
 
 // ── Підтримка ──────────────────────────────────────────────────────────────
@@ -1241,7 +1332,7 @@ async function loadSupportMessages() {
   const data = await api('GET', `/support/messages/${state.userId}`);
   const msgs = data.ok ? data.messages : [];
   if (!msgs.length) {
-    wrap.innerHTML = `<div class="support-intro"><div class="support-intro-icon">🔮</div><div class="support-intro-text">Задайте любой вопрос — мы ответим в ближайшее время</div></div>`;
+    wrap.innerHTML = `<div class="support-intro"><div class="support-intro-icon">🔮</div><div class="support-intro-text">${L('supportIntro')}</div></div>`;
     return;
   }
   wrap.innerHTML = msgs.map(m => `
@@ -1264,13 +1355,13 @@ async function sendSupportMessage() {
   wrap.insertAdjacentHTML('beforeend', `
     <div class="support-msg msg-user">
       <div class="msg-bubble">${text}</div>
-      <div class="msg-time">Отправляется...</div>
+      <div class="msg-time">${L('supportSending')}</div>
     </div>
   `);
   wrap.scrollTop = wrap.scrollHeight;
   tg?.HapticFeedback?.impactOccurred?.('light');
   const data = await api('POST', '/support/message', { userId: state.userId, text });
-  if (!data.ok) toast('Ошибка отправки. Попробуйте позже.');
+  if (!data.ok) toast(L('supportSendErr'));
 }
 
 // ── Сонник ────────────────────────────────────────────────────────────────
@@ -1379,9 +1470,9 @@ async function shareCard(card, name, meaning) {
       await navigator.share({ text: `${text}\n${link}` });
     } else {
       await navigator.clipboard.writeText(`${text}\n${link}`);
-      toast('Скопировано в буфер 📋');
+      toast(L('copied'));
     }
-  } catch (_) { toast('Не удалось поделиться'); }
+  } catch (_) { toast(L('shareErr')); }
 }
 
 // ── Share reading (з AI-інтерпретацією) ────────────────────────────────────
@@ -1402,34 +1493,32 @@ async function shareReading(reading, aiText) {
       await navigator.share({ text: `${text}\n${link}` });
     } else {
       await navigator.clipboard.writeText(`${text}\n${link}`);
-      toast('Скопировано в буфер 📋');
+      toast(L('copied'));
     }
-  } catch (_) { toast('Не удалось поделиться'); }
+  } catch (_) { toast(L('shareErr')); }
 }
 
 // ══ ОНБОРДИНГ ═══════════════════════════════════════════════════════════════
-
-const LIFE_PATH_SHORT = {
-  1: 'Лидер', 2: 'Дипломат', 3: 'Творец', 4: 'Строитель',
-  5: 'Искатель', 6: 'Хранитель', 7: 'Мудрец', 8: 'Властелин',
-  9: 'Гуманист', 11: 'Мистик', 22: 'Архитектор',
-};
 
 function renderOnboarding(user) {
   const nameEl = document.getElementById('onb-name');
   const grid   = document.getElementById('onb-grid');
   const lpBlock = document.getElementById('onb-lp-block');
   const doneBtn = document.getElementById('btn-onboarding-done');
+  const titleEl = document.getElementById('onb-title');
   // Якщо екрану онбордингу немає — одразу на головну
   if (!nameEl || !grid) throw new Error('onboarding-screen-missing');
 
+  const lifePathNames = T[state.lang]?.lifePathNames || T.ru.lifePathNames;
   nameEl.textContent = user.firstName || 'Провидец';
+  if (titleEl) titleEl.innerHTML = `${L('onbTitle')}<br><span id="onb-name">${user.firstName || ''}</span>`;
+
   const a = user.astro;
   const cards = [
-    { icon: a?.zodiac?.emoji || '⭐', title: a?.zodiac?.name || '...', sub: a?.zodiac?.element ? `Стихия ${a.zodiac.element}` : 'Знак зодиака' },
-    { icon: '🔢', title: `Путь ${a?.lifePath || '?'}`, sub: LIFE_PATH_SHORT[a?.lifePath] || 'Число судьбы' },
-    { icon: a?.moonPhase?.emoji || '🌙', title: a?.moonPhase?.name || '...', sub: 'Луна при рождении' },
-    { icon: '🪐', title: a?.zodiac?.planet || '...', sub: `Планета-покровитель` },
+    { icon: a?.zodiac?.emoji || '⭐', title: a?.zodiac?.name || '...', sub: a?.zodiac?.element ? `${L('elementWord')} ${a.zodiac.element}` : L('zodiacSignWord') },
+    { icon: '🔢', title: `${L('myPath')} ${a?.lifePath || '?'}`, sub: lifePathNames[a?.lifePath] || L('numSub') },
+    { icon: a?.moonPhase?.emoji || '🌙', title: a?.moonPhase?.name || '...', sub: L('birthMoon') },
+    { icon: '🪐', title: a?.zodiac?.planet || '...', sub: L('guardianPlanet') },
   ];
   grid.innerHTML = cards.map((c, i) => `
     <div class="onb-card" style="--delay:${i * 0.12}s">
@@ -1441,7 +1530,7 @@ function renderOnboarding(user) {
 
   const lp = a?.lifePath;
   if (lp && lpBlock) {
-    lpBlock.innerHTML = `<div class="onb-lp"><span class="onb-lp-num">${lp}</span><span class="onb-lp-label">${LIFE_PATH_SHORT[lp] || 'Ваш путь'}</span></div>`;
+    lpBlock.innerHTML = `<div class="onb-lp"><span class="onb-lp-num">${lp}</span><span class="onb-lp-label">${lifePathNames[lp] || L('myPath')}</span></div>`;
   }
 
   if (doneBtn) doneBtn.onclick = async () => {
@@ -1486,7 +1575,7 @@ async function loadNumerologyScreen() {
   const content = document.getElementById('num-content');
   const user = state.user;
   if (!user?.astro) {
-    content.innerHTML = '<div class="empty-state"><p>Данные не найдены. Введите дату рождения.</p></div>';
+    content.innerHTML = `<div class="empty-state"><p>${L('numNoData')}</p></div>`;
     return;
   }
   const a = user.astro;
@@ -1585,11 +1674,11 @@ async function loadHoroscopeScreen() {
   const zodiacName = user?.astro?.zodiac?.name;
 
   if (!zodiacName || !HOROSCOPE_DATA[zodiacName]) {
-    content.innerHTML = `<div class="empty-state"><p>Введите дату рождения для получения гороскопа.</p></div>`;
+    content.innerHTML = `<div class="empty-state"><p>${L('horoNoDate')}</p></div>`;
     return;
   }
 
-  content.innerHTML = '<div style="padding:40px;text-align:center;color:var(--text2);">🌟 Загрузка...</div>';
+  content.innerHTML = `<div style="padding:40px;text-align:center;color:var(--text2);">${L('horoLoading')}</div>`;
 
   // Спробуємо отримати дані з API, fallback на локальні
   const signKey = ZODIAC_KEY_MAP[zodiacName];
@@ -1626,40 +1715,40 @@ function renderHoroscopeContent(content, zodiacName, apiData) {
     </div>
 
     ${weekly ? `<div class="horo-weekly-block">
-      <div class="hwb-label">🔮 Прогноз недели</div>
+      <div class="hwb-label">${L('horoWeeklyLabel')}</div>
       <div class="hwb-text">${weekly}</div>
     </div>` : ''}
 
     <div class="horo-areas">
       <div class="horo-area">
         <div class="ha-icon">❤️</div>
-        <div class="ha-info"><div class="ha-title">Любовь</div><div class="ha-desc">${love}</div></div>
+        <div class="ha-info"><div class="ha-title">${L('horoLove')}</div><div class="ha-desc">${love}</div></div>
       </div>
       <div class="horo-area">
         <div class="ha-icon">💼</div>
-        <div class="ha-info"><div class="ha-title">Работа</div><div class="ha-desc">${work}</div></div>
+        <div class="ha-info"><div class="ha-title">${L('horoWork')}</div><div class="ha-desc">${work}</div></div>
       </div>
       <div class="horo-area">
         <div class="ha-icon">🌿</div>
-        <div class="ha-info"><div class="ha-title">Здоровье</div><div class="ha-desc">${health}</div></div>
+        <div class="ha-info"><div class="ha-title">${L('horoHealth')}</div><div class="ha-desc">${health}</div></div>
       </div>
       <div class="horo-area">
         <div class="ha-icon">💰</div>
-        <div class="ha-info"><div class="ha-title">Финансы</div><div class="ha-desc">${money}</div></div>
+        <div class="ha-info"><div class="ha-title">${L('horoMoney')}</div><div class="ha-desc">${money}</div></div>
       </div>
     </div>
 
     ${lucky ? `<div class="horo-lucky">
-      <div class="hl-title">✨ Удача недели</div>
+      <div class="hl-title">${L('horoLuckyTitle')}</div>
       <div class="hl-grid">
-        <div class="hl-item"><div class="hl-label">День</div><div class="hl-val">${lucky.day}</div></div>
-        <div class="hl-item"><div class="hl-label">Цвет</div><div class="hl-val">${lucky.color}</div></div>
-        <div class="hl-item"><div class="hl-label">Число</div><div class="hl-val">${lucky.number}</div></div>
+        <div class="hl-item"><div class="hl-label">${L('horoLuckyDay')}</div><div class="hl-val">${lucky.day}</div></div>
+        <div class="hl-item"><div class="hl-label">${L('horoLuckyColor')}</div><div class="hl-val">${lucky.color}</div></div>
+        <div class="hl-item"><div class="hl-label">${L('horoLuckyNumber')}</div><div class="hl-val">${lucky.number}</div></div>
       </div>
     </div>` : ''}
 
     <div class="horo-all-signs">
-      <div class="horo-all-title">Все знаки</div>
+      <div class="horo-all-title">${L('horoAllSigns')}</div>
       <div class="horo-signs-grid">
         ${Object.entries(HOROSCOPE_DATA).map(([name, d]) =>
           `<div class="horo-sign-cell${name === zodiacName ? ' active' : ''}" data-sign="${name}">
@@ -1756,7 +1845,7 @@ function initCompatScreen() {
   if (!btn || !inp || btn.dataset.init) return;
   btn.dataset.init = '1';
   btn.addEventListener('click', () => {
-    if (!inp.value) { toast('Введите дату рождения партнёра'); return; }
+    if (!inp.value) { toast(L('compatEnterPartner')); return; }
     calcCompatibility(inp.value);
   });
   inp.addEventListener('change', () => {
@@ -1767,7 +1856,7 @@ function initCompatScreen() {
 function calcCompatibility(partnerBirth) {
   const result = document.getElementById('compat-result');
   const user = state.user;
-  if (!user?.birthDate || !user?.astro) { toast('Ваши данные не найдены'); return; }
+  if (!user?.birthDate || !user?.astro) { toast(L('compatUserNotFound')); return; }
 
   const myZodiac      = user.astro.zodiac?.name || getZodiacFromBirth(user.birthDate);
   const partnerZodiac = getZodiacFromBirth(partnerBirth);
@@ -1835,7 +1924,7 @@ async function loadDiaryScreen() {
   const moon = state.moonData?.moon;
   const lang = state.lang;
 
-  content.innerHTML = `<div style="padding:32px;text-align:center;color:var(--text2)">Загрузка...</div>`;
+  content.innerHTML = `<div style="padding:32px;text-align:center;color:var(--text2)">${L('loading2')}</div>`;
 
   // Мігруємо старі записи з localStorage → БД (одноразово)
   const migrateKey = `diary_migrated_${state.userId}`;
@@ -1854,18 +1943,18 @@ async function loadDiaryScreen() {
   const entries = data.ok ? data.entries : [];
 
   const renderEntries = (list) => list.length ? `
-    <div class="diary-entries-title">Прошлые записи</div>
+    <div class="diary-entries-title">${L('diaryPastTitle')}</div>
     ${list.map(e => `
       <div class="diary-entry" data-id="${e.id}">
         <div class="de-header">
           <span class="de-phase">${esc(e.moon_emoji || '🌙')} ${esc(e.moon_name || '')}</span>
           <span class="de-date">${fmtDate(e.entry_date)}</span>
-          <button class="de-del" data-id="${e.id}" title="Удалить">✕</button>
+          <button class="de-del" data-id="${e.id}" title="${L('close')}">✕</button>
         </div>
         <div class="de-text">${esc(e.text)}</div>
       </div>
     `).join('')}
-  ` : `<div class="diary-empty">Записей пока нет. Начни вести лунный дневник!</div>`;
+  ` : `<div class="diary-empty">${L('diaryEmpty')}</div>`;
 
   content.innerHTML = `
     <div class="diary-moon-phase">
@@ -1874,12 +1963,12 @@ async function loadDiaryScreen() {
       <span class="dmp-date">${todayDateStr()}</span>
     </div>
     <div class="diary-write-block">
-      <div class="dwb-title">Запись на сегодня</div>
+      <div class="dwb-title">${L('diaryWriteTitle')}</div>
       <textarea id="diary-input" class="diary-textarea"
-        placeholder="${t('diaryPlaceholder', lang)}"
+        placeholder="${L('diaryPlaceholder')}"
         maxlength="1000" rows="4"></textarea>
       <button class="btn-primary btn-sm diary-save-btn" id="btn-diary-save">
-        ${t('diarySave', lang)}
+        ${L('diarySave')}
       </button>
     </div>
     <div class="diary-entries" id="diary-entries">
@@ -1890,7 +1979,7 @@ async function loadDiaryScreen() {
 
   document.getElementById('btn-diary-save')?.addEventListener('click', async () => {
     const text = document.getElementById('diary-input')?.value?.trim();
-    if (!text) { toast('Напишите что-нибудь...'); return; }
+    if (!text) { toast(L('diaryWritePrompt')); return; }
     const btn = document.getElementById('btn-diary-save');
     btn.disabled = true;
     const res = await api('POST', `/diary/${state.userId}`, {
@@ -1898,10 +1987,10 @@ async function loadDiaryScreen() {
     });
     btn.disabled = false;
     if (res.ok) {
-      toast('Запись сохранена ✨');
+      toast(L('diarySaved'));
       tg?.HapticFeedback?.impactOccurred?.('light');
       await loadDiaryScreen();
-    } else { toast('Ошибка сохранения'); }
+    } else { toast(L('diarySaveErr')); }
   });
 
   content.querySelectorAll('.de-del').forEach(btn => {
@@ -1923,38 +2012,38 @@ async function loadProfileScreen() {
 
   const premBlock = ps?.isPremium
     ? `<div class="profile-premium-block">
-        <div class="ppb-status">👑 Премиум активен</div>
-        <div class="ppb-sub">${ps.daysLeft !== null ? `Осталось ${ps.daysLeft} дней` : 'Активен'}</div>
+        <div class="ppb-status">${L('profilePremiumActive')}</div>
+        <div class="ppb-sub">${ps.daysLeft !== null ? `${L('premiumDaysLeft')} ${ps.daysLeft} ${L('premiumStatusDays')}` : L('profilePremiumActive')}</div>
       </div>`
     : `<div class="profile-premium-block" style="background:rgba(255,255,255,.04)">
-        <div class="ppb-status" style="color:var(--text2)">Бесплатный план</div>
-        <div class="ppb-sub"><button class="btn-link" id="profile-go-premium">Улучшить до Премиум →</button></div>
+        <div class="ppb-status" style="color:var(--text2)">${L('profileFreePlan')}</div>
+        <div class="ppb-sub"><button class="btn-link" id="profile-go-premium">${L('upgradePremium')}</button></div>
       </div>`;
 
   content.innerHTML = `
     <div class="profile-card">
-      <h3>✏️ Редактировать профиль</h3>
+      <h3>${L('profileEditTitle')}</h3>
       <div class="profile-field">
-        <label>Ваше имя</label>
-        <input id="pf-name" type="text" maxlength="30" value="${esc(user?.firstName || '')}" placeholder="Имя">
+        <label>${L('profileNameLabel')}</label>
+        <input id="pf-name" type="text" maxlength="30" value="${esc(user?.firstName || '')}" placeholder="${L('namePlaceholder')}">
       </div>
       <div class="profile-field">
-        <label>Дата рождения</label>
+        <label>${L('profileBirthLabel')}</label>
         <input id="pf-birth" type="date" value="${esc(user?.birthDate || '')}" max="${new Date(Date.now()-441504e6).toISOString().split('T')[0]}" min="1920-01-01">
       </div>
-      <button class="btn-primary" id="btn-profile-save">Сохранить изменения</button>
+      <button class="btn-primary" id="btn-profile-save">${L('profileSaveBtn')}</button>
     </div>
 
     ${premBlock}
 
     <div class="profile-card">
-      <h3>📄 Документы</h3>
-      <button class="btn-link" id="profile-terms" style="font-size:14px;color:var(--text2)">Условия использования и Конфиденциальность →</button>
+      <h3>${L('profileDocsTitle')}</h3>
+      <button class="btn-link" id="profile-terms" style="font-size:14px;color:var(--text2)">${L('profileTermsBtn')}</button>
     </div>
 
     <div class="profile-danger">
-      <p>Удаление аккаунта необратимо — все данные, расклады и дневник будут удалены.</p>
-      <button class="btn-danger" id="btn-delete-account">🗑️ Удалить мой аккаунт</button>
+      <p>${L('profileDangerText')}</p>
+      <button class="btn-danger" id="btn-delete-account">${L('profileDeleteBtn')}</button>
     </div>
     <div style="height:32px"></div>
   `;
@@ -1962,16 +2051,16 @@ async function loadProfileScreen() {
   document.getElementById('btn-profile-save')?.addEventListener('click', async () => {
     const name  = document.getElementById('pf-name')?.value?.trim();
     const birth = document.getElementById('pf-birth')?.value;
-    if (!name && !birth) { toast('Нечего сохранять'); return; }
+    if (!name && !birth) { toast(L('nothingToSave')); return; }
     const btn = document.getElementById('btn-profile-save');
-    btn.disabled = true; btn.textContent = 'Сохраняем...';
+    btn.disabled = true; btn.textContent = L('profileSaving');
     const res = await api('PATCH', `/users/${state.userId}`, { firstName: name, birthDate: birth || undefined });
-    btn.disabled = false; btn.textContent = 'Сохранить изменения';
+    btn.disabled = false; btn.textContent = L('profileSaveBtn');
     if (res.ok) {
       state.user = res.user;
-      toast('✅ Профиль обновлён!');
+      toast(L('profileSaved'));
       tg?.HapticFeedback?.notificationOccurred?.('success');
-    } else { toast('Ошибка сохранения'); }
+    } else { toast(L('profileSaveErr')); }
   });
 
   document.getElementById('profile-go-premium')?.addEventListener('click', async () => {
@@ -1983,13 +2072,13 @@ async function loadProfileScreen() {
   });
 
   document.getElementById('btn-delete-account')?.addEventListener('click', async () => {
-    if (!confirm('Удалить аккаунт и все данные? Это нельзя отменить.')) return;
+    if (!confirm(L('deleteConfirm'))) return;
     const res = await api('DELETE', `/users/${state.userId}/self`);
     if (res.ok) {
-      toast('Аккаунт удалён. До свидания 🌙');
+      toast(L('deletedOk'));
       localStorage.clear();
       setTimeout(() => tg?.close?.(), 2000);
-    } else { toast('Ошибка. Напишите в поддержку.'); }
+    } else { toast(L('deleteErr')); }
   });
 }
 
@@ -2008,16 +2097,16 @@ function renderReferralProgress(refBonus) {
         <div class="ref-progress-fill" style="width:${Math.min(100, pct)}%"></div>
       </div>
       <div class="ref-progress-labels">
-        <span>${refBonus} приглашено</span>
-        <span>Следующая цель: ${next} 🎁</span>
+        <span>${refBonus} ${L('premiumInvitedMany')}</span>
+        <span>${L('refNextGoal')}: ${next} 🎁</span>
       </div>
     </div>
     <div class="ref-steps">
       ${goals.map(g => `
         <div class="ref-step${refBonus >= g ? ' done' : ''}">
           <div class="rs-icon">${refBonus >= g ? '✅' : '👤'}</div>
-          <div class="rs-val">${g} ${g === 1 ? 'подруга' : 'подруги'}</div>
-          <div class="rs-reward">${g === 1 ? '1 день' : g === 3 ? '3 дня' : 'неделя!'}</div>
+          <div class="rs-val">${g} ${g === 1 ? L('premiumInvitedSingle') : L('premiumInvitedMany')}</div>
+          <div class="rs-reward">${g === 1 ? L('refReward1') : g === 3 ? L('refReward3') : L('refReward7')}</div>
         </div>
       `).join('')}
     </div>
@@ -2037,7 +2126,7 @@ function renderBlurredSpreadPreview(spreadType) {
       `).join('')}
       <div class="bp-overlay">
         <div class="bp-lock">👑</div>
-        <div class="bp-text">Доступно в Премиум</div>
+        <div class="bp-text">${L('premiumOnly')}</div>
       </div>
     </div>
   `;
@@ -2051,6 +2140,7 @@ function fmtDate(iso) {
 
 // ── Init ───────────────────────────────────────────────────────────────────
 async function init() {
+  localizeDOM(); // Одразу перекладаємо всі статичні тексти
   initStars();
   initNav();
   initSplashScreen();
