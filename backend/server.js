@@ -416,6 +416,10 @@ app.get('/api/status', async (req, res) => {
 
 // ─── Global error handler ─────────────────────────────────────────────────────
 app.use((err, req, res, _next) => {
+  // Payload too large (express.json limit)
+  if (err.type === 'entity.too.large' || err.status === 413) {
+    return res.status(413).json({ ok: false, error: 'payload_too_large' });
+  }
   console.error('[Error]', err.message || err);
   res.status(500).json({ ok: false, error: 'internal_error' });
 });
