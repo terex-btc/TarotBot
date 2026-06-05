@@ -8,7 +8,8 @@
     "dev": "nodemon backend/server.js",
     "test:payments": "node tests/payment.test.js",
     "test:api": "TEST_PORT=3099 node tests/api.test.js",
-    "test": "node tests/payment.test.js && TEST_PORT=3099 node tests/api.test.js"
+    "test:prod": "node tests/prod.test.js",
+    "test": "node tests/prod.test.js"
   },
   "keywords": [],
   "author": "",
