@@ -4,6 +4,7 @@ const router  = express.Router();
 const { pool } = require('../db');
 const { calcLifePath, getZodiac, getMoonPhase, calcPersonalYear, calcDayNumber } = require('../services/algorithmService');
 const { bumpActivity } = require('./admin');
+const { validateUserId, limits } = require('../middleware/security');
 
 // ── Хелпери ───────────────────────────────────────────────────────────────────
 function isPremiumActive(user) {
@@ -32,7 +33,7 @@ function rowToUser(row) {
 }
 
 // POST /api/users/init
-router.post('/init', async (req, res) => {
+router.post('/init', limits.init, async (req, res) => {
   try {
     const { userId, username, firstName, name, birthDate, lang } = req.body;
     if (!userId) return res.status(400).json({ ok: false, error: 'userId required' });
@@ -95,7 +96,7 @@ router.post('/:userId/premium', async (req, res) => {
 });
 
 // GET /api/users/:userId/premium-status
-router.get('/:userId/premium-status', async (req, res) => {
+router.get('/:userId/premium-status', validateUserId, async (req, res) => {
   try {
     const { rows } = await pool.query(
       `SELECT is_premium, premium_expiry, ref_bonus, spell_credits FROM users WHERE user_id=$1`,
@@ -117,7 +118,7 @@ router.get('/:userId/premium-status', async (req, res) => {
 });
 
 // GET /api/users/:userId/ref
-router.get('/:userId/ref', async (req, res) => {
+router.get('/:userId/ref', validateUserId, async (req, res) => {
   try {
     const { rows } = await pool.query(
       `SELECT is_premium, premium_expiry, ref_bonus FROM users WHERE user_id=$1`,
@@ -130,7 +131,7 @@ router.get('/:userId/ref', async (req, res) => {
 });
 
 // PATCH /api/users/:userId — оновити ім'я та/або дату народження
-router.patch('/:userId', async (req, res) => {
+router.patch('/:userId', validateUserId, async (req, res) => {
   try {
     const { firstName, birthDate } = req.body;
     const uid = req.params.userId;
@@ -167,7 +168,7 @@ router.patch('/:userId', async (req, res) => {
 });
 
 // GET /api/users/:userId
-router.get('/:userId', async (req, res) => {
+router.get('/:userId', validateUserId, async (req, res) => {
   try {
     const { rows } = await pool.query(`SELECT * FROM users WHERE user_id=$1`, [req.params.userId]);
     if (!rows.length) return res.status(404).json({ ok: false, error: 'User not found' });
@@ -176,7 +177,7 @@ router.get('/:userId', async (req, res) => {
 });
 
 // DELETE /api/users/:userId/self — GDPR self-delete
-router.delete('/:userId/self', async (req, res) => {
+router.delete('/:userId/self', validateUserId, async (req, res) => {
   try {
     const uid = req.params.userId;
     await pool.query(`DELETE FROM diary_entries WHERE user_id=$1`, [uid]);

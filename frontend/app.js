@@ -108,10 +108,15 @@ function localizeDOM() {
 }
 
 // ── API ────────────────────────────────────────────────────────────────────
+// initData від Telegram — передаємо в кожен запит для верифікації підпису
+const _tgInitData = tg?.initData || '';
+
 async function api(method, path, body) {
+  const headers = { 'Content-Type': 'application/json' };
+  if (_tgInitData) headers['X-Tg-Auth'] = _tgInitData;
   const r = await fetch(`/api${path}`, {
     method,
-    headers: { 'Content-Type': 'application/json' },
+    headers,
     body: body ? JSON.stringify(body) : undefined,
   });
   try { return await r.json(); } catch (_) { return { ok: false, error: `http_${r.status}` }; }

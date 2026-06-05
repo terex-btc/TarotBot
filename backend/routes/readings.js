@@ -4,6 +4,7 @@ const router  = express.Router();
 const { createReading, getUserReadings, getTodayReading, SPREAD_TYPES } = require('../services/readingService');
 const { loadUser, isPremiumActive } = require('./users');
 const { isAdmin } = require('../config/admins');
+const { validateUserId } = require('../middleware/security');
 
 // GET /api/readings/spreads
 router.get('/spreads', (req, res) => {
@@ -11,7 +12,7 @@ router.get('/spreads', (req, res) => {
 });
 
 // GET /api/readings/:userId
-router.get('/:userId', async (req, res) => {
+router.get('/:userId', validateUserId, async (req, res) => {
   try {
     res.json({ ok: true, readings: await getUserReadings(req.params.userId, 10) });
   } catch (e) {
@@ -20,7 +21,7 @@ router.get('/:userId', async (req, res) => {
 });
 
 // POST /api/readings/:userId
-router.post('/:userId', async (req, res) => {
+router.post('/:userId', validateUserId, async (req, res) => {
   try {
     const { spreadType, lang } = req.body;
     if (!spreadType) return res.status(400).json({ ok: false, error: 'spreadType required' });

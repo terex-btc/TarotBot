@@ -5,6 +5,16 @@ const { SPELLS, CATEGORIES, DREAM_MEANINGS, getSpellsByMoonPhase, getSpellsByCat
 const { getMoonPhase } = require('../services/algorithmService');
 const { isPremiumActive, loadUser } = require('./users');
 const { isAdmin } = require('../config/admins');
+const { validateUserId } = require('../middleware/security');
+
+// Валідатор userId з query або params
+function validateUidParam(req, res, next) {
+  const uid = req.params.userId || req.query.userId || '';
+  if (uid && !/^\d{1,20}$/.test(uid)) {
+    return res.status(400).json({ ok: false, error: 'invalid_userId' });
+  }
+  next();
+}
 
 // GET /api/spells/categories
 router.get('/categories', (req, res) => {
@@ -12,7 +22,7 @@ router.get('/categories', (req, res) => {
 });
 
 // GET /api/spells/today/:userId
-router.get('/today/:userId', async (req, res) => {
+router.get('/today/:userId', validateUserId, async (req, res) => {
   try {
     const today = new Date().toISOString().split('T')[0];
     const moon  = getMoonPhase(today);
@@ -25,7 +35,7 @@ router.get('/today/:userId', async (req, res) => {
 });
 
 // GET /api/spells/category/:categoryId?userId=...
-router.get('/category/:categoryId', async (req, res) => {
+router.get('/category/:categoryId', validateUidParam, async (req, res) => {
   try {
     const uid = req.query.userId || '';
     const user = await loadUser(uid);
@@ -37,7 +47,7 @@ router.get('/category/:categoryId', async (req, res) => {
 });
 
 // GET /api/spells/:id?userId=...
-router.get('/:id', async (req, res) => {
+router.get('/:id', validateUidParam, async (req, res) => {
   try {
     const spell = getSpellById(req.params.id);
     if (!spell) return res.status(404).json({ ok: false, error: 'Not found' });
@@ -89,7 +99,7 @@ router.get('/dreams/list', (req, res) => {
 });
 
 // GET /api/spells/dreams/interpret?symbol=вода&lang=ru
-router.get('/dreams/interpret', async (req, res) => {
+router.get('/dreams/interpret', validateUidParam, async (req, res) => {
   try {
     const { symbol, lang = 'ru', userId } = req.query;
     if (!symbol) return res.status(400).json({ ok: false, error: 'symbol required' });

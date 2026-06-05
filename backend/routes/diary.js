@@ -2,9 +2,10 @@
 const express = require('express');
 const router  = express.Router();
 const { pool } = require('../db');
+const { validateUserId } = require('../middleware/security');
 
 // GET /api/diary/:userId
-router.get('/:userId', async (req, res) => {
+router.get('/:userId', validateUserId, async (req, res) => {
   try {
     const { rows } = await pool.query(
       `SELECT id, text, moon_emoji, moon_name, entry_date, created_at
@@ -16,7 +17,7 @@ router.get('/:userId', async (req, res) => {
 });
 
 // POST /api/diary/:userId
-router.post('/:userId', async (req, res) => {
+router.post('/:userId', validateUserId, async (req, res) => {
   try {
     const { text, moonEmoji, moonName } = req.body;
     if (!text?.trim()) return res.status(400).json({ ok: false, error: 'text required' });
@@ -31,7 +32,7 @@ router.post('/:userId', async (req, res) => {
 });
 
 // DELETE /api/diary/:userId/:id
-router.delete('/:userId/:id', async (req, res) => {
+router.delete('/:userId/:id', validateUserId, async (req, res) => {
   try {
     await pool.query(
       `DELETE FROM diary_entries WHERE user_id=$1 AND id=$2`,

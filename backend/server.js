@@ -1,6 +1,7 @@
 require('dotenv').config({ path: __dirname + '/.env' });
 const express = require('express');
 const cors    = require('cors');
+const helmet  = require('helmet');
 const path    = require('path');
 const TelegramBot   = require('node-telegram-bot-api');
 const cron          = require('node-cron');
@@ -9,14 +10,38 @@ const { setUserPremium, addRefBonus } = require('./routes/users');
 const { handleAdminReply }            = require('./routes/support');
 const { getMoonPhase }                = require('./services/algorithmService');
 const { bumpActivity }                = require('./routes/admin');
+const { verifyTelegramAuth, ownerOnly, validateUserId, limits } = require('./middleware/security');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 const BOT_TOKEN = process.env.BOT_TOKEN;
 
+// ─── Trust proxy (Railway / Nginx) ────────────────────────────────────────────
+// Без цього req.ip завжди буде 127.0.0.1 і rate limit per-IP не буде працювати
+app.set('trust proxy', 1);
+
 // ─── Middleware ───────────────────────────────────────────────────────────────
-app.use(cors());
-app.use(express.json());
+// Security headers (XSS, clickjacking, MIME sniffing, etc.)
+app.use(helmet({
+  contentSecurityPolicy: false, // вимикаємо CSP — Telegram WebApp додає свої скрипти
+  crossOriginEmbedderPolicy: false,
+}));
+
+// CORS — дозволяємо тільки Telegram WebApp та localhost для dev
+app.use(cors({
+  origin: (origin, cb) => {
+    // Telegram відкриває WebApp без origin (або з web.telegram.org/tgwebapp)
+    if (!origin || origin.includes('telegram') || origin.includes('localhost') || origin.includes('127.0.0.1')) {
+      return cb(null, true);
+    }
+    cb(new Error('Not allowed by CORS'));
+  },
+  methods: ['GET', 'POST', 'PATCH', 'DELETE'],
+  allowedHeaders: ['Content-Type', 'X-Tg-Auth'],
+}));
+
+// Ліміт розміру тіла запиту — захист від payload bomb
+app.use(express.json({ limit: '50kb' }));
 // Статика: JS/CSS кешуємо на 1 годину, index.html — ніколи (щоб оновлення одразу доходили)
 app.use(express.static(path.join(__dirname, '../frontend'), {
   setHeaders(res, filePath) {
@@ -366,16 +391,19 @@ if (BOT_TOKEN) {
 app.set('bot', bot || null);
 
 // ─── Routes ───────────────────────────────────────────────────────────────────
-app.use('/api/cards', require('./routes/cards'));
-app.use('/api/readings', require('./routes/readings'));
-app.use('/api/users', require('./routes/users'));
-app.use('/api/spells', require('./routes/spells'));
-app.use('/api/payments', require('./routes/payments'));
-app.use('/api/support', require('./routes/support'));
-app.use('/api/ai', require('./routes/ai'));
-app.use('/api/horoscope', require('./routes/horoscope'));
-app.use('/api/diary', require('./routes/diary'));
-app.use('/admin', require('./routes/admin'));
+// Глобальний rate limit для всіх /api — 120 запитів/хвилину з одного IP
+app.use('/api', limits.global);
+
+app.use('/api/cards',    require('./routes/cards'));
+app.use('/api/readings', limits.readings, require('./routes/readings'));
+app.use('/api/users',    require('./routes/users'));
+app.use('/api/spells',   require('./routes/spells'));
+app.use('/api/payments', limits.payments, require('./routes/payments'));
+app.use('/api/support',  limits.support,  require('./routes/support'));
+app.use('/api/ai',       limits.ai,       require('./routes/ai'));
+app.use('/api/horoscope',require('./routes/horoscope'));
+app.use('/api/diary',    require('./routes/diary'));
+app.use('/admin',        require('./routes/admin'));
 
 // ─── Status ───────────────────────────────────────────────────────────────────
 let _cachedBotUsername = null;
