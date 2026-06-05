@@ -5,10 +5,12 @@ import { t, T } from './i18n.js';
 const tg = window.Telegram?.WebApp;
 if (tg) {
   tg.ready();
-  tg.expand();
+  tg.expand();                          // розгорнути на повну висоту
+  tg.requestFullscreen?.();             // повний екран (Telegram 7.10+, ховає верхній бар)
   tg.setHeaderColor?.('#07030f');
   tg.setBackgroundColor?.('#07030f');
-  tg.disableVerticalSwipes?.(); // Не закривати WebApp свайпом вниз (Telegram 7.7+)
+  tg.setBottomBarColor?.('#07030f');
+  tg.disableVerticalSwipes?.();         // не закривати свайпом вниз (Telegram 7.7+)
 }
 
 // ── State ──────────────────────────────────────────────────────────────────

@@ -27,17 +27,13 @@ app.use(helmet({
   crossOriginEmbedderPolicy: false,
 }));
 
-// CORS — дозволяємо тільки Telegram WebApp та localhost для dev
+// CORS — відкрито для Telegram WebApp (Mini Apps запускаються з різних origin)
+// Безпека забезпечується через Telegram initData HMAC + rate limiting
 app.use(cors({
-  origin: (origin, cb) => {
-    // Telegram відкриває WebApp без origin (або з web.telegram.org/tgwebapp)
-    if (!origin || origin.includes('telegram') || origin.includes('localhost') || origin.includes('127.0.0.1')) {
-      return cb(null, true);
-    }
-    cb(new Error('Not allowed by CORS'));
-  },
-  methods: ['GET', 'POST', 'PATCH', 'DELETE'],
+  origin: true, // дозволяємо всі origin — Telegram WebApp може мати будь-який
+  methods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'X-Tg-Auth'],
+  credentials: false,
 }));
 
 // Ліміт розміру тіла запиту — захист від payload bomb
