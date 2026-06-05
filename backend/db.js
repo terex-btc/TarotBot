@@ -7,11 +7,15 @@ if (!process.env.DATABASE_URL) {
   console.error('[DB] УВАГА: DATABASE_URL не задана! Запити до БД будуть падати.');
 }
 
+// Railway internal (.railway.internal) — SSL не потрібен, це внутрішня мережа
+// Railway external / AWS — потрібен SSL з rejectUnauthorized:false
+const dbUrl = process.env.DATABASE_URL || 'postgresql://localhost/tarot';
+const isRailwayInternal = dbUrl.includes('.railway.internal');
+const needsSsl = !isRailwayInternal && (dbUrl.includes('railway') || dbUrl.includes('amazonaws') || dbUrl.includes('supabase'));
+
 const pool = new Pool({
-  connectionString: process.env.DATABASE_URL || 'postgresql://localhost/tarot',
-  ssl: process.env.DATABASE_URL?.includes('railway') || process.env.DATABASE_URL?.includes('amazonaws')
-    ? { rejectUnauthorized: false }
-    : false,
+  connectionString: dbUrl,
+  ssl: needsSsl ? { rejectUnauthorized: false } : false,
   max:              5,    // Railway Free: максимум 5 одночасних з'єднань
   idleTimeoutMillis: 30000, // закриваємо idle-з'єднання через 30 сек
   connectionTimeoutMillis: 5000, // таймаут на підключення 5 сек
