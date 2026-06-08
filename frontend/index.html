@@ -11,7 +11,7 @@
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css?v=2">
 </head>
 <body>
   <canvas id="stars-canvas"></canvas>
@@ -84,7 +84,7 @@
     <div id="screen-home" class="screen">
       <header class="top-bar">
         <div class="top-bar-left">
-          <div class="avatar-circle">🔮</div>
+          <div class="avatar-circle" id="user-avatar">🔮</div>
           <button class="top-user-btn" id="btn-profile" title="Профиль — змінити ім'я та дату народження">
             <div class="top-name" id="top-name">...</div>
             <div class="top-astro" id="top-astro">✏️ змінити дані</div>
@@ -107,55 +107,64 @@
           <div class="today-hint">Сегодня особый день для...</div>
         </div>
 
-        <!-- Навигация: 5 секций -->
-        <div class="nav-grid nav-grid-5">
-          <div class="nav-cell" data-screen="tarot">
+        <!-- Навигация: 2 hero-карты -->
+        <div class="nav-featured">
+          <div class="nav-cell nav-feat" data-screen="tarot">
             <div class="nav-cell-emoji">🃏</div>
-            <div class="nav-cell-name">Таро</div>
-            <div class="nav-cell-sub">Расклады</div>
+            <div class="nav-feat-body">
+              <div class="nav-cell-name">Таро</div>
+              <div class="nav-cell-sub" data-i18n="cardsSub">Расклады</div>
+            </div>
           </div>
-          <div class="nav-cell" data-screen="spells">
+          <div class="nav-cell nav-feat" data-screen="spells">
             <div class="nav-cell-emoji">🕯️</div>
-            <div class="nav-cell-name" data-i18n="spellsScreen">🕯️ Заговоры</div>
+            <div class="nav-feat-body">
+              <div class="nav-cell-name" data-i18n="spellsScreen">Заговоры</div>
+              <div class="nav-cell-sub">Ритуалы</div>
+            </div>
           </div>
+        </div>
+
+        <!-- Навигация: 3 основных -->
+        <div class="nav-grid nav-grid-3">
           <div class="nav-cell" data-screen="moon">
             <div class="nav-cell-emoji">🌔</div>
             <div class="nav-cell-name" data-i18n="moonSub">Календарь</div>
           </div>
           <div class="nav-cell" data-screen="dreams">
             <div class="nav-cell-emoji">😴</div>
-            <div class="nav-cell-name" data-i18n="dreamsScreen">😴 Сонник</div>
+            <div class="nav-cell-name" data-i18n="dreamsScreen">Сонник</div>
           </div>
           <div class="nav-cell" data-screen="premium">
             <div class="nav-cell-emoji">👑</div>
-            <div class="nav-cell-name" data-i18n="premiumScreen">👑 Премиум</div>
+            <div class="nav-cell-name" data-i18n="premiumScreen">Премиум</div>
           </div>
         </div>
 
-        <!-- Персональний кабінет — другий ряд -->
+        <!-- Навигация: личный кабинет -->
         <div class="nav-personal">
           <div class="nav-cell nav-cell-sm" data-screen="numerology">
             <div class="nav-cell-emoji">🔢</div>
-            <div class="nav-cell-name" data-i18n="numScreen">🔢 Нумерология</div>
+            <div class="nav-cell-name" data-i18n="numScreen">Нумерология</div>
           </div>
           <div class="nav-cell nav-cell-sm" data-screen="horoscope">
             <div class="nav-cell-emoji">🌟</div>
-            <div class="nav-cell-name" data-i18n="horoScreen">🌟 Гороскоп</div>
+            <div class="nav-cell-name" data-i18n="horoScreen">Гороскоп</div>
           </div>
           <div class="nav-cell nav-cell-sm" data-screen="compat">
             <div class="nav-cell-emoji">💞</div>
-            <div class="nav-cell-name" data-i18n="compatScreen">💞 Совместимость</div>
+            <div class="nav-cell-name" data-i18n="compatScreen">Совместимость</div>
           </div>
           <div class="nav-cell nav-cell-sm" data-screen="diary">
             <div class="nav-cell-emoji">📓</div>
-            <div class="nav-cell-name" data-i18n="diaryScreen">📓 Дневник</div>
+            <div class="nav-cell-name" data-i18n="diaryScreen">Дневник</div>
           </div>
         </div>
 
         <!-- Карта дня (краткая) -->
         <section class="home-section">
           <div class="section-head">
-            <span class="section-icon">✨</span>
+            <span class="section-icon"></span>
             <span class="section-label" data-i18n="cardOfDay">Карта дня</span>
             <span class="badge-free" data-i18n="free">БЕСПЛАТНО</span>
           </div>
@@ -163,8 +172,8 @@
             <div class="tap-card" id="tap-daily">
               <div class="tap-card-glow"></div>
               <div class="tap-card-body">
-                <span class="tap-card-emoji">🌟</span>
-                <span class="tap-card-text">Нажмите, чтобы<br>открыть карту</span>
+                <div class="tap-card-symbol"><div class="sym-diamond"></div></div>
+                <span class="tap-card-text" data-i18n="tapCardText">Нажмите, чтобы<br>открыть карту</span>
               </div>
             </div>
           </div>
@@ -173,7 +182,7 @@
         <!-- Заговоры на сегодня (превью) -->
         <section class="home-section">
           <div class="section-head">
-            <span class="section-icon">🕯️</span>
+            <span class="section-icon"></span>
             <span class="section-label" data-i18n="spellsToday">Заговоры на сегодня</span>
             <button class="btn-link" id="btn-all-spells" data-i18n="allSpells">Все →</button>
           </div>
@@ -198,7 +207,7 @@
         <!-- Карта дня -->
         <section class="home-section">
           <div class="section-head">
-            <span class="section-icon">✨</span>
+            <span class="section-icon"></span>
             <span class="section-label" data-i18n="cardOfDay">Карта дня</span>
             <span class="badge-free" data-i18n="free">БЕСПЛАТНО</span>
           </div>
@@ -216,7 +225,7 @@
         <!-- Три карты (премиум) -->
         <section class="home-section">
           <div class="section-head">
-            <span class="section-icon">🃏</span>
+            <span class="section-icon"></span>
             <span class="section-label" data-i18n="spreads">Расклады</span>
           </div>
           <div class="spread-btn" data-spread="three_card">
@@ -234,7 +243,7 @@
         <!-- Премиум расклады -->
         <section class="home-section">
           <div class="section-head">
-            <span class="section-icon">👑</span>
+            <span class="section-icon"></span>
             <span class="section-label" data-i18n="premiumSpreads">Премиум расклады</span>
           </div>
           <div class="premium-grid">
@@ -636,6 +645,6 @@
 
   </div>
 
-  <script type="module" src="app.js"></script>
+  <script type="module" src="app.js?v=2"></script>
 </body>
 </html>

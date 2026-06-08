@@ -19,6 +19,9 @@ if (tg) {
     document.documentElement.style.setProperty('--tg-top', `${tgTop}px`);
   }
   applyTgSafeArea();
+  // requestFullscreen() async — повторно зчитуємо після активації
+  setTimeout(applyTgSafeArea, 250);
+  setTimeout(applyTgSafeArea, 700);
   // Оновлюємо при зміні (напр. поворот екрану або вихід з fullscreen)
   tg.onEvent?.('fullscreenChanged', applyTgSafeArea);
   tg.onEvent?.('safeAreaChanged', applyTgSafeArea);
@@ -287,6 +290,11 @@ async function renderHome() {
   document.getElementById('top-astro').textContent = z
     ? `${z.emoji} ${z.name} · Путь ${user.astro.lifePath}`
     : '✏️ ' + L('tapToEdit');
+  const av = document.getElementById('user-avatar');
+  if (av && user.firstName) {
+    av.textContent = user.firstName[0].toUpperCase();
+    av.classList.add('avatar-letter');
+  }
   renderAstroStrip(user);
 
   // Таро: метадані (синхронно, без запиту)

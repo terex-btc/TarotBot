@@ -387,6 +387,14 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   display: flex; align-items: center; justify-content: center;
   font-size: 18px; flex-shrink: 0;
 }
+.avatar-circle.avatar-letter {
+  font-family: 'Inter', sans-serif;
+  font-size: 16px;
+  font-weight: 800;
+  background: linear-gradient(135deg, var(--purple) 0%, var(--purple3) 100%);
+  color: #fff;
+  letter-spacing: 0;
+}
 .top-name  { font-size: 14px; font-weight: 700; color: var(--text); }
 .top-astro { font-size: 11px; color: var(--text2); margin-top: 1px; }
 .top-user-btn {
@@ -433,8 +441,22 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   display: flex; align-items: center; gap: 7px;
   margin-bottom: 10px;
 }
-.section-icon  { font-size: 16px; }
-.section-label { font-size: 13px; font-weight: 700; color: var(--text); flex: 1; }
+.section-icon {
+  width: 3px; height: 14px;
+  border-radius: 2px;
+  background: linear-gradient(180deg, var(--purple2), var(--gold2));
+  display: inline-block;
+  flex-shrink: 0;
+  align-self: center;
+}
+.section-label {
+  font-family: 'Cinzel', serif;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  flex: 1;
+  letter-spacing: .03em;
+}
 .badge-free {
   font-size: 10px; font-weight: 700;
   background: rgba(124,58,237,.2);
@@ -482,10 +504,37 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   align-items: center; justify-content: center;
   gap: 14px;
 }
-.tap-card-emoji {
-  font-size: 56px;
-  filter: drop-shadow(0 0 18px rgba(168,85,247,.75));
+.tap-card-symbol {
+  width: 64px; height: 64px;
+  position: relative;
   animation: float 3s ease-in-out infinite;
+  filter: drop-shadow(0 0 18px rgba(168,85,247,.75));
+}
+.tap-card-symbol::before,
+.tap-card-symbol::after {
+  content: '';
+  position: absolute;
+  border-radius: 50%;
+  border: 1.5px solid rgba(168,85,247,.55);
+}
+.tap-card-symbol::before {
+  inset: 0;
+  animation: ring-spin 8s linear infinite;
+}
+.tap-card-symbol::after {
+  inset: 10px;
+  border-color: rgba(240,192,64,.45);
+  animation: ring-spin 5s linear infinite reverse;
+}
+@keyframes ring-spin { to { transform: rotate(360deg); } }
+/* Diamond in center */
+.tap-card-symbol .sym-diamond {
+  position: absolute;
+  top: 50%; left: 50%;
+  width: 18px; height: 18px;
+  background: linear-gradient(135deg, var(--purple2), var(--gold));
+  transform: translate(-50%, -50%) rotate(45deg);
+  box-shadow: 0 0 12px rgba(168,85,247,.6);
 }
 .tap-card-text {
   font-size: 13px; color: var(--text2);
@@ -1075,12 +1124,13 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
 
-/* ══ НОВЫЕ СТИЛИ: Главный экран ══════════════════════════════════════════ */
+/* ══ Головний екран ══════════════════════════════════════════════════════ */
 .today-block {
-  background: linear-gradient(135deg, rgba(124,58,237,.12), rgba(240,192,64,.06));
-  border: 1px solid var(--border2);
+  background: linear-gradient(135deg, rgba(124,58,237,.15) 0%, rgba(240,192,64,.08) 100%);
+  border: 1px solid rgba(168,85,247,.3);
   border-radius: var(--r);
-  padding: 12px 16px;
+  padding: 13px 16px;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.04);
   margin-bottom: 16px;
   display: flex;
   align-items: center;
@@ -1093,37 +1143,118 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 }
 .today-hint { font-size: 12px; color: var(--text2); }
 
+/* ══ Nav Featured Cards ══════════════════════════════════════════════════ */
+.nav-featured {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+.nav-feat {
+  min-height: 110px !important;
+  padding: 16px 15px 15px !important;
+  align-items: flex-start !important;
+  text-align: left !important;
+  flex-direction: column !important;
+  justify-content: space-between !important;
+  gap: 0 !important;
+}
+.nav-feat .nav-cell-emoji {
+  width: 46px !important;
+  height: 46px !important;
+  border-radius: 13px !important;
+  font-size: 24px !important;
+  margin-bottom: 0 !important;
+}
+.nav-feat-body { margin-top: 10px; }
+.nav-feat .nav-cell-name {
+  font-family: 'Cinzel', serif !important;
+  font-size: 15px !important;
+  font-weight: 600 !important;
+  line-height: 1.2 !important;
+  color: #fff !important;
+}
+.nav-feat .nav-cell-sub {
+  font-size: 11px !important;
+  margin-top: 2px !important;
+  color: rgba(var(--nc, 180,120,255), 0.7) !important;
+  font-weight: 500 !important;
+}
+
+/* ── Accent per section (RGB triplets for rgba() support) ── */
+.nav-cell[data-screen="tarot"]      { --nc: 139,92,246; }
+.nav-cell[data-screen="spells"]     { --nc: 236,72,153; }
+.nav-cell[data-screen="moon"]       { --nc: 34,211,238; }
+.nav-cell[data-screen="dreams"]     { --nc: 52,211,153; }
+.nav-cell[data-screen="premium"]    { --nc: 245,158,11; }
+.nav-cell[data-screen="numerology"] { --nc: 249,115,22; }
+.nav-cell[data-screen="horoscope"]  { --nc: 99,179,237; }
+.nav-cell[data-screen="compat"]     { --nc: 244,63,94; }
+.nav-cell[data-screen="diary"]      { --nc: 167,139,250; }
+
 .nav-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 8px;
-  margin-bottom: 20px;
+  margin-bottom: 10px;
 }
-.nav-grid-5 {
-  grid-template-columns: repeat(5, 1fr);
-}
-.nav-grid-5 .nav-cell {
-  padding: 12px 4px 10px;
-  min-height: 78px;
-}
-.nav-grid-5 .nav-cell-emoji { font-size: 22px; }
-.nav-grid-5 .nav-cell-name  { font-size: 11px; }
-.nav-grid-5 .nav-cell-sub   { font-size: 9px; }
+.nav-grid-3 { grid-template-columns: repeat(3, 1fr); }
+.nav-grid-3 .nav-cell { min-height: 82px; }
+.nav-grid-3 .nav-cell-emoji { width: 34px; height: 34px; border-radius: 9px; font-size: 18px; }
+.nav-grid-3 .nav-cell-name  { font-size: 11px; }
+
 .nav-cell {
-  background: var(--surface);
-  border: 1px solid var(--border);
+  background: linear-gradient(160deg,
+    rgba(var(--nc, 180,120,255), .07) 0%,
+    rgba(var(--nc, 180,120,255), .02) 100%);
+  border: 1px solid rgba(var(--nc, 180,120,255), .22);
   border-radius: var(--r);
-  padding: 14px 6px 12px;
+  padding: 12px 4px 10px;
   text-align: center;
   cursor: pointer;
-  transition: background .15s, border-color .15s, transform .12s;
+  transition: border-color .15s, transform .12s, box-shadow .15s;
   min-height: 84px;
-  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px;
+  position: relative;
+  overflow: hidden;
 }
-.nav-cell:active { background: var(--surf2); border-color: var(--purple2); transform: scale(.96); }
-.nav-cell-emoji { font-size: 26px; }
-.nav-cell-name  { font-size: 12px; font-weight: 700; color: var(--text); }
-.nav-cell-sub   { font-size: 10px; color: var(--text2); }
+.nav-cell::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: radial-gradient(ellipse at 50% 0%,
+    rgba(var(--nc, 180,120,255), .14) 0%, transparent 68%);
+  pointer-events: none;
+}
+.nav-cell:active {
+  border-color: rgba(var(--nc, 180,120,255), .55);
+  box-shadow: 0 0 14px rgba(var(--nc, 180,120,255), .18);
+  transform: scale(.96);
+}
+.nav-cell-emoji {
+  width: 38px; height: 38px;
+  background: rgba(var(--nc, 180,120,255), .16);
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px;
+  margin-bottom: 4px;
+  flex-shrink: 0;
+  position: relative; z-index: 1;
+}
+.nav-cell-name {
+  font-size: 11px; font-weight: 700;
+  color: var(--text);
+  position: relative; z-index: 1;
+  line-height: 1.2;
+}
+.nav-cell-sub {
+  font-size: 9px; color: var(--text2);
+  position: relative; z-index: 1;
+}
+/* Premium cell gets a subtle shimmer border */
+.nav-cell[data-screen="premium"] {
+  border-color: rgba(245,158,11,.35);
+  box-shadow: 0 0 10px rgba(245,158,11,.08);
+}
 
 .btn-link {
   background: none; border: none;
@@ -1612,10 +1743,10 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   margin-bottom: 20px;
 }
 .nav-cell-sm {
-  padding: 10px 4px 8px;
+  padding: 10px 3px 8px;
   min-height: 64px;
 }
-.nav-cell-sm .nav-cell-emoji { font-size: 20px; margin-bottom: 4px; }
+.nav-cell-sm .nav-cell-emoji { width: 30px; height: 30px; border-radius: 8px; font-size: 15px; margin-bottom: 3px; }
 .nav-cell-sm .nav-cell-name  { font-size: 10px; }
 
 /* ══ ОНБОРДИНГ ══════════════════════════════════════════════════════════ */
