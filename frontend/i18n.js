@@ -343,6 +343,24 @@ export const T = {
     // ── Compat ──
     compatEnterPartner: 'Введите дату рождения партнёра',
     compatUserNotFound: 'Ваши данные не найдены',
+    compatShareText: 'Наша совместимость',
+    compatShareSuffix: '— узнай свою в Магическом Кабинете ✨',
+
+    // ── Upsell after reading ──
+    upsellTitle: 'Хочешь узнать что ждёт весь месяц?',
+    upsellSub: 'Расклад на месяц, год и любовь — открой Премиум',
+    upsellBtn: 'Открыть Премиум 👑',
+
+    // ── AI Chat ──
+    aiChatScreen: 'AI Оракул',
+    aiChatSub: 'Спроси о судьбе',
+    aiChatWelcome: 'Я — Оракул карт. Задай свой вопрос и я раскрою послание звёзд.',
+    aiChatPlaceholder: 'Задай вопрос картам...',
+    aiChatThinking: 'Карты говорят...',
+    aiChatPremiumMsg: '👑 AI Оракул доступен в Премиум. Открой доступ ко всем возможностям.',
+    aiChatPremiumBtn: 'Открыть Премиум 👑',
+    aiChatLimitMsg: '⏳ Лимит на сегодня исчерпан. Возвращайся завтра.',
+    aiChatError: 'Не удалось получить ответ. Попробуй ещё раз.',
   },
 
   ua: {
@@ -686,6 +704,24 @@ export const T = {
     // ── Compat ──
     compatEnterPartner: 'Введіть дату народження партнера',
     compatUserNotFound: 'Ваші дані не знайдено',
+    compatShareText: 'Наша сумісність',
+    compatShareSuffix: '— дізнайся свою в Магічному Кабінеті ✨',
+
+    // ── Upsell after reading ──
+    upsellTitle: 'Хочеш дізнатись що чекає весь місяць?',
+    upsellSub: 'Розклад на місяць, рік і кохання — відкрий Преміум',
+    upsellBtn: 'Відкрити Преміум 👑',
+
+    // ── AI Chat ──
+    aiChatScreen: 'AI Оракул',
+    aiChatSub: 'Спитай про долю',
+    aiChatWelcome: 'Я — Оракул карт. Постав своє запитання і я розкрию послання зірок.',
+    aiChatPlaceholder: 'Постав запитання картам...',
+    aiChatThinking: 'Карти говорять...',
+    aiChatPremiumMsg: '👑 AI Оракул доступний у Преміум. Відкрий доступ до всіх можливостей.',
+    aiChatPremiumBtn: 'Відкрити Преміум 👑',
+    aiChatLimitMsg: '⏳ Ліміт на сьогодні вичерпано. Повертайся завтра.',
+    aiChatError: 'Не вдалося отримати відповідь. Спробуй ще раз.',
   }
 };
 

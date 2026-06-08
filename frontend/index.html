@@ -11,7 +11,7 @@
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=3">
+  <link rel="stylesheet" href="style.css?v=4">
 </head>
 <body>
   <canvas id="stars-canvas"></canvas>
@@ -139,6 +139,18 @@
             <div class="nav-cell-emoji">👑</div>
             <div class="nav-cell-name" data-i18n="premiumScreen">Премиум</div>
           </div>
+        </div>
+
+        <!-- AI Оракул — баннер -->
+        <div class="ai-oracle-banner" id="nav-ai-oracle" data-screen="ai-chat">
+          <div class="aob-left">
+            <div class="aob-icon">✨</div>
+            <div class="aob-text">
+              <div class="aob-title" data-i18n="aiChatScreen">AI Оракул</div>
+              <div class="aob-sub" data-i18n="aiChatSub">Спроси о судьбе</div>
+            </div>
+          </div>
+          <div class="aob-arrow">→</div>
         </div>
 
         <!-- Навигация: личный кабинет -->
@@ -317,6 +329,8 @@
             <button class="btn-share-reading" id="btn-share-reading">📲 Поделиться</button>
           </div>
         </div>
+        <!-- Upsell после карты дня -->
+        <div id="reading-upsell" class="reading-upsell hidden"></div>
         <div style="height:40px"></div>
       </div>
     </div>
@@ -652,8 +666,26 @@
       </div>
     </div>
 
+    <!-- ══ AI CHAT (Оракул) ══════════════════════════════════════════════════ -->
+    <div id="screen-ai-chat" class="screen">
+      <header class="top-bar">
+        <button class="icon-btn back-btn" data-to="home">←</button>
+        <div class="top-bar-title" data-i18n="aiChatScreen">AI Оракул</div>
+        <div style="width:40px"></div>
+      </header>
+      <div class="ai-chat-wrap">
+        <div class="ai-chat-messages" id="ai-chat-messages">
+          <!-- Сообщения добавляются через JS -->
+        </div>
+        <div class="ai-chat-input-bar" id="ai-chat-input-bar">
+          <textarea id="ai-chat-input" class="ai-chat-input" data-i18n-ph="aiChatPlaceholder" placeholder="Задай вопрос картам..." rows="1" maxlength="400"></textarea>
+          <button class="ai-chat-send" id="ai-chat-send">→</button>
+        </div>
+      </div>
+    </div>
+
   </div>
 
-  <script type="module" src="app.js?v=3"></script>
+  <script type="module" src="app.js?v=4"></script>
 </body>
 </html>

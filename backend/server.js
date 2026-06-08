@@ -333,12 +333,77 @@ if (BOT_TOKEN) {
     return _moonCache;
   }
 
+  // ── Допоміжна функція: відправка батчами ─────────────────────────────────
+  async function sendBatch(rows, buildMsg, webAppUrl, logTag) {
+    let sent = 0, failed = 0;
+    const BATCH = 25;
+    for (let i = 0; i < rows.length; i += BATCH) {
+      const batch = rows.slice(i, i + BATCH);
+      await Promise.allSettled(batch.map(async user => {
+        try {
+          const { text, btnText } = buildMsg(user);
+          await bot.sendMessage(user.user_id, text, {
+            parse_mode: 'Markdown',
+            reply_markup: { inline_keyboard: [[
+              { text: btnText || '🔮 Открыть', web_app: { url: webAppUrl } },
+            ]]},
+          });
+          sent++;
+        } catch (_) { failed++; }
+      }));
+      if (i + BATCH < rows.length) await new Promise(r => setTimeout(r, 1100));
+    }
+    console.log(`[Cron/${logTag}] відправлено ${sent}, пропущено ${failed}, всього ${rows.length}`);
+  }
+
+  // ── Щоденні сповіщення: 9:00 ─────────────────────────────────────────────
   cron.schedule('0 9 * * *', async () => {
     try {
       const webAppUrl = process.env.WEBAPP_URL || `http://localhost:${PORT}`;
       const moon = getCachedMoon();
 
-      // Вибираємо активних юзерів (реєструвалися за останні 60 днів)
+      // Сьогоднішній MM-DD для перевірки дня народження
+      const todayMD = new Date().toISOString().slice(5, 10); // "MM-DD"
+
+      const cutoff = Date.now() - 60 * 24 * 60 * 60 * 1000;
+      const { rows } = await pool.query(
+        `SELECT user_id, first_name, birth_date FROM users
+         WHERE created_at > to_timestamp($1/1000.0) AND birth_date IS NOT NULL
+         LIMIT 5000`,
+        [cutoff]
+      );
+
+      const defaultMsgs = [
+        `🔮 Карта дня уже готова для тебя`,
+        `✨ Звёзды приготовили послание на сегодня`,
+        `🌟 Твоя карта дня ждёт — что скажут карты?`,
+        `🃏 Начни день с Таро — открой карту дня!`,
+      ];
+      const moonMsg = `\n\n${moon.emoji} Луна сегодня: *${moon.name}*`;
+
+      await sendBatch(rows, (user) => {
+        const isBirthday = user.birth_date && String(user.birth_date).slice(5, 10) === todayMD;
+        let text;
+        if (isBirthday) {
+          text = `🎂 *С Днём Рождения, ${user.first_name || 'дорогая'}!*\n\nВ твой особый день карты дают послание о судьбоносных переменах. Открой карту дня — она выбрана специально для тебя.${moonMsg}`;
+        } else {
+          text = `${defaultMsgs[Math.floor(Math.random() * defaultMsgs.length)]}, ${user.first_name || 'дорогая'}!${moonMsg}`;
+        }
+        return { text, btnText: isBirthday ? '🎂 Открыть карту дня' : '🔮 Открыть карту дня' };
+      }, webAppUrl, 'morning');
+    } catch (e) {
+      console.error('[Cron] Помилка щоденних сповіщень:', e.message);
+    }
+  }, { timezone: 'Europe/Kyiv' });
+
+  // ── Місячні сповіщення: 20:00 (тільки повнолуння / новолуння) ────────────
+  cron.schedule('0 20 * * *', async () => {
+    try {
+      const moon = getCachedMoon();
+      // Відправляємо тільки при повнолунні або новолунні
+      if (moon.phase !== 'full' && moon.phase !== 'new') return;
+
+      const webAppUrl = process.env.WEBAPP_URL || `http://localhost:${PORT}`;
       const cutoff = Date.now() - 60 * 24 * 60 * 60 * 1000;
       const { rows } = await pool.query(
         `SELECT user_id, first_name FROM users
@@ -347,36 +412,25 @@ if (BOT_TOKEN) {
         [cutoff]
       );
 
-      const msgs = [
-        `🔮 Карта дня уже готова для тебя`,
-        `✨ Звёзды приготовили послание на сегодня`,
-        `🌟 Твоя карта дня ждёт — что скажут карты?`,
-        `🃏 Начни день с Таро — открой карту дня!`,
+      const isFull = moon.phase === 'full';
+      const moonMsgs = isFull ? [
+        `🌕 *Полнолуние!* Это самое мощное время для магии и намерений.\n\nОткрой расклад — звёзды открыты для тебя, ${'{name}'}!`,
+        `🌕 Сегодня *Полнолуние* — сила луны на пике!\n\nКарты говорят особенно ясно. Открой послание, ${'{name}'}`,
+      ] : [
+        `🌑 *Новолуние* — время новых начал и загадываний желаний.\n\nКарты Таро помогут направить энергию. Открой расклад, ${'{name}'}!`,
+        `🌑 Сегодня *Новолуние* — лучший день для намерений.\n\nЧто ты хочешь привлечь в свою жизнь? Спроси карты, ${'{name}'}`,
       ];
-      const moonMsg = `\n\n${moon.emoji} Луна сегодня: *${moon.name}*`;
 
-      let sent = 0, failed = 0;
-      // Telegram дозволяє ~30 msg/сек. Відправляємо батчами по 25 з паузою 1 сек.
-      const BATCH = 25;
-      for (let i = 0; i < rows.length; i += BATCH) {
-        const batch = rows.slice(i, i + BATCH);
-        await Promise.allSettled(batch.map(async user => {
-          try {
-            const greeting = `${msgs[Math.floor(Math.random() * msgs.length)]}, ${user.first_name || 'дорогая'}!${moonMsg}`;
-            await bot.sendMessage(user.user_id, greeting, {
-              parse_mode: 'Markdown',
-              reply_markup: { inline_keyboard: [[
-                { text: '🔮 Открыть карту дня', web_app: { url: webAppUrl } },
-              ]]},
-            });
-            sent++;
-          } catch (_) { failed++; } // юзер заблокував бота
-        }));
-        if (i + BATCH < rows.length) await new Promise(r => setTimeout(r, 1100));
-      }
-      console.log(`[Cron] Сповіщення: відправлено ${sent}, пропущено ${failed}, всього ${rows.length}`);
+      await sendBatch(rows, (user) => {
+        const name = user.first_name || 'дорогая';
+        const tmpl = moonMsgs[Math.floor(Math.random() * moonMsgs.length)];
+        return {
+          text: tmpl.replace('{name}', name),
+          btnText: isFull ? '🌕 Открыть расклад' : '🌑 Открыть расклад',
+        };
+      }, webAppUrl, 'moon');
     } catch (e) {
-      console.error('[Cron] Помилка щоденних сповіщень:', e.message);
+      console.error('[Cron] Помилка місячних сповіщень:', e.message);
     }
   }, { timezone: 'Europe/Kyiv' });
 

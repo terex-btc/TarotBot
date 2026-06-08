@@ -575,6 +575,26 @@ function renderReading(reading) {
     verdictEl.classList.remove('hidden');
   }
   document.getElementById('reading-interpretation').textContent = reading.interpretation || '';
+
+  // Upsell block — только для daily + не-premium
+  const upsellEl = document.getElementById('reading-upsell');
+  if (upsellEl) {
+    if (reading.spreadType === 'daily' && !state.user?.isPremium) {
+      upsellEl.innerHTML = `
+        <div class="ru-icon">🔮</div>
+        <div class="ru-title">${L('upsellTitle')}</div>
+        <div class="ru-sub">${L('upsellSub')}</div>
+        <button class="btn-upsell" id="btn-reading-upsell">${L('upsellBtn')}</button>
+      `;
+      upsellEl.classList.remove('hidden');
+      document.getElementById('btn-reading-upsell')?.addEventListener('click', async () => {
+        showScreen('premium'); await loadPremiumScreen();
+      });
+    } else {
+      upsellEl.classList.add('hidden');
+    }
+  }
+
   const wrap  = document.getElementById('reading-cards-wrap');
   const isGrid = reading.cards.length >= 4;
   wrap.className = `reading-cards-wrap${isGrid ? ' grid-layout' : ''}`;
@@ -1175,7 +1195,13 @@ function initNav() {
       else if (s === 'horoscope')  { showScreen('horoscope'); loadHoroscopeScreen(); }
       else if (s === 'compat')     { showScreen('compat'); initCompatScreen(); }
       else if (s === 'diary')      { showScreen('diary'); loadDiaryScreen(); }
+      else if (s === 'ai-chat')    { showScreen('ai-chat'); initAiChatScreen(); }
     });
+  });
+
+  // AI Oracle banner (отдельный обработчик для баннера)
+  document.getElementById('nav-ai-oracle')?.addEventListener('click', () => {
+    showScreen('ai-chat'); initAiChatScreen();
   });
 
   // Кнопка «Все заговоры →» на головному
@@ -1947,6 +1973,9 @@ function calcCompatibility(partnerBirth) {
       <button class="btn-primary" id="btn-compat-spread">
         🃏 Расклад для пары
       </button>
+      <button class="btn-share-reading" id="btn-compat-share" style="margin-top:8px;width:100%">
+        📲 Поделиться результатом
+      </button>
     </div>
     <div style="height:32px"></div>
   `;
@@ -1955,6 +1984,17 @@ function calcCompatibility(partnerBirth) {
 
   document.getElementById('btn-compat-spread')?.addEventListener('click', () => {
     openSpread('love');
+  });
+
+  document.getElementById('btn-compat-share')?.addEventListener('click', () => {
+    const shareText = `${L('compatShareText')} ${myZodiac} ♥ ${partnerZodiac} — ${finalScore}%! ${L('compatShareSuffix')}`;
+    if (tg?.shareURL) {
+      tg.shareURL(process.env.WEBAPP_URL || 'https://t.me/MagicCabinetBot', shareText);
+    } else if (navigator.share) {
+      navigator.share({ text: shareText }).catch(() => {});
+    } else {
+      navigator.clipboard?.writeText(shareText).then(() => toast(L('copied'))).catch(() => toast(L('shareErr')));
+    }
   });
 }
 
@@ -2171,6 +2211,146 @@ function renderBlurredSpreadPreview(spreadType) {
       </div>
     </div>
   `;
+}
+
+// ══ AI CHAT (ОРАКУЛ) ═════════════════════════════════════════════════════════
+
+let _aiChatHistory = [];
+let _aiChatInited  = false;
+let _aiChatBusy    = false;
+
+function initAiChatScreen() {
+  const messagesEl = document.getElementById('ai-chat-messages');
+  const inputEl    = document.getElementById('ai-chat-input');
+  const sendBtn    = document.getElementById('ai-chat-send');
+  if (!messagesEl) return;
+
+  // Инициализируем только первый раз
+  if (!_aiChatInited) {
+    _aiChatInited = true;
+    _aiChatHistory = [];
+    messagesEl.innerHTML = `
+      <div class="ai-chat-welcome">
+        <div class="ai-chat-welcome-orb">🔮</div>
+        <div class="ai-chat-welcome-title">${L('aiChatScreen')}</div>
+        <div class="ai-chat-welcome-sub">${L('aiChatWelcome')}</div>
+      </div>
+    `;
+
+    // Авто-рост textarea
+    inputEl?.addEventListener('input', () => {
+      inputEl.style.height = 'auto';
+      inputEl.style.height = Math.min(inputEl.scrollHeight, 96) + 'px';
+    });
+
+    sendBtn?.addEventListener('click', sendAiChatMessage);
+    inputEl?.addEventListener('keydown', e => {
+      if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendAiChatMessage(); }
+    });
+  }
+}
+
+async function sendAiChatMessage() {
+  if (_aiChatBusy) return;
+  const inputEl    = document.getElementById('ai-chat-input');
+  const messagesEl = document.getElementById('ai-chat-messages');
+  const sendBtn    = document.getElementById('ai-chat-send');
+  const text = inputEl?.value?.trim();
+  if (!text) return;
+
+  // Проверка Premium — AI chat только для премиум
+  if (!state.user?.isPremium) {
+    appendAiMessage('system', L('aiChatPremiumMsg'));
+    // Показываем кнопку перехода к Премиум
+    const promptDiv = document.createElement('div');
+    promptDiv.className = 'ai-premium-prompt';
+    promptDiv.innerHTML = `<button class="btn-ai-premium" id="ai-go-premium">${L('aiChatPremiumBtn')}</button>`;
+    messagesEl.appendChild(promptDiv);
+    promptDiv.querySelector('#ai-go-premium')?.addEventListener('click', async () => {
+      showScreen('premium'); await loadPremiumScreen();
+    });
+    scrollAiChat();
+    return;
+  }
+
+  inputEl.value = '';
+  inputEl.style.height = 'auto';
+  _aiChatBusy = true;
+  sendBtn.disabled = true;
+
+  // Сообщение пользователя
+  appendAiMessage('user', text);
+  _aiChatHistory.push({ role: 'user', content: text });
+
+  // Индикатор "думает"
+  const typingId = 'ai-typing-' + Date.now();
+  const typingDiv = document.createElement('div');
+  typingDiv.id = typingId;
+  typingDiv.className = 'ai-msg ai-msg-oracle ai-msg-typing';
+  typingDiv.innerHTML = '<div class="ai-dot"></div><div class="ai-dot"></div><div class="ai-dot"></div>';
+  messagesEl.appendChild(typingDiv);
+  scrollAiChat();
+
+  try {
+    const data = await api('POST', '/ai/chat', {
+      userId:   state.userId,
+      messages: _aiChatHistory.slice(-10), // последние 10 сообщений
+      userAstro: state.user?.astro,
+      lang:     state.lang,
+    });
+
+    document.getElementById(typingId)?.remove();
+
+    if (data.ok) {
+      const reply = data.reply;
+      _aiChatHistory.push({ role: 'assistant', content: reply });
+      appendAiMessage('oracle', reply);
+    } else if (data.error === 'rate_limit') {
+      appendAiMessage('system', L('aiChatLimitMsg'));
+    } else {
+      appendAiMessage('system', L('aiChatError'));
+    }
+  } catch (_) {
+    document.getElementById(typingId)?.remove();
+    appendAiMessage('system', L('aiChatError'));
+  }
+
+  _aiChatBusy = false;
+  sendBtn.disabled = false;
+  tg?.HapticFeedback?.notificationOccurred?.('success');
+}
+
+function appendAiMessage(type, text) {
+  const messagesEl = document.getElementById('ai-chat-messages');
+  if (!messagesEl) return;
+  const div = document.createElement('div');
+  if (type === 'user') {
+    div.className = 'ai-msg ai-msg-user';
+    div.textContent = text;
+  } else if (type === 'oracle') {
+    div.className = 'ai-msg ai-msg-oracle';
+    div.innerHTML = `
+      <div class="ai-msg-oracle-header">
+        <span class="ai-msg-oracle-icon">🔮</span>
+        <span class="ai-msg-oracle-name">Оракул</span>
+      </div>
+      <div>${escHtml(text).replace(/\n/g, '<br>')}</div>
+    `;
+  } else {
+    div.className = 'ai-msg ai-msg-system';
+    div.textContent = text;
+  }
+  messagesEl.appendChild(div);
+  scrollAiChat();
+}
+
+function scrollAiChat() {
+  const el = document.getElementById('ai-chat-messages');
+  if (el) requestAnimationFrame(() => { el.scrollTop = el.scrollHeight; });
+}
+
+function escHtml(str) {
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
 
 // ── Helpers ────────────────────────────────────────────────────────────────

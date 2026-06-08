@@ -91,4 +91,56 @@ router.post('/interpret', async (req, res) => {
   }
 });
 
+// POST /api/ai/chat — диалог с Оракулом
+router.post('/chat', async (req, res) => {
+  try {
+    if (!process.env.ANTHROPIC_API_KEY) {
+      return res.status(503).json({ ok: false, error: 'AI not configured' });
+    }
+    const { messages, userAstro, userId, lang } = req.body;
+    if (!messages?.length) return res.status(400).json({ ok: false, error: 'messages required' });
+
+    // Rate limit: 10 запросов/мин на юзера для чата
+    const RL_CHAT_MAX = 10;
+    if (userId) {
+      const now = Date.now();
+      const times = (_rl.get(`chat_${userId}`) || []).filter(t => now - t < RL_WINDOW);
+      if (times.length >= RL_CHAT_MAX) {
+        return res.status(429).json({ ok: false, error: 'rate_limit' });
+      }
+      times.push(now);
+      _rl.set(`chat_${userId}`, times);
+    }
+
+    const l = lang || 'ru';
+
+    const astroInfo = userAstro ? [
+      userAstro.zodiac?.name,
+      `Жизненный путь ${userAstro.lifePath}`,
+      userAstro.moonPhase?.name,
+    ].filter(Boolean).join(', ') : '';
+
+    const systemPrompt = l === 'ua'
+      ? `Ти — містичний Оракул карт Таро з тисячолітньою мудрістю. Відповідаєш коротко (2-5 речень), містично але конкретно. Іноді посилаєшся на карти, зірки, фази місяця. Звертаєшся на "ти". ${astroInfo ? `Астрологія користувача: ${astroInfo}.` : ''}`
+      : `Ты — мистический Оракул карт Таро с тысячелетней мудростью. Отвечаешь кратко (2-5 предложений), мистично но конкретно. Иногда ссылаешься на карты, звёзды, фазы луны. Обращаешься на "ты". ${astroInfo ? `Астрология пользователя: ${astroInfo}.` : ''}`;
+
+    // Конвертируем историю сообщений в формат Anthropic
+    const apiMessages = messages
+      .slice(-10) // не больше 10 сообщений
+      .map(m => ({ role: m.role === 'user' ? 'user' : 'assistant', content: String(m.content).slice(0, 500) }));
+
+    const finalMsg = await getClient().messages.create({
+      model: 'claude-haiku-4-5',
+      max_tokens: 250,
+      system: systemPrompt,
+      messages: apiMessages,
+    });
+    const reply = finalMsg.content.find(b => b.type === 'text')?.text || '';
+    res.json({ ok: true, reply });
+  } catch (e) {
+    console.error('[AI] chat error:', e.message);
+    res.status(500).json({ ok: false, error: 'ai_error' });
+  }
+});
+
 module.exports = router;
