@@ -5,12 +5,24 @@ import { t, T } from './i18n.js';
 const tg = window.Telegram?.WebApp;
 if (tg) {
   tg.ready();
-  tg.expand();                          // розгорнути на повну висоту
-  tg.requestFullscreen?.();             // повний екран (Telegram 7.10+, ховає верхній бар)
+  tg.expand();
+  tg.requestFullscreen?.();
   tg.setHeaderColor?.('#07030f');
   tg.setBackgroundColor?.('#07030f');
   tg.setBottomBarColor?.('#07030f');
-  tg.disableVerticalSwipes?.();         // не закривати свайпом вниз (Telegram 7.7+)
+  tg.disableVerticalSwipes?.();
+
+  // Встановлюємо відступ зверху з урахуванням Telegram fullscreen UI кнопок
+  function applyTgSafeArea() {
+    // contentSafeAreaInset.top — відступ від Telegram кнопок (Закрити і т.д.)
+    const tgTop = tg.contentSafeAreaInset?.top ?? 0;
+    document.documentElement.style.setProperty('--tg-top', `${tgTop}px`);
+  }
+  applyTgSafeArea();
+  // Оновлюємо при зміні (напр. поворот екрану або вихід з fullscreen)
+  tg.onEvent?.('fullscreenChanged', applyTgSafeArea);
+  tg.onEvent?.('safeAreaChanged', applyTgSafeArea);
+  tg.onEvent?.('contentSafeAreaChanged', applyTgSafeArea);
 }
 
 // ── State ──────────────────────────────────────────────────────────────────
@@ -272,7 +284,9 @@ async function renderHome() {
   if (!user) return;
   document.getElementById('top-name').textContent = user.firstName || L('defaultName');
   const z = user.astro?.zodiac;
-  document.getElementById('top-astro').textContent = z ? `${z.emoji} ${z.name} · Путь ${user.astro.lifePath}` : '';
+  document.getElementById('top-astro').textContent = z
+    ? `${z.emoji} ${z.name} · Путь ${user.astro.lifePath}`
+    : '✏️ ' + L('tapToEdit');
   renderAstroStrip(user);
 
   // Таро: метадані (синхронно, без запиту)

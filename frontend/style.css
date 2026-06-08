@@ -23,8 +23,10 @@
   --text3:   #4e3d72;
   --r:       16px;
   --r-sm:    10px;
-  /* Нижній safe-area для iPhone */
+  /* Safe area — встановлюються через JS при fullscreen */
+  --safe-t:  env(safe-area-inset-top, 0px);
   --safe-b:  env(safe-area-inset-bottom, 12px);
+  --tg-top:  0px; /* додатковий відступ від Telegram UI кнопок у fullscreen */
 }
 
 /* ══ Base ════════════════════════════════════════════════════════════════ */
@@ -72,8 +74,8 @@ body {
   pointer-events: none;
   transform: translateX(40px);
   transition: opacity .3s ease, transform .3s ease;
-  /* Учитываем notch */
-  padding-top: env(safe-area-inset-top, 0px);
+  /* Учитываем notch + Telegram fullscreen UI кнопки */
+  padding-top: calc(var(--safe-t) + var(--tg-top));
 }
 .screen.active {
   opacity: 1;
@@ -387,6 +389,12 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 }
 .top-name  { font-size: 14px; font-weight: 700; color: var(--text); }
 .top-astro { font-size: 11px; color: var(--text2); margin-top: 1px; }
+.top-user-btn {
+  background: none; border: none; padding: 4px 8px 4px 0;
+  text-align: left; cursor: pointer; border-radius: 8px;
+  transition: background .15s;
+}
+.top-user-btn:active { background: var(--surface); }
 
 /* ══ HOME SCROLL ══════════════════════════════════════════════════════════ */
 .home-scroll {

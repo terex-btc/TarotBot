@@ -171,6 +171,7 @@ export const T = {
     supportSendErr: 'Ошибка отправки. Попробуйте позже.',
 
     // ── Profile ──
+    tapToEdit: 'нажми для изменения',
     profileEditTitle: '✏️ Редактировать профиль',
     profileNameLabel: 'Ваше имя',
     profileBirthLabel: 'Дата рождения',
@@ -509,6 +510,7 @@ export const T = {
     supportSendErr: 'Помилка надсилання. Спробуйте пізніше.',
 
     // ── Profile ──
+    tapToEdit: 'натисни для зміни',
     profileEditTitle: '✏️ Редагувати профіль',
     profileNameLabel: 'Ваше ім\'я',
     profileBirthLabel: 'Дата народження',
