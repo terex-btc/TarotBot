@@ -62,7 +62,7 @@ async function createReading(userId, birthDate, spreadType, targetDate, lang) {
   const adminMode = isAdmin(userId);
   const { cardIds, reversed, meta } = algo.selectCards(birthDate, today, spreadType, spread.count, adminMode);
   const cards  = cardIds.map((id, i) => ({ ...MAJOR_ARCANA[id], isReversed: reversed[i] }));
-  const interpretation = algo.generateInterpretation(meta, spreadType, 'ru');
+  const { text: interpretation, verdict } = algo.generateInterpretation(meta, spreadType, cards);
 
   const id = Date.now().toString();
   const { rows } = await pool.query(`
@@ -83,7 +83,7 @@ async function createReading(userId, birthDate, spreadType, targetDate, lang) {
   ).catch(() => {});
   bumpActivity?.();
 
-  return rowToReading(rows[0]);
+  return { ...rowToReading(rows[0]), verdict };
 }
 
 async function getUserReadings(userId, limit = 10) {

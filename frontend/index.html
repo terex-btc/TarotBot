@@ -11,7 +11,7 @@
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=2">
+  <link rel="stylesheet" href="style.css?v=3">
 </head>
 <body>
   <canvas id="stars-canvas"></canvas>
@@ -296,6 +296,7 @@
       <div class="reading-scroll" id="reading-scroll">
         <div class="reading-question-badge hidden" id="reading-question-badge"></div>
         <div class="reading-meta" id="reading-meta"></div>
+        <div class="reading-verdict hidden" id="reading-verdict"></div>
         <div class="reading-interpretation" id="reading-interpretation"></div>
         <div class="reading-cards-wrap" id="reading-cards-wrap"></div>
         <div id="reading-summary-btn" class="reading-summary-btn hidden">
@@ -459,44 +460,20 @@
         <div style="width:40px"></div>
       </header>
       <div class="premium-scroll">
+
+        <!-- Философия обмена энергиями -->
+        <div class="energy-exchange-block">
+          <div class="eeb-symbol">◈</div>
+          <p class="eeb-text" data-i18n="energyExchange">Это обмен энергиями — ты получаешь магический дар, знания и силу. Взамен — отдаёшь материальное. Так устроена Вселенная.</p>
+        </div>
+
         <div class="premium-hero">
           <div class="premium-crown">👑</div>
           <h2 class="premium-title" data-i18n="premiumTitle">Магический Премиум</h2>
           <p class="premium-sub" id="premium-hero-sub">Полная сила магии — персонально<br>по вашему знаку и нумерологии</p>
         </div>
 
-        <!-- Бесплатный премиум через реферал — ГЛАВНЫЙ БЛОК -->
-        <div class="free-premium-block">
-          <div class="fpb-header">
-            <span class="fpb-gift">🎁</span>
-            <div>
-              <div class="fpb-title" data-i18n="fpbTitle">Получи Премиум бесплатно!</div>
-              <div class="fpb-sub" data-i18n="fpbSub">Пригласи подругу — получи 1 день Премиума</div>
-            </div>
-          </div>
-          <div class="fpb-counter" id="fpb-counter">
-            <div class="fpb-step" id="fpb-step1" data-i18n="fpb1">👤 1 подруга = 1 день</div>
-            <div class="fpb-step" id="fpb-step3" data-i18n="fpb3">👥 3 подруги = 3 дня</div>
-            <div class="fpb-step" id="fpb-step7" data-i18n="fpb7">🌟 7 подруг = неделя!</div>
-          </div>
-          <div class="fpb-invited" id="fpb-invited"></div>
-          <button class="btn-primary btn-free-prem" id="btn-share-ref" data-i18n="inviteBtn">
-            📲 Пригласить подругу
-          </button>
-        </div>
-
-        <div class="premium-divider" data-i18n="premiumDivider">— или купить —</div>
-
-        <div class="premium-features">
-          <div class="pf-item"><span class="pf-emoji">🃏</span><div data-i18n-html="premiumF1"><b>Все расклады Таро</b><div class="pf-desc">Любовь · Месяц · Год — 22 карты судьбы</div></div></div>
-          <div class="pf-item"><span class="pf-emoji">🕯️</span><div data-i18n-html="premiumF2"><b>Все заговоры и ритуалы</b><div class="pf-desc">Привороты · Деньги · Красота · Защита</div></div></div>
-          <div class="pf-item"><span class="pf-emoji">🌙</span><div data-i18n-html="premiumF3"><b>Лунный магический дневник</b><div class="pf-desc">Ритуалы на каждую фазу луны</div></div></div>
-          <div class="pf-item"><span class="pf-emoji">🔮</span><div data-i18n-html="premiumF4"><b>Алгоритм судьбы</b><div class="pf-desc">Персонально по дате рождения</div></div></div>
-          <div class="pf-item"><span class="pf-emoji">❤️</span><div data-i18n-html="premiumF5"><b>Привороты силы</b><div class="pf-desc">Любовная магия · Верность · Возврат</div></div></div>
-          <div class="pf-item"><span class="pf-emoji">💰</span><div data-i18n-html="premiumF6"><b>Денежная магия</b><div class="pf-desc">Мощные ритуалы на богатство</div></div></div>
-        </div>
-
-        <!-- Плани -->
+        <!-- Плани — первыми, до реферала -->
         <div class="plans-wrap">
           <div class="plan-card" data-plan="premium_30">
             <div class="plan-emoji">🌙</div>
@@ -523,6 +500,38 @@
           <span id="btn-buy-label" data-i18n="buyBtn">Выбрать план 👑</span>
         </button>
         <p class="premium-note" data-i18n="payNote">Оплата через Telegram Stars · Безопасно</p>
+
+        <!-- Что включено -->
+        <div class="premium-features">
+          <div class="pf-item"><span class="pf-emoji">🃏</span><div data-i18n-html="premiumF1"><b>Все расклады Таро</b><div class="pf-desc">Любовь · Месяц · Год — 22 карты судьбы</div></div></div>
+          <div class="pf-item"><span class="pf-emoji">🕯️</span><div data-i18n-html="premiumF2"><b>Все заговоры и ритуалы</b><div class="pf-desc">Привороты · Деньги · Красота · Защита</div></div></div>
+          <div class="pf-item"><span class="pf-emoji">🌙</span><div data-i18n-html="premiumF3"><b>Лунный магический дневник</b><div class="pf-desc">Ритуалы на каждую фазу луны</div></div></div>
+          <div class="pf-item"><span class="pf-emoji">🔮</span><div data-i18n-html="premiumF4"><b>Алгоритм судьбы</b><div class="pf-desc">Персонально по дате рождения</div></div></div>
+          <div class="pf-item"><span class="pf-emoji">❤️</span><div data-i18n-html="premiumF5"><b>Привороты силы</b><div class="pf-desc">Любовная магия · Верность · Возврат</div></div></div>
+          <div class="pf-item"><span class="pf-emoji">💰</span><div data-i18n-html="premiumF6"><b>Денежная магия</b><div class="pf-desc">Мощные ритуалы на богатство</div></div></div>
+        </div>
+
+        <div class="premium-divider" data-i18n="premiumDivider">— или получи бесплатно —</div>
+
+        <!-- Реферальный блок — после кнопки покупки -->
+        <div class="free-premium-block">
+          <div class="fpb-header">
+            <span class="fpb-gift">🎁</span>
+            <div>
+              <div class="fpb-title" data-i18n="fpbTitle">Получи Премиум бесплатно!</div>
+              <div class="fpb-sub" data-i18n="fpbSub">Пригласи подругу — получи 1 день Премиума</div>
+            </div>
+          </div>
+          <div class="fpb-counter" id="fpb-counter">
+            <div class="fpb-step" id="fpb-step1" data-i18n="fpb1">👤 1 подруга = 1 день</div>
+            <div class="fpb-step" id="fpb-step3" data-i18n="fpb3">👥 3 подруги = 3 дня</div>
+            <div class="fpb-step" id="fpb-step7" data-i18n="fpb7">🌟 7 подруг = неделя!</div>
+          </div>
+          <div class="fpb-invited" id="fpb-invited"></div>
+          <button class="btn-primary btn-free-prem" id="btn-share-ref" data-i18n="inviteBtn">
+            📲 Пригласить подругу
+          </button>
+        </div>
 
         <p class="premium-note-bottom" data-i18n="payNoteBottom">Оплачивая вы соглашаетесь с условиями сервиса</p>
 
@@ -645,6 +654,6 @@
 
   </div>
 
-  <script type="module" src="app.js?v=2"></script>
+  <script type="module" src="app.js?v=3"></script>
 </body>
 </html>

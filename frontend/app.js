@@ -562,6 +562,18 @@ function renderReading(reading) {
       `<div class="meta-pill">${m.moonPhase?.emoji} <strong>${m.moonPhase?.name}</strong></div>`,
     ].join('');
   }
+  // Verdict badge
+  const verdictEl = document.getElementById('reading-verdict');
+  if (verdictEl) {
+    const cfg = {
+      positive: { icon: '✨', text: L('verdictPositive') || 'Энергия на вашей стороне' },
+      caution:  { icon: '⚡', text: L('verdictCaution')  || 'День требует осознанности' },
+      neutral:  { icon: '🔮', text: L('verdictNeutral')  || 'Всё зависит от ваших действий' },
+    }[reading.verdict] || { icon: '🔮', text: L('verdictNeutral') || 'Всё зависит от ваших действий' };
+    verdictEl.innerHTML = `<span class="vb-icon">${cfg.icon}</span><span>${cfg.text}</span>`;
+    verdictEl.className = `reading-verdict verdict-${reading.verdict || 'neutral'}`;
+    verdictEl.classList.remove('hidden');
+  }
   document.getElementById('reading-interpretation').textContent = reading.interpretation || '';
   const wrap  = document.getElementById('reading-cards-wrap');
   const isGrid = reading.cards.length >= 4;

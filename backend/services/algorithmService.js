@@ -236,62 +236,108 @@ function selectCards(birthDate, targetDate, spreadType, count, isAdmin = false) 
   };
 }
 
-// ── Генерація персоналізованого коментаря ─────────────────────────────────
-function generateInterpretation(meta, spreadType, lang = 'ua') {
-  const { lifePath, zodiac, personalDay, personalYear, moonPhase } = meta;
+// ── Вердикт по картам ─────────────────────────────────────────────────────
+const POSITIVE_CARD_IDS_SET = new Set([0,1,2,3,4,5,6,7,8,10,11,14,17,19,20,21]);
 
-  const texts = {
-    ua: {
-      daily: [
-        `Сьогодні — ваш особистий день числа ${personalDay}. ${moonPhase.emoji} ${moonPhase.name} підсилює ваш знак ${zodiac.emoji} ${zodiac.name}.`,
-        `Ваш Шлях Життя ${lifePath} і сьогоднішні зірки вказують на важливий момент для знаку ${zodiac.emoji} ${zodiac.name}.`,
-        `Енергія ${moonPhase.name} у поєднанні з вашим особистим числом ${personalDay} відкриває нові можливості.`,
+function scoreCards(cards) {
+  if (!cards || !cards.length) return 0;
+  let score = 0;
+  for (const c of cards) {
+    const pos = POSITIVE_CARD_IDS_SET.has(c.id);
+    score += c.isReversed ? (pos ? -0.4 : 0.25) : (pos ? 1 : -1);
+  }
+  return score / cards.length;
+}
+
+function getVerdict(cards) {
+  const s = scoreCards(cards);
+  if (s >= 0.3)  return 'positive';
+  if (s <= -0.3) return 'caution';
+  return 'neutral';
+}
+
+// ── Генерація персоналізованого коментаря ─────────────────────────────────
+function generateInterpretation(meta, spreadType, cards = []) {
+  const { lifePath, zodiac, personalDay, personalYear, moonPhase } = meta;
+  const z = `${zodiac.emoji} ${zodiac.name}`;
+  const verdict = getVerdict(cards);
+
+  const TEXTS = {
+    daily: {
+      positive: [
+        `Карты сегодня благоволят тебе, ${z}. Действуй смело — момент подходит для решительных шагов и новых начинаний.`,
+        `${moonPhase.emoji} ${moonPhase.name} и твоё число ${personalDay} создают мощный союз. Удача сегодня рядом с тобой.`,
+        `Энергия ${z} сегодня на подъёме. Путь жизни ${lifePath} говорит: сейчас твой момент — не упусти его.`,
       ],
-      love: [
-        `Для знаку ${zodiac.emoji} ${zodiac.name} під ${moonPhase.emoji} ${moonPhase.name} у коханні зараз особливий час.`,
-        `Ваш Шлях Життя ${lifePath} і планета ${zodiac.planet} підказують: будьте відкриті до нових зустрічей.`,
-        `Особистий рік ${personalYear} несе важливі зміни у ваших стосунках, ${zodiac.emoji} ${zodiac.name}.`,
+      caution: [
+        `Карты советуют быть осторожным сегодня, ${z}. Лучше наблюдать и слушать, чем спешить с действиями.`,
+        `${moonPhase.emoji} ${moonPhase.name} требует внимательности. Личный день ${personalDay} — время для осознанности, не для риска.`,
+        `Сегодня важнее внутренняя работа, чем внешние действия, ${z}. Доверься интуиции — путь ${lifePath} подскажет выход.`,
       ],
-      month: [
-        `Для ${zodiac.emoji} ${zodiac.name} цей місяць під впливом ${zodiac.planet} і числа ${personalYear}.`,
-        `${moonPhase.emoji} ${moonPhase.name} розкриває цикл ${zodiac.element}ного знаку ${zodiac.emoji}.`,
-        `Особистий рік ${personalYear} з'єднується з вашим Шляхом Життя ${lifePath} у цьому місяці.`,
-      ],
-      year: [
-        `Ваш особистий рік ${personalYear} — це ключовий цикл для ${zodiac.emoji} ${zodiac.name}.`,
-        `Шлях Життя ${lifePath} у рік ${personalYear} відкриває новий розділ вашої долі.`,
-        `${zodiac.planet} керує вашим ${zodiac.emoji} знаком, і цей рік стане переломним.`,
+      neutral: [
+        `День двойственный: возможности есть, но они требуют выбора. В твоих руках, ${z}, направить энергию числа ${personalDay} в нужное русло.`,
+        `${moonPhase.emoji} ${moonPhase.name} приносит баланс. Каждое решение сегодня имеет вес, ${z} — действуй осознанно.`,
       ],
     },
-    ru: {
-      daily: [
-        `Сегодня — ваш личный день числа ${personalDay}. ${moonPhase.emoji} ${moonPhase.name} усиливает ваш знак ${zodiac.emoji} ${zodiac.name}.`,
-        `Ваш Путь Жизни ${lifePath} и сегодняшние звёзды указывают на важный момент для ${zodiac.emoji} ${zodiac.name}.`,
-        `Энергия ${moonPhase.name} вместе с вашим личным числом ${personalDay} открывает новые возможности.`,
+    three_card: {
+      positive: [
+        `Расклад ведёт к росту, ${z}. Прошлое подготовило почву, настоящее открывает возможности, будущее обещает результат.`,
+        `Три карты говорят единогласно: путь ясен и ведёт вперёд. Путь жизни ${lifePath} усиливает этот курс.`,
       ],
-      love: [
-        `Для знака ${zodiac.emoji} ${zodiac.name} под ${moonPhase.emoji} ${moonPhase.name} в любви особое время.`,
-        `Ваш Путь Жизни ${lifePath} и планета ${zodiac.planet} подсказывают: будьте открыты к новым встречам.`,
-        `Личный год ${personalYear} несёт важные изменения в ваших отношениях, ${zodiac.emoji} ${zodiac.name}.`,
+      caution: [
+        `Карты указывают на переходный период, ${z}. Нужно отпустить старое, чтобы открылось новое — это временно.`,
+        `Три карты показывают вызов, но не тупик. ${moonPhase.emoji} ${moonPhase.name} помогает пройти его с достоинством.`,
       ],
-      month: [
-        `Для ${zodiac.emoji} ${zodiac.name} этот месяц под влиянием ${zodiac.planet} и числа ${personalYear}.`,
-        `${moonPhase.emoji} ${moonPhase.name} раскрывает цикл ${zodiac.element}ного знака ${zodiac.emoji}.`,
-        `Личный год ${personalYear} соединяется с вашим Путём Жизни ${lifePath} в этом месяце.`,
+      neutral: [
+        `Прошлое, настоящее и будущее переплетены. В твоих руках, ${z}, повернуть эту энергию в нужную сторону.`,
+        `Три карты рисуют путь с развилками. Число ${personalDay} подсказывает: сегодня важны намерения, а не только действия.`,
       ],
-      year: [
-        `Ваш личный год ${personalYear} — ключевой цикл для ${zodiac.emoji} ${zodiac.name}.`,
-        `Путь Жизни ${lifePath} в год ${personalYear} открывает новую главу вашей судьбы.`,
-        `${zodiac.planet} управляет вашим ${zodiac.emoji} знаком, и этот год станет переломным.`,
+    },
+    love: {
+      positive: [
+        `В сфере чувств сейчас благоприятное время, ${z}. Сердце открыто — и Вселенная это видит и поддерживает.`,
+        `Карты любви говорят о тепле и взаимности. Путь жизни ${lifePath} и ${moonPhase.emoji} ${moonPhase.name} усиливают эти вибрации.`,
       ],
-    }
+      caution: [
+        `Отношения сейчас требуют честного разговора, ${z}. Не откладывай то, что важно — молчание стоит дороже слов.`,
+        `${moonPhase.emoji} ${moonPhase.name} обнажает скрытые чувства. Прислушайся к ним, а не к страхам, ${z}.`,
+      ],
+      neutral: [
+        `Карты показывают неоднозначность в сердечных делах, ${z}. Ключ — в открытости и готовности говорить честно.`,
+      ],
+    },
+    month: {
+      positive: [
+        `Этот месяц несёт рост и возможности для ${z}. Личный год ${personalYear} поддерживает твои цели — используй этот период.`,
+        `Карты месяца благоприятны: жди новых дверей. Твой путь ${lifePath} помогает замечать их вовремя.`,
+      ],
+      caution: [
+        `Месяц потребует усилий, ${z}, но к его концу ты выйдешь сильнее. ${moonPhase.emoji} ${moonPhase.name} даст поддержку.`,
+        `Личный год ${personalYear} ставит задачи — но у ${z} есть всё необходимое для их решения.`,
+      ],
+      neutral: [
+        `Месяц смешанный: периоды подъёма сменяются паузами. Используй обе фазы мудро, ${z}.`,
+      ],
+    },
+    year: {
+      positive: [
+        `Личный год ${personalYear} — один из ключевых для ${z}. Это время роста, реализации и важных перемен к лучшему.`,
+        `Карты года рисуют путь вверх. Путь жизни ${lifePath} и личный год ${personalYear} создают мощный союз.`,
+      ],
+      caution: [
+        `Год потребует зрелости, ${z}. Личный год ${personalYear} — это урок, который сделает тебя значительно мудрее.`,
+        `${zodiac.planet} готовит серьёзные события для ${z}. Смелость и осознанность — твои главные союзники.`,
+      ],
+      neutral: [
+        `Год несёт и вызовы, и подарки для ${z}. Личный год ${personalYear} — твой момент для глубокой трансформации.`,
+      ],
+    },
   };
 
-  const langTexts = texts['ru']; // всегда русский
-  const arr = langTexts[spreadType] || langTexts.daily;
-  // Детерміновано вибираємо текст
-  const idx = (meta.personalDay + meta.lifePath) % arr.length;
-  return arr[idx];
+  const typeTexts = TEXTS[spreadType] || TEXTS.daily;
+  const arr = typeTexts[verdict] || typeTexts.neutral;
+  const idx = (personalDay + lifePath + (verdict === 'positive' ? 0 : verdict === 'caution' ? 1 : 2)) % arr.length;
+  return { text: arr[idx], verdict };
 }
 
 module.exports = {
@@ -303,4 +349,5 @@ module.exports = {
   getMoonPhase,
   selectCards,
   generateInterpretation,
+  getVerdict,
 };
