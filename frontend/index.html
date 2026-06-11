@@ -11,7 +11,7 @@
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=6">
+  <link rel="stylesheet" href="style.css?v=7">
 </head>
 <body>
   <canvas id="stars-canvas"></canvas>
@@ -98,6 +98,12 @@
       </header>
 
       <div class="home-scroll">
+        <!-- Соц. доказательство -->
+        <div class="home-social-proof">
+          <div class="hsp-dot"></div>
+          <span>24 000+ пользователей открыли свою судьбу</span>
+        </div>
+
         <!-- Луна сегодня -->
         <div class="today-block" id="today-block">
           <div class="today-moon" id="today-moon-pill">🌙</div>
@@ -280,6 +286,9 @@
         <!-- Заговоры на сегодня по луне -->
         <div class="spell-moon-banner" id="spell-moon-banner"></div>
 
+        <!-- Теазер для не-преміум -->
+        <div class="spells-premium-teaser hidden" id="spells-premium-teaser"></div>
+
         <!-- Категории -->
         <div class="spell-cats-title" data-i18n="spellSelectCat">Выберите категорию</div>
         <div class="spell-cats" id="spell-cats"></div>
@@ -409,6 +418,13 @@
           <div class="premium-crown">👑</div>
           <h2 class="premium-title" data-i18n="premiumTitle">Магический Премиум</h2>
           <p class="premium-sub" id="premium-hero-sub">Полная сила магии — персонально<br>по вашему знаку и нумерологии</p>
+          <div class="premium-stats">
+            <div class="pstat"><div class="pstat-n">24K+</div><div class="pstat-l">пользователей</div></div>
+            <div class="pstat-div"></div>
+            <div class="pstat"><div class="pstat-n">4.9★</div><div class="pstat-l">рейтинг</div></div>
+            <div class="pstat-div"></div>
+            <div class="pstat"><div class="pstat-n">200+</div><div class="pstat-l">ритуалов</div></div>
+          </div>
         </div>
 
         <!-- Плани — первыми, до реферала -->
@@ -697,6 +713,6 @@
 
   </div>
 
-  <script type="module" src="app.js?v=6"></script>
+  <script type="module" src="app.js?v=7"></script>
 </body>
 </html>

@@ -423,22 +423,9 @@ function renderAstroStrip(user) {
 function renderSpellsPreview(spells) {
   const wrap = document.getElementById('spells-preview');
   if (!wrap) return;
-  const isPremium = state.user?.isPremium || false;
-  if (!isPremium) {
-    // Показуємо тизер — назви заблоковані
-    wrap.innerHTML = `
-      <div class="spells-locked-banner" id="spells-locked-banner">
-        <div class="slb-icon">🔒</div>
-        <div class="slb-text"><b>${L('spellsTeaserTitle')}</b><br>${L('spellsTeaserSub')}</div>
-        <button class="btn-primary btn-sm slb-btn" id="btn-unlock-spells">${L('spellsTeaserBtn')}</button>
-      </div>
-    `;
-    document.getElementById('btn-unlock-spells')?.addEventListener('click', async () => {
-      showScreen('premium'); await loadPremiumScreen();
-    });
-    return;
-  }
   if (!spells?.length) return;
+  const isPremium = state.user?.isPremium || false;
+
   wrap.innerHTML = spells.slice(0, 6).map(s => `
     <div class="spell-preview-card${s.locked ? ' locked' : ''}" data-spell-id="${s.id}">
       ${s.locked ? '<div class="spc-lock">🔒</div>' : ''}
@@ -447,9 +434,18 @@ function renderSpellsPreview(spells) {
       <div class="spc-sub">${s.subtitle}</div>
       <div class="spc-moon">${s.moon[0] !== 'any' ? L('spellMoonToday') : ''}</div>
     </div>
-  `).join('');
+  `).join('') + (!isPremium ? `
+    <div class="spells-unlock-strip" id="btn-unlock-spells-strip">
+      <span>👑 ${L('spellsTeaserBtn')}</span>
+      <span class="sus-arrow">→</span>
+    </div>
+  ` : '');
+
   wrap.querySelectorAll('.spell-preview-card').forEach(el => {
     el.addEventListener('click', () => openSpellById(el.dataset.spellId));
+  });
+  document.getElementById('btn-unlock-spells-strip')?.addEventListener('click', async () => {
+    showScreen('premium'); await loadPremiumScreen();
   });
 }
 
@@ -682,15 +678,9 @@ function openCardDetail(card) {
 // ══ ЗАГОВОРЫ ════════════════════════════════════════════════════════════════
 
 async function openSpellsScreen() {
-  // Заговоры — только Премиум
-  const isPremium = state.user?.isPremium || false;
-  if (!isPremium) {
-    showScreen('premium');
-    await loadPremiumScreen();
-    toast(L('spellsLockedToast'));
-    return;
-  }
   showScreen('spells');
+  const isPremium = state.user?.isPremium || false;
+
   // Баннер фази місяця
   if (state.moonData) {
     const moon = state.moonData.moon;
@@ -700,6 +690,24 @@ async function openSpellsScreen() {
       <div class="smb-desc">${getMoonMagicDesc(moon.energy)}</div>
     `;
   }
+
+  // Теазер для не-преміум — тонкий банер зверху
+  const teaserEl = document.getElementById('spells-premium-teaser');
+  if (teaserEl) {
+    if (!isPremium) {
+      teaserEl.innerHTML = `
+        <div class="spt-text">🔒 ${state.lang === 'ua' ? 'Частина ритуалів доступна лише з Преміум' : 'Часть ритуалов доступна только с Премиум'}</div>
+        <button class="spt-btn" id="btn-spells-get-premium">👑 ${state.lang === 'ua' ? 'Відкрити' : 'Открыть'}</button>
+      `;
+      teaserEl.classList.remove('hidden');
+      document.getElementById('btn-spells-get-premium')?.addEventListener('click', async () => {
+        showScreen('premium'); await loadPremiumScreen();
+      });
+    } else {
+      teaserEl.classList.add('hidden');
+    }
+  }
+
   // Категорії
   const data = await api('GET', '/spells/categories');
   if (!data.ok) return;

@@ -888,6 +888,18 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   margin-bottom: 10px;
 }
 .premium-sub { font-size: 14px; color: var(--text2); line-height: 1.65; }
+.premium-stats {
+  display: flex; align-items: center; justify-content: center; gap: 14px;
+  margin-top: 16px; padding: 12px 16px;
+  background: rgba(240,192,64,.06); border: 1px solid rgba(240,192,64,.15);
+  border-radius: 12px;
+}
+.pstat { text-align: center; }
+.pstat-n { font-family:'Cinzel',serif; font-size:18px; font-weight:700;
+  background: linear-gradient(90deg,var(--gold2),var(--gold));
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+.pstat-l { font-size:10px; color:var(--text3); margin-top:2px; }
+.pstat-div { width:1px; height:28px; background:rgba(240,192,64,.2); }
 
 .premium-features {
   background: var(--surface);
@@ -2238,6 +2250,34 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   font-size: 13px; font-weight: 700; color: var(--text);
 }
 
+/* Спелли: стрип "Відкрити всі" для не-преміум */
+.spells-unlock-strip {
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  padding: 12px; margin-top: 4px; border-radius: var(--r);
+  border: 1px solid rgba(245,158,11,.28);
+  background: rgba(245,158,11,.07);
+  font-size: 13px; font-weight: 700; color: var(--gold);
+  cursor: pointer; transition: background .18s;
+}
+.spells-unlock-strip:active { background: rgba(245,158,11,.14); }
+.sus-arrow { font-size: 16px; }
+
+/* Спелли: теазер зверху екрану ритуалів */
+.spells-premium-teaser {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  padding: 10px 14px; margin: 0 0 10px;
+  background: rgba(245,158,11,.08); border: 1px solid rgba(245,158,11,.25); border-radius: 10px;
+  font-size: 12px; color: var(--gold);
+}
+.spells-premium-teaser.hidden { display: none; }
+.spt-text { flex: 1; }
+.spt-btn {
+  background: rgba(245,158,11,.18); border: 1px solid rgba(245,158,11,.35);
+  color: var(--gold); border-radius: 8px; padding: 5px 12px;
+  font-size: 12px; font-weight: 700; white-space: nowrap; cursor: pointer;
+}
+.spt-btn:active { background: rgba(245,158,11,.3); }
+
 /* ══ BOTTOM NAV ══════════════════════════════════════════════════════════ */
 .bottom-nav {
   position: absolute;
@@ -2505,3 +2545,146 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   color: var(--text); margin-bottom: 8px;
 }
 .ai-chat-welcome-sub { font-size: 13px; color: var(--text2); line-height: 1.6; }
+
+/* ══════════════════════════════════════════════════════════════════════════
+   VISUAL POLISH — продаваємий вигляд
+══════════════════════════════════════════════════════════════════════════ */
+
+/* 1. Tap-card — пульсуюче магічне сяйво ---------------------------------- */
+@keyframes cardMagic {
+  0%, 100% {
+    box-shadow: 0 0 28px rgba(139,92,246,.3), 0 0 60px rgba(168,85,247,.12),
+                inset 0 0 20px rgba(139,92,246,.06);
+  }
+  50% {
+    box-shadow: 0 0 45px rgba(168,85,247,.55), 0 0 90px rgba(139,92,246,.2),
+                inset 0 0 30px rgba(168,85,247,.1);
+  }
+}
+#screen-home .tap-card, #screen-tarot .tap-card {
+  animation: cardMagic 3s ease-in-out infinite;
+  border: 1.5px solid rgba(168,85,247,.35) !important;
+}
+#screen-home .tap-card-glow {
+  background: radial-gradient(ellipse 70% 50% at 50% 50%,
+    rgba(168,85,247,.35), transparent);
+  animation: float 4s ease-in-out infinite;
+}
+
+/* 2. Buy button — золотий шимер ------------------------------------------ */
+@keyframes goldShimmer {
+  0%   { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+.btn-gold {
+  background: linear-gradient(90deg,
+    #92400e 0%, #f0c040 30%, #fbbf24 50%, #f0c040 70%, #92400e 100%) !important;
+  background-size: 200% auto !important;
+  animation: goldShimmer 2.8s linear infinite !important;
+  font-size: 16px !important;
+  padding: 18px !important;
+  box-shadow: 0 4px 20px rgba(240,192,64,.35) !important;
+}
+.btn-gold:active { opacity: .85; }
+
+/* 3. Plan card — золото, бейдж, ціна ------------------------------------ */
+.plan-badge {
+  background: linear-gradient(90deg, #d97706, #f0c040) !important;
+  color: #1a0800 !important;
+  font-size: 10px !important; font-weight: 800 !important;
+  padding: 3px 10px !important;
+  box-shadow: 0 2px 8px rgba(240,192,64,.45);
+  letter-spacing: .04em;
+}
+.plan-price { font-size: 19px !important; font-weight: 800 !important; }
+.plan-card.selected .plan-price {
+  background: linear-gradient(90deg, var(--gold2), var(--gold));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+}
+.plan-card.plan-popular {
+  box-shadow: 0 0 16px rgba(168,85,247,.18);
+}
+.plan-card.selected {
+  box-shadow: 0 0 22px rgba(240,192,64,.25);
+}
+
+/* 4. Verdict badge — кольоровий glow -------------------------------------- */
+.verdict-positive { box-shadow: 0 0 14px rgba(52,211,153,.2); }
+.verdict-caution  { box-shadow: 0 0 14px rgba(249,115,22,.2); }
+.verdict-neutral  { box-shadow: 0 0 14px rgba(139,92,246,.18); }
+
+/* 5. AI інтерпретація — преміум рамка ------------------------------------ */
+@keyframes aibPulse {
+  0%, 100% { border-color: rgba(139,92,246,.3);
+    box-shadow: 0 0 12px rgba(139,92,246,.1); }
+  50% { border-color: rgba(168,85,247,.55);
+    box-shadow: 0 0 20px rgba(139,92,246,.2); }
+}
+.ai-interpretation-block:not(.hidden) {
+  animation: aibPulse 3.5s ease-in-out infinite;
+}
+
+/* 6. More premium banner — виразний ---------------------------------------- */
+.more-premium-banner {
+  background: linear-gradient(135deg, rgba(245,158,11,.13), rgba(240,192,64,.05)) !important;
+  border: 1px solid rgba(245,158,11,.35) !important;
+  padding: 18px 16px !important;
+  box-shadow: 0 0 18px rgba(245,158,11,.1);
+}
+.mpb-title {
+  font-family: 'Cinzel', serif;
+  background: linear-gradient(90deg, var(--gold2), var(--gold));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+}
+
+/* 7. Locked spell cards — desirable not just locked ----------------------- */
+.spell-preview-card.locked {
+  filter: saturate(.45) brightness(.65);
+  position: relative;
+}
+.spell-preview-card.locked .spc-lock {
+  position: absolute; top: 6px; right: 6px;
+  font-size: 12px; opacity: .8;
+}
+
+/* 8. Кнопка реферала — пульс ---------------------------------------------- */
+@keyframes ctaPulse {
+  0%, 100% { box-shadow: 0 4px 16px rgba(139,92,246,.2); }
+  50%       { box-shadow: 0 4px 28px rgba(139,92,246,.42); }
+}
+.btn-free-prem { animation: ctaPulse 2.8s ease-in-out infinite; }
+
+/* 9. Premium crown — золотий glow ----------------------------------------- */
+.premium-crown { filter: drop-shadow(0 0 16px rgba(240,192,64,.55)); }
+
+/* 10. Соц.доказ — стрічка на головній ------------------------------------ */
+.home-social-proof {
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+  font-size: 11px; color: var(--text3); margin: 0 0 10px;
+  letter-spacing: .02em;
+}
+.hsp-dot {
+  width: 5px; height: 5px; border-radius: 50%;
+  background: #34d399; box-shadow: 0 0 5px #34d399;
+  animation: blink 2s ease-in-out infinite;
+}
+@keyframes blink {
+  0%, 100% { opacity: 1; } 50% { opacity: .3; }
+}
+
+/* 11. Reading scroll — глибше занурення ---------------------------------- */
+.reading-interpretation {
+  border-color: rgba(139,92,246,.22) !important;
+}
+.flip-card-outer {
+  filter: drop-shadow(0 4px 8px rgba(0,0,0,.35));
+}
+.flip-card-outer .flip-front { border-color: rgba(139,92,246,.3); }
+
+/* 12. Energy exchange block — рамка --------------------------------------- */
+.energy-exchange-block {
+  border: 1px solid rgba(240,192,64,.15);
+  border-radius: var(--r);
+  background: rgba(240,192,64,.03);
+}
+.eeb-symbol { font-size: 36px !important; }
