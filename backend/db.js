@@ -95,6 +95,20 @@ const PG_SCHEMA = `
     created_at  TIMESTAMPTZ DEFAULT NOW()
   );
   CREATE INDEX IF NOT EXISTS payments_log_user_idx ON payments_log(user_id, created_at DESC);
+  CREATE TABLE IF NOT EXISTS spread_credits (
+    user_id     TEXT NOT NULL,
+    spread_type TEXT NOT NULL,
+    credits     INTEGER DEFAULT 0,
+    PRIMARY KEY (user_id, spread_type)
+  );
+  CREATE TABLE IF NOT EXISTS push_log (
+    user_id    TEXT NOT NULL,
+    push_type  TEXT NOT NULL,
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    PRIMARY KEY (user_id, push_type)
+  );
+  ALTER TABLE users ADD COLUMN IF NOT EXISTS source TEXT;
+  CREATE INDEX IF NOT EXISTS activity_log_event_idx ON activity_log(event_type, created_at DESC);
 `;
 
 async function initDB() {

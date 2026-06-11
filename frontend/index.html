@@ -11,7 +11,7 @@
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=8">
+  <link rel="stylesheet" href="style.css?v=9">
 </head>
 <body>
   <canvas id="stars-canvas"></canvas>
@@ -258,6 +258,34 @@
           <button class="btn-secondary" id="btn-skip-question" data-i18n="skipQuestion">Пропустить</button>
           <button class="btn-primary" id="btn-ask-cards" data-i18n="askQuestion">Спросить карты 🃏</button>
         </div>
+      </div>
+    </div>
+
+    <!-- ══ PAYWALL: разовий розклад чи преміум ═══════════════════════════════ -->
+    <div id="spread-paywall-modal" class="modal-overlay hidden">
+      <div class="modal-card">
+        <button class="modal-x" id="spw-close">✕</button>
+        <div class="modal-icon" id="spw-emoji">🔮</div>
+        <div class="modal-title" id="spw-title">Расклад «Любовь»</div>
+        <div class="modal-sub" id="spw-sub">Карты уже перемешаны и ждут твоего вопроса</div>
+        <div class="spw-options">
+          <button class="spw-option" id="spw-buy-single">
+            <div class="spw-opt-left">
+              <div class="spw-opt-name" data-i18n="spwSingle">Один расклад</div>
+              <div class="spw-opt-desc" data-i18n="spwSingleDesc">Сейчас · навсегда в истории</div>
+            </div>
+            <div class="spw-opt-price" id="spw-price">⭐ 50</div>
+          </button>
+          <button class="spw-option spw-option-gold" id="spw-buy-premium">
+            <div class="spw-opt-badge" data-i18n="spwBadge">ВЫГОДНЕЕ</div>
+            <div class="spw-opt-left">
+              <div class="spw-opt-name" data-i18n="spwPremium">👑 Премиум</div>
+              <div class="spw-opt-desc" data-i18n="spwPremiumDesc">Все расклады + ритуалы + AI без ограничений</div>
+            </div>
+            <div class="spw-opt-price" data-i18n="spwPremiumPrice">от ⭐ 299</div>
+          </button>
+        </div>
+        <div class="modal-note" data-i18n="payNote">Оплата через Telegram Stars · Безопасно</div>
       </div>
     </div>
 
@@ -746,6 +774,6 @@
 
   </div>
 
-  <script type="module" src="app.js?v=8"></script>
+  <script type="module" src="app.js?v=9"></script>
 </body>
 </html>

@@ -2111,6 +2111,36 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 }
 .question-textarea:focus { outline:none;border-color:var(--purple); }
 .modal-note { font-size:11px;color:var(--text2);text-align:center; }
+
+/* ── Paywall: разовий розклад чи преміум ── */
+.modal-x {
+  position:absolute;top:12px;right:12px;
+  background:none;border:none;color:var(--text2);
+  font-size:18px;cursor:pointer;line-height:1;padding:4px;
+}
+.spw-options { display:flex;flex-direction:column;gap:10px;margin:6px 0 10px; }
+.spw-option {
+  display:flex;align-items:center;justify-content:space-between;gap:10px;
+  padding:14px 16px;border-radius:var(--r);
+  background:var(--surface);border:1px solid var(--border);
+  color:var(--text);cursor:pointer;text-align:left;position:relative;
+  transition:transform .15s,border-color .15s;
+}
+.spw-option:active { transform:scale(.97);border-color:var(--border2); }
+.spw-opt-left { flex:1;min-width:0; }
+.spw-opt-name { font-size:14.5px;font-weight:700; }
+.spw-opt-desc { font-size:11.5px;color:var(--text2);margin-top:2px;line-height:1.35; }
+.spw-opt-price { font-size:15px;font-weight:800;color:var(--gold);white-space:nowrap; }
+.spw-option-gold {
+  background:linear-gradient(135deg,rgba(243,192,96,.13),rgba(217,70,239,.08));
+  border-color:rgba(243,192,96,.4);
+}
+.spw-opt-badge {
+  position:absolute;top:-8px;right:12px;
+  background:linear-gradient(135deg,var(--gold),#e8a83a);
+  color:#3a2208;font-size:9px;font-weight:800;letter-spacing:.05em;
+  padding:3px 8px;border-radius:8px;
+}
 .modal-btns { display:flex;gap:10px;margin-top:4px; }
 .modal-btns .btn-secondary {
   flex:0 0 auto;padding:14px 16px;

@@ -80,6 +80,12 @@ async function pollUntil(fetchFn, predicate, { interval = 900, maxMs = 9000 } = 
   return null; // таймаут — повертаємо null
 }
 
+// ── Analytics ──────────────────────────────────────────────────────────────
+// fire-and-forget — ніколи не блокує UX
+function track(event, meta = '') {
+  try { api('POST', '/analytics/event', { userId: state.userId, event, meta }); } catch (_) {}
+}
+
 // ── i18n shorthand ─────────────────────────────────────────────────────────
 const L = key => t(key, state.lang);
 
@@ -273,6 +279,7 @@ function initIntroScreen() {
         username:  state.tgUser?.username || '',
         birthDate: birthIn.value,
         lang:      state.lang,
+        source:    tg?.initDataUnsafe?.start_param || '',
       });
       if (data.ok && data.user) {
         state.user = data.user;
@@ -535,10 +542,68 @@ function showQuestionModal(spreadType) {
 }
 
 // ── Таро: розкладання ──────────────────────────────────────────────────────
+const SPREAD_PRICES = { love: 50, month: 50, year: 75, three_card: 35 };
+const SPREAD_LABELS = {
+  love:       { ru: 'Расклад «Любовь»',  ua: 'Розклад «Кохання»',  emoji: '❤️' },
+  month:      { ru: 'Расклад «Месяц»',   ua: 'Розклад «Місяць»',   emoji: '📅' },
+  year:       { ru: 'Расклад «Год»',     ua: 'Розклад «Рік»',      emoji: '🌟' },
+  three_card: { ru: 'Расклад «3 карты»', ua: 'Розклад «3 карти»',  emoji: '🃏' },
+};
+
 async function openSpread(spreadType) {
   const needsPremium = ['love', 'month', 'year', 'three_card'].includes(spreadType);
-  if (needsPremium && !state.user?.isPremium) { showScreen('premium'); await loadPremiumScreen(); return; }
-  showQuestionModal(spreadType);
+  if (!needsPremium || state.user?.isPremium) { showQuestionModal(spreadType); return; }
+  // Є куплений разовий кредит на цей розклад — пропускаємо
+  if ((state.premiumStatus?.spreadCredits?.[spreadType] || 0) > 0) {
+    showQuestionModal(spreadType);
+    return;
+  }
+  showSpreadPaywall(spreadType);
+}
+
+// ── Paywall: разовий розклад чи преміум ────────────────────────────────────
+function showSpreadPaywall(spreadType) {
+  track('paywall_view', `spread_${spreadType}`);
+  const modal = document.getElementById('spread-paywall-modal');
+  const info  = SPREAD_LABELS[spreadType] || { ru: 'Расклад', ua: 'Розклад', emoji: '🔮' };
+  document.getElementById('spw-emoji').textContent = info.emoji;
+  document.getElementById('spw-title').textContent = state.lang === 'ua' ? info.ua : info.ru;
+  document.getElementById('spw-price').textContent = `⭐ ${SPREAD_PRICES[spreadType] || 50}`;
+  modal.classList.remove('hidden');
+
+  document.getElementById('spw-close').onclick = () => modal.classList.add('hidden');
+  modal.onclick = (e) => { if (e.target === modal) modal.classList.add('hidden'); };
+
+  document.getElementById('spw-buy-premium').onclick = async () => {
+    modal.classList.add('hidden');
+    showScreen('premium'); await loadPremiumScreen();
+  };
+
+  document.getElementById('spw-buy-single').onclick = () => guardedCall('buy_spread', async () => {
+    track('buy_click', `spread_${spreadType}`);
+    try {
+      const data = await api('POST', '/payments/invoice/spread', { spreadType, userId: state.userId });
+      if (!data.ok) throw new Error(data.error);
+      tg?.openInvoice?.(data.link, async (status) => {
+        if (status === 'paid') {
+          tg?.HapticFeedback?.notificationOccurred?.('success');
+          modal.classList.add('hidden');
+          toast(L('paymentSuccess'));
+          // Чекаємо поки кредит з'явиться в БД (webhook може йти з затримкою)
+          const ps = await pollUntil(
+            () => api('GET', `/users/${state.userId}/premium-status`),
+            d => d.ok && (d.spreadCredits?.[spreadType] || 0) > 0
+          );
+          if (ps) state.premiumStatus = ps;
+          showQuestionModal(spreadType);
+        } else if (status === 'cancelled') {
+          toast(L('paymentCancelled'));
+        }
+      });
+    } catch (_) {
+      toast(L('invoiceError'));
+    }
+  });
 }
 
 async function startReading(spreadType, question) {
@@ -1345,6 +1410,7 @@ function initNav() {
   document.getElementById('btn-buy-label').textContent = L('premiumDefaultPlan');
 
   document.getElementById('btn-buy-premium').addEventListener('click', () => guardedCall('buy_premium', async () => {
+    track('buy_click', selectedPlan);
     const btn = document.getElementById('btn-buy-premium');
     btn.disabled = true;
     document.getElementById('btn-buy-label').textContent = L('premiumCreatingInvoice');
@@ -1425,6 +1491,7 @@ function initNav() {
 
 // ── Преміум екран ──────────────────────────────────────────────────────────
 async function loadPremiumScreen() {
+  track('paywall_view', 'premium_screen');
   const ps = await api('GET', `/users/${state.userId}/premium-status`);
   if (!ps.ok) return;
   renderReferralProgress(ps.refBonus || 0);
@@ -2436,6 +2503,7 @@ async function init() {
   const uid     = state.tgUser?.id?.toString() || savedId;
   if (uid) {
     state.userId = uid;
+    track('open_app', tg?.initDataUnsafe?.start_param || '');
     const data = await api('GET', `/users/${uid}`);
     if (data.ok && data.user?.birthDate) {
       state.user = data.user;

@@ -9,6 +9,8 @@ const PLANS = {
   premium_30:  { stars: 299,  days: 30,  label: '1 месяц',  emoji: '🌙', type: 'subscription' },
   premium_90:  { stars: 699,  days: 90,  label: '3 месяца', emoji: '🌟', type: 'subscription' },
   premium_365: { stars: 1990, days: 365, label: '1 год',    emoji: '👑', type: 'subscription' },
+  // Win-back: знижка для тих, у кого закінчився преміум (лінк надсилається пушем)
+  premium_30_promo: { stars: 199, days: 30, label: '1 месяц со скидкой −33%', emoji: '🎁', type: 'subscription' },
 };
 
 // Мікроплатежі — окремі заговори
@@ -16,6 +18,41 @@ const SPELL_PURCHASES = {
   spell_single: { stars: 30, label: 'Один заговор', emoji: '🕯️', type: 'spell' },
   spell_pack5:  { stars: 99, label: '5 заговоров',  emoji: '✨', type: 'spell_pack', count: 5 },
 };
+
+// Разові розклади — один преміум-розклад без підписки
+const SPREAD_PURCHASES = {
+  love:       { stars: 50, label: 'Расклад «Любовь»',  emoji: '❤️', desc: 'Что он чувствует? 4 карты о ваших отношениях — навсегда в истории.' },
+  month:      { stars: 50, label: 'Расклад «Месяц»',   emoji: '📅', desc: 'Что ждёт тебя в этом месяце — 4 карты судьбы.' },
+  year:       { stars: 75, label: 'Расклад «Год»',     emoji: '🌟', desc: 'Большой расклад на год — 6 карт о главных событиях.' },
+  three_card: { stars: 35, label: 'Расклад «3 карты»', emoji: '🃏', desc: 'Прошлое · Настоящее · Будущее — ответ на твой вопрос.' },
+};
+
+// POST /api/payments/invoice/spread — купити один розклад
+router.post('/invoice/spread', async (req, res) => {
+  const { spreadType, userId } = req.body;
+  if (!spreadType || !userId) return res.status(400).json({ ok: false, error: 'spreadType and userId required' });
+
+  const sp = SPREAD_PURCHASES[spreadType];
+  if (!sp) return res.status(400).json({ ok: false, error: 'Unknown spreadType' });
+
+  const bot = req.app.get('bot');
+  if (!bot) return res.status(503).json({ ok: false, error: 'Bot not initialized' });
+
+  try {
+    const link = await bot.createInvoiceLink(
+      `${sp.emoji} ${sp.label}`,
+      sp.desc,
+      `spread:${spreadType}`, // payload
+      '',     // providerToken — порожній для Telegram Stars
+      'XTR',
+      [{ label: sp.label, amount: sp.stars }]
+    );
+    res.json({ ok: true, link });
+  } catch (e) {
+    console.error('[Payments] Spread invoice error:', e.message);
+    res.status(500).json({ ok: false, error: e.message });
+  }
+});
 
 // POST /api/payments/invoice
 // Створює інвойс через Telegram bot і повертає invoice link
@@ -104,8 +141,9 @@ router.get('/my-spells/:userId', async (req, res) => {
 
 // GET /api/payments/plans
 router.get('/plans', (req, res) => {
-  res.json({ ok: true, plans: { ...PLANS, ...SPELL_PURCHASES } });
+  res.json({ ok: true, plans: { ...PLANS, ...SPELL_PURCHASES }, spreads: SPREAD_PURCHASES });
 });
 
 module.exports = router;
-module.exports.SPELL_PURCHASES = SPELL_PURCHASES;
+module.exports.SPELL_PURCHASES  = SPELL_PURCHASES;
+module.exports.SPREAD_PURCHASES = SPREAD_PURCHASES;

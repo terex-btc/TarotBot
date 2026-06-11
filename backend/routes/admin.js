@@ -132,6 +132,27 @@ router.get('/', (req, res) => {
 
 <div id="msg"></div>
 
+<!-- Воронка конверсий -->
+<div class="section">
+  <h2>📈 Воронка конверсий
+    <select id="funnel-days" onchange="loadFunnel()" style="background:#120824;border:1px solid #2a1a4a;color:#e0d8ff;padding:5px 10px;border-radius:8px;font-size:12px;margin-left:8px">
+      <option value="1">24 часа</option>
+      <option value="7" selected>7 дней</option>
+      <option value="30">30 дней</option>
+    </select>
+  </h2>
+  <div id="funnel-wrap" style="display:flex;flex-direction:column;gap:6px;max-width:560px"></div>
+</div>
+
+<!-- Источники трафика -->
+<div class="section">
+  <h2>🎯 Источники трафика <span style="font-size:11px;color:#4a3a6a;font-weight:400">ссылка: t.me/бот?start=src_названиеканала</span></h2>
+  <table id="sources-table">
+    <thead><tr><th>Источник</th><th>Юзеров</th><th>За 7 дней</th><th>Платников</th><th>Конверсия</th><th>Stars</th></tr></thead>
+    <tbody></tbody>
+  </table>
+</div>
+
 <!-- Видать премиум вручную -->
 <div class="section">
   <h2>⚡ Выдать премиум вручную</h2>
@@ -209,7 +230,7 @@ async function apiFetch(url, opts) {
   return r.json();
 }
 
-const EVENT_ICONS  = { register:'🌟', reading:'🃏', payment:'⭐', spell:'🕯️', ai_chat:'✨' };
+const EVENT_ICONS  = { register:'🌟', reading:'🃏', payment:'⭐', spell:'🕯️', ai_chat:'✨', spread_buy:'💎' };
 const SPREAD_NAMES = { three_card:'3 карты', love:'Любовь', month:'Месяц', year:'Год', daily:'Карта дня' };
 let _lastActivityId = 0;
 
@@ -251,6 +272,50 @@ function timeSince(dateStr) {
   return Math.floor(sec/86400) + 'д';
 }
 
+async function loadFunnel() {
+  const days = document.getElementById('funnel-days').value;
+  const f = await apiFetch('/admin/api/funnel?days=' + days);
+  const wrap = document.getElementById('funnel-wrap');
+  if (!f.ok || !wrap) return;
+  const steps = [
+    { label: '📱 Открыли приложение', val: f.openApp,  color: '#6ab4e8' },
+    { label: '🃏 Сделали расклад',     val: f.readings, color: '#9b4fff' },
+    { label: '👀 Видели пейвол',       val: f.paywall,  color: '#c9a0ff' },
+    { label: '🖱️ Нажали «купить»',     val: f.buyClick, color: '#f0a040' },
+    { label: '⭐ Оплатили',            val: f.payers,   color: '#f0c040' },
+  ];
+  const max = Math.max(1, steps[0].val);
+  wrap.innerHTML = steps.map((s, i) => {
+    const pct  = Math.round((s.val / max) * 100);
+    const conv = i > 0 && steps[i-1].val > 0 ? Math.round((s.val / steps[i-1].val) * 100) + '%' : '';
+    return \`<div style="display:flex;align-items:center;gap:10px">
+      <div style="width:180px;font-size:12px;color:#c0b8d8;flex-shrink:0">\${s.label}</div>
+      <div style="flex:1;background:#120824;border-radius:6px;height:24px;position:relative;overflow:hidden">
+        <div style="width:\${pct}%;min-width:2px;height:100%;background:\${s.color};opacity:.75;border-radius:6px"></div>
+        <span style="position:absolute;left:8px;top:3px;font-size:12px;font-weight:700;color:#fff">\${s.val}</span>
+      </div>
+      <div style="width:46px;font-size:11px;color:#8a7aaa;text-align:right;flex-shrink:0">\${conv}</div>
+    </div>\`;
+  }).join('') + \`<div style="font-size:12px;color:#8a7aaa;margin-top:4px">💰 Платежей: <b style="color:#f0c040">\${f.payments}</b> на <b style="color:#f0c040">⭐ \${f.stars}</b> за \${f.days} дн.</div>\`;
+}
+
+async function loadSources() {
+  const s = await apiFetch('/admin/api/sources');
+  if (!s.ok) return;
+  const tbody = document.querySelector('#sources-table tbody');
+  tbody.innerHTML = s.sources.map(r => {
+    const conv = r.users > 0 ? ((r.payers / r.users) * 100).toFixed(1) + '%' : '—';
+    return \`<tr>
+      <td><b style="color:\${r.source==='(органика)'?'#8a7aaa':'#c9a0ff'}">\${r.source}</b></td>
+      <td>\${r.users}</td>
+      <td>\${r.users7 || 0}</td>
+      <td>\${r.payers}</td>
+      <td>\${conv}</td>
+      <td style="color:#f0c040">⭐ \${r.stars}</td>
+    </tr>\`;
+  }).join('') || '<tr><td colspan="6" class="empty-state">Пока нет данных</td></tr>';
+}
+
 async function loadAll() {
   document.getElementById('last-updated').textContent = 'Загрузка...';
   const [stats, users, pays] = await Promise.all([
@@ -258,6 +323,7 @@ async function loadAll() {
     apiFetch('/admin/api/users'),
     apiFetch('/admin/api/payments'),
   ]);
+  loadFunnel(); loadSources();
 
   if (stats.ok) {
     document.getElementById('s-users').textContent  = stats.users;
@@ -540,6 +606,52 @@ router.get('/api/users/:userId', auth, async (req, res) => {
   } catch (e) { res.status(500).json({ ok: false, error: e.message }); }
 });
 
+// GET /admin/api/funnel?days=7 — воронка конверсій
+router.get('/api/funnel', auth, async (req, res) => {
+  try {
+    const days = Math.min(90, Math.max(1, parseInt(req.query.days) || 7));
+    const interval = `${days} days`;
+    const [openApp, daily, paywall, buyClick, payers, payments] = await Promise.all([
+      pool.query(`SELECT COUNT(DISTINCT user_id) FROM activity_log WHERE event_type='open_app' AND created_at > NOW() - $1::interval`, [interval]),
+      pool.query(`SELECT COUNT(DISTINCT user_id) FROM activity_log WHERE event_type='reading' AND created_at > NOW() - $1::interval`, [interval]),
+      pool.query(`SELECT COUNT(DISTINCT user_id) FROM activity_log WHERE event_type='paywall_view' AND created_at > NOW() - $1::interval`, [interval]),
+      pool.query(`SELECT COUNT(DISTINCT user_id) FROM activity_log WHERE event_type='buy_click' AND created_at > NOW() - $1::interval`, [interval]),
+      pool.query(`SELECT COUNT(DISTINCT user_id) FROM payments_log WHERE status='success' AND created_at > NOW() - $1::interval`, [interval]),
+      pool.query(`SELECT COUNT(*) as cnt, COALESCE(SUM(stars),0) as stars FROM payments_log WHERE status='success' AND created_at > NOW() - $1::interval`, [interval]),
+    ]);
+    res.json({
+      ok: true, days,
+      openApp:  Number(openApp.rows[0].count),
+      readings: Number(daily.rows[0].count),
+      paywall:  Number(paywall.rows[0].count),
+      buyClick: Number(buyClick.rows[0].count),
+      payers:   Number(payers.rows[0].count),
+      payments: Number(payments.rows[0].cnt),
+      stars:    Number(payments.rows[0].stars),
+    });
+  } catch (e) { res.status(500).json({ ok: false, error: e.message }); }
+});
+
+// GET /admin/api/sources — джерела трафіку: юзери, платники, Stars
+router.get('/api/sources', auth, async (req, res) => {
+  try {
+    const { rows } = await pool.query(`
+      SELECT
+        COALESCE(u.source, '(органика)') as source,
+        COUNT(DISTINCT u.user_id)::int as users,
+        COUNT(DISTINCT u.user_id) FILTER (WHERE u.created_at > NOW() - INTERVAL '7 days')::int as users7,
+        COUNT(DISTINCT p.user_id)::int as payers,
+        COALESCE(SUM(p.stars), 0)::int as stars
+      FROM users u
+      LEFT JOIN payments_log p ON p.user_id = u.user_id AND p.status = 'success'
+      GROUP BY COALESCE(u.source, '(органика)')
+      ORDER BY users DESC
+      LIMIT 50
+    `);
+    res.json({ ok: true, sources: rows });
+  } catch (e) { res.status(500).json({ ok: false, error: e.message }); }
+});
+
 // GET /admin/api/ping
 router.get('/api/ping', auth, (req, res) => {
   res.json({ ok: true, counter: _activityCounter, lastAt: _activityLastAt });
@@ -553,6 +665,7 @@ router.get('/api/activity', auth, async (req, res) => {
              (SELECT first_name FROM users WHERE user_id=activity_log.user_id) as first_name
       FROM activity_log
       WHERE NOT (event_type='reading' AND meta='daily')
+        AND event_type NOT IN ('open_app','paywall_view','buy_click')
       UNION ALL
       SELECT p.id, p.user_id, 'payment' as event_type, p.payload as meta, p.stars, p.created_at,
              u.first_name

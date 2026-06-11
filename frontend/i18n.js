@@ -25,6 +25,14 @@ export const T = {
     openBtn: 'Открыть кабинет',
     connecting: 'Соединяемся со звёздами...',
 
+    // ── Spread paywall ──
+    spwSingle: 'Один расклад',
+    spwSingleDesc: 'Сейчас · навсегда в истории',
+    spwBadge: 'ВЫГОДНЕЕ',
+    spwPremium: '👑 Премиум',
+    spwPremiumDesc: 'Все расклады + ритуалы + AI без ограничений',
+    spwPremiumPrice: 'от ⭐ 299',
+
     // ── Home / Nav ──
     homeCatsLabel: 'Что тебя волнует?',
     hcatLove: 'Любовь и отношения',
@@ -396,6 +404,14 @@ export const T = {
     birthLabel: 'Дата народження',
     openBtn: 'Відкрити кабінет',
     connecting: 'З\'єднуємось із зірками...',
+
+    // ── Spread paywall ──
+    spwSingle: 'Один розклад',
+    spwSingleDesc: 'Зараз · назавжди в історії',
+    spwBadge: 'ВИГІДНІШЕ',
+    spwPremium: '👑 Преміум',
+    spwPremiumDesc: 'Всі розклади + ритуали + AI без обмежень',
+    spwPremiumPrice: 'від ⭐ 299',
 
     // ── Home / Nav ──
     homeCatsLabel: 'Що тебе хвилює?',

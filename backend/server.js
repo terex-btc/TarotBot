@@ -59,6 +59,16 @@ if (BOT_TOKEN) {
     const name   = msg.from?.first_name || 'Дорогая';
     const webAppUrl = process.env.WEBAPP_URL || `http://localhost:${PORT}`;
 
+    // ── UTM: /start src_channelname → зберігаємо джерело (first-touch) ──────
+    const srcMatch = (msg.text || '').match(/\/start\s+src_([\w-]{1,32})/);
+    if (srcMatch) {
+      pool.query(
+        `INSERT INTO users (user_id, source) VALUES ($1, $2)
+         ON CONFLICT (user_id) DO UPDATE SET source = COALESCE(users.source, EXCLUDED.source)`,
+        [String(chatId), srcMatch[1]]
+      ).catch(() => {});
+    }
+
     // Шаг 1 — приветствие с анимацией (стикер шара)
     try {
       await bot.sendSticker(chatId, 'CAACAgIAAxkBAAIBc2Z5dQABm6eLAAF2v3v2sQ7UiXM2gAACGAADwDZME6TvFKFwZ0I-NQQ');
@@ -148,6 +158,13 @@ if (BOT_TOKEN) {
     const webAppUrl = process.env.WEBAPP_URL || `http://localhost:${PORT}`;
     if (String(chatId) === refUserId) return;
 
+    // Джерело: реферал (first-touch)
+    pool.query(
+      `INSERT INTO users (user_id, source) VALUES ($1, 'ref')
+       ON CONFLICT (user_id) DO UPDATE SET source = COALESCE(users.source, 'ref')`,
+      [String(chatId)]
+    ).catch(() => {});
+
     try {
       await addRefBonus(refUserId, 1);
       await bot.sendMessage(refUserId,
@@ -201,7 +218,8 @@ if (BOT_TOKEN) {
 
       // ── Преміум підписка ──────────────────────────────────────────────────
       if (payload.startsWith('premium_')) {
-        const days = payload === 'premium_30' ? 30 : payload === 'premium_90' ? 90 : 365;
+        const daysMap = { premium_30: 30, premium_90: 90, premium_365: 365, premium_30_promo: 30 };
+        const days = daysMap[payload] || 30;
 
         // Продовжуємо від поточного expiry якщо вже є преміум
         const { rows } = await pool.query(`SELECT premium_expiry FROM users WHERE user_id=$1`, [uid]);
@@ -228,6 +246,30 @@ if (BOT_TOKEN) {
           }
         );
         console.log(`[Pay] Premium ${days}d activated for uid=${uid}`);
+
+      // ── Разовий розклад ───────────────────────────────────────────────────
+      } else if (payload.startsWith('spread:')) {
+        const spreadType = payload.replace('spread:', '');
+        await pool.query(
+          `INSERT INTO spread_credits (user_id, spread_type, credits) VALUES ($1, $2, 1)
+           ON CONFLICT (user_id, spread_type) DO UPDATE SET credits = spread_credits.credits + 1`,
+          [uid, spreadType]
+        );
+        pool.query(`INSERT INTO activity_log (user_id, event_type, meta) VALUES ($1,'spread_buy',$2)`, [uid, spreadType]).catch(() => {});
+        const spreadNames = { love: '❤️ Любовь', month: '📅 Месяц', year: '🌟 Год', three_card: '🃏 3 карты' };
+        await bot.sendMessage(chatId,
+          `🔮 *Расклад куплен!*\n\n` +
+          `⭐ Оплачено: *${stars} Stars*\n` +
+          `🃏 Расклад: *${spreadNames[spreadType] || spreadType}*\n\n` +
+          `✨ Карты уже ждут тебя — открой приложение и задай свой вопрос 👇`,
+          {
+            parse_mode: 'Markdown',
+            reply_markup: { inline_keyboard: [[
+              { text: '🔮 Открыть расклад', web_app: { url: webAppUrl } }
+            ]]}
+          }
+        );
+        console.log(`[Pay] Spread ${spreadType} purchased by uid=${uid}`);
 
       // ── Один заговор ──────────────────────────────────────────────────────
       } else if (payload.startsWith('spell:')) {
@@ -434,6 +476,92 @@ if (BOT_TOKEN) {
     }
   }, { timezone: 'Europe/Kyiv' });
 
+  // ── Retention-пуші: 11:00 — нагадування про закінчення преміуму + win-back ─
+  cron.schedule('0 11 * * *', async () => {
+    const webAppUrl = process.env.WEBAPP_URL || `http://localhost:${PORT}`;
+    const now = Date.now();
+
+    // Хелпер: чи можна слати цей пуш юзеру (не частіше ніж раз на 25 днів)
+    async function canPush(userId, pushType) {
+      const { rowCount } = await pool.query(
+        `INSERT INTO push_log (user_id, push_type, created_at) VALUES ($1, $2, NOW())
+         ON CONFLICT (user_id, push_type) DO UPDATE SET created_at = NOW()
+         WHERE push_log.created_at < NOW() - INTERVAL '25 days'`,
+        [userId, pushType]
+      );
+      return rowCount > 0;
+    }
+
+    // 1) Преміум закінчується через 1-2 дні — нагадуємо продовжити
+    try {
+      const { rows } = await pool.query(
+        `SELECT user_id, first_name, premium_expiry FROM users
+         WHERE is_premium = true AND premium_expiry > $1 AND premium_expiry < $2
+         LIMIT 500`,
+        [now, now + 2 * 86400000]
+      );
+      let sent = 0;
+      for (const u of rows) {
+        if (!(await canPush(u.user_id, 'expire_warn'))) continue;
+        const daysLeft = Math.max(1, Math.ceil((Number(u.premium_expiry) - now) / 86400000));
+        try {
+          await bot.sendMessage(u.user_id,
+            `👑 *${u.first_name || 'Дорогая'}, твой Премиум заканчивается ${daysLeft === 1 ? 'завтра' : 'через 2 дня'}!*\n\n` +
+            `Чтобы не потерять доступ к раскладам, ритуалам и лунному дневнику — продли подписку сейчас ✨`,
+            {
+              parse_mode: 'Markdown',
+              reply_markup: { inline_keyboard: [[
+                { text: '👑 Продлить Премиум', web_app: { url: `${webAppUrl}?screen=premium` } }
+              ]]}
+            });
+          sent++;
+        } catch (_) {}
+        await new Promise(r => setTimeout(r, 50));
+      }
+      if (rows.length) console.log(`[Cron/expire_warn] відправлено ${sent}/${rows.length}`);
+    } catch (e) { console.error('[Cron/expire_warn]', e.message); }
+
+    // 2) Win-back: преміум закінчився 2-4 дні тому — знижка 199⭐ на 1 місяць
+    try {
+      const { rows } = await pool.query(
+        `SELECT user_id, first_name FROM users
+         WHERE premium_expiry IS NOT NULL AND premium_expiry < $1 AND premium_expiry > $2
+         LIMIT 500`,
+        [now - 2 * 86400000, now - 4 * 86400000]
+      );
+      if (rows.length) {
+        // Один invoice link на всіх — лінки Stars багаторазові
+        const promoLink = await bot.createInvoiceLink(
+          '🎁 Премиум со скидкой −33%',
+          'Специальное предложение: 1 месяц Магического Премиума за 199 ⭐ вместо 299. Все расклады, ритуалы и AI.',
+          'premium_30_promo', '', 'XTR',
+          [{ label: 'Премиум 1 месяц (скидка)', amount: 199 }]
+        );
+        let sent = 0;
+        for (const u of rows) {
+          if (!(await canPush(u.user_id, 'winback'))) continue;
+          try {
+            await bot.sendMessage(u.user_id,
+              `🔮 *${u.first_name || 'Дорогая'}, карты скучают по тебе...*\n\n` +
+              `Твой Премиум закончился, но звёзды приготовили подарок:\n\n` +
+              `🎁 *1 месяц за 199 ⭐ вместо 299* — скидка 33%\n` +
+              `⏳ Предложение действует только *24 часа*`,
+              {
+                parse_mode: 'Markdown',
+                reply_markup: { inline_keyboard: [
+                  [{ text: '🎁 Забрать скидку −33%', url: promoLink }],
+                  [{ text: '🔮 Открыть кабинет', web_app: { url: webAppUrl } }],
+                ]}
+              });
+            sent++;
+          } catch (_) {}
+          await new Promise(r => setTimeout(r, 50));
+        }
+        console.log(`[Cron/winback] відправлено ${sent}/${rows.length}`);
+      }
+    } catch (e) { console.error('[Cron/winback]', e.message); }
+  }, { timezone: 'Europe/Kyiv' });
+
   console.log('[Bot] Telegram bot запущено');
 }
 
@@ -452,6 +580,7 @@ app.use('/api/payments', limits.payments, require('./routes/payments'));
 app.use('/api/support',  limits.support,  require('./routes/support'));
 app.use('/api/ai',       limits.ai,       require('./routes/ai'));
 app.use('/api/horoscope',require('./routes/horoscope'));
+app.use('/api/analytics',require('./routes/analytics'));
 app.use('/api/diary',    require('./routes/diary'));
 app.use('/admin',        require('./routes/admin'));
 

@@ -35,8 +35,10 @@ function rowToUser(row) {
 // POST /api/users/init
 router.post('/init', limits.init, async (req, res) => {
   try {
-    const { userId, username, firstName, name, birthDate, lang } = req.body;
+    const { userId, username, firstName, name, birthDate, lang, source } = req.body;
     if (!userId) return res.status(400).json({ ok: false, error: 'userId required' });
+    // Джерело трафіку зі start_param міні-аппи (src_xxx) — тільки first-touch
+    const src = typeof source === 'string' && /^src_[\w-]{1,32}$/.test(source) ? source.slice(4) : null;
 
     let astro = null;
     if (birthDate) {
@@ -53,17 +55,18 @@ router.post('/init', limits.init, async (req, res) => {
     const fname = firstName || name || '';
 
     const { rows } = await pool.query(`
-      INSERT INTO users (user_id, username, first_name, birth_date, lang, astro)
-      VALUES ($1, $2, $3, $4, $5, $6)
+      INSERT INTO users (user_id, username, first_name, birth_date, lang, astro, source)
+      VALUES ($1, $2, $3, $4, $5, $6, $7)
       ON CONFLICT (user_id) DO UPDATE SET
         username   = COALESCE(NULLIF($2,''), users.username),
         first_name = COALESCE(NULLIF($3,''), users.first_name),
         birth_date = COALESCE($4, users.birth_date),
         lang       = COALESCE($5, users.lang),
         astro      = CASE WHEN $4 IS NOT NULL THEN $6 ELSE users.astro END,
+        source     = COALESCE(users.source, $7),
         updated_at = NOW()
       RETURNING *, (xmax = 0) AS is_new
-    `, [userId, username || '', fname, birthDate || null, lang || 'ru', astro ? JSON.stringify(astro) : null]);
+    `, [userId, username || '', fname, birthDate || null, lang || 'ru', astro ? JSON.stringify(astro) : null, src]);
 
     // Логуємо тільки нову реєстрацію
     if (rows[0]?.is_new) {
@@ -98,11 +101,19 @@ router.post('/:userId/premium', async (req, res) => {
 // GET /api/users/:userId/premium-status
 router.get('/:userId/premium-status', validateUserId, async (req, res) => {
   try {
-    const { rows } = await pool.query(
-      `SELECT is_premium, premium_expiry, ref_bonus, spell_credits FROM users WHERE user_id=$1`,
-      [req.params.userId]
-    );
-    if (!rows.length) return res.json({ ok: true, isPremium: false, premiumExpiry: null, refBonus: 0, daysLeft: null, spellCredits: 0 });
+    const [{ rows }, creditsRes] = await Promise.all([
+      pool.query(
+        `SELECT is_premium, premium_expiry, ref_bonus, spell_credits FROM users WHERE user_id=$1`,
+        [req.params.userId]
+      ),
+      pool.query(
+        `SELECT spread_type, credits FROM spread_credits WHERE user_id=$1 AND credits > 0`,
+        [req.params.userId]
+      ),
+    ]);
+    const spreadCredits = {};
+    creditsRes.rows.forEach(r => { spreadCredits[r.spread_type] = r.credits; });
+    if (!rows.length) return res.json({ ok: true, isPremium: false, premiumExpiry: null, refBonus: 0, daysLeft: null, spellCredits: 0, spreadCredits });
     const user   = rows[0];
     const active = isPremiumActive(user);
     const expiry = user.premium_expiry ? Number(user.premium_expiry) : null;
@@ -112,9 +123,10 @@ router.get('/:userId/premium-status', validateUserId, async (req, res) => {
       premiumExpiry: expiry,
       refBonus:     user.ref_bonus    || 0,
       spellCredits: user.spell_credits || 0,
+      spreadCredits,
       daysLeft:     expiry ? Math.max(0, Math.ceil((expiry - Date.now()) / 86400000)) : null,
     });
-  } catch (e) { res.json({ ok: true, isPremium: false, daysLeft: null, refBonus: 0, spellCredits: 0 }); }
+  } catch (e) { res.json({ ok: true, isPremium: false, daysLeft: null, refBonus: 0, spellCredits: 0, spreadCredits: {} }); }
 });
 
 // GET /api/users/:userId/ref

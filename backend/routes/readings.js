@@ -5,6 +5,17 @@ const { createReading, getUserReadings, getTodayReading, SPREAD_TYPES } = requir
 const { loadUser, isPremiumActive } = require('./users');
 const { isAdmin } = require('../config/admins');
 const { validateUserId } = require('../middleware/security');
+const { pool } = require('../db');
+
+// Атомарно списуємо 1 кредит разового розкладу. Повертає true якщо списали.
+async function useSpreadCredit(userId, spreadType) {
+  const { rowCount } = await pool.query(
+    `UPDATE spread_credits SET credits = credits - 1
+     WHERE user_id = $1 AND spread_type = $2 AND credits > 0`,
+    [userId, spreadType]
+  );
+  return rowCount > 0;
+}
 
 // GET /api/readings/spreads
 router.get('/spreads', (req, res) => {
@@ -32,9 +43,13 @@ router.post('/:userId', validateUserId, async (req, res) => {
     const uid  = req.params.userId;
     const user = await loadUser(uid);
 
-    // Перевірка преміум (адмін має необмежений доступ)
+    // Перевірка преміум (адмін має необмежений доступ).
+    // Без преміуму — пробуємо списати куплений разовий кредит на цей розклад.
     if (spread.premium && !isPremiumActive(user) && !isAdmin(uid)) {
-      return res.status(403).json({ ok: false, error: 'premium_required' });
+      const usedCredit = await useSpreadCredit(uid, spreadType).catch(() => false);
+      if (!usedCredit) {
+        return res.status(403).json({ ok: false, error: 'premium_required' });
+      }
     }
 
     if (!user?.birthDate) {
