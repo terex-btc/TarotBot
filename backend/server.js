@@ -476,6 +476,83 @@ if (BOT_TOKEN) {
     }
   }, { timezone: 'Europe/Kyiv' });
 
+  // ── Автопостинг у канал-воронку ───────────────────────────────────────────
+  // CHANNEL_ID в .env: @username каналу або -100xxxxxxxxxx. Бот має бути адміном.
+  const CHANNEL_ID = process.env.CHANNEL_ID;
+  if (CHANNEL_ID) {
+    const { MAJOR_ARCANA } = require('./config/tarotCards');
+
+    async function getBotLink(src) {
+      if (!_cachedBotUsername) { try { _cachedBotUsername = (await bot.getMe()).username; } catch (_) {} }
+      return `https://t.me/${_cachedBotUsername || 'bot'}?start=src_${src}`;
+    }
+
+    // Ранковий пост: карта дня
+    async function postMorningCard() {
+      const webAppUrl = process.env.WEBAPP_URL || `http://localhost:${PORT}`;
+      const card = MAJOR_ARCANA[Math.floor(Math.random() * MAJOR_ARCANA.length)];
+      const moon = getCachedMoon();
+      const botLink = await getBotLink('channel');
+
+      const caption =
+        `${card.emoji} *Карта дня — ${card.nameRu}*\n\n` +
+        `${card.upright.ru}.\n\n` +
+        `${card.description.ru}\n\n` +
+        `${moon.emoji} Луна сегодня: *${moon.name}*\n\n` +
+        `✨ Это общая карта для всех. Твоя *личная* карта дня рассчитывается по дате рождения 👇`;
+
+      const markup = { inline_keyboard: [[{ text: '🔮 Узнать свою карту дня — бесплатно', url: botLink }]] };
+
+      try {
+        await bot.sendPhoto(CHANNEL_ID, `${webAppUrl}${card.image}`, {
+          caption, parse_mode: 'Markdown', reply_markup: markup,
+        });
+      } catch (_) {
+        // Якщо фото не доступне (localhost) — текстовий пост
+        await bot.sendMessage(CHANNEL_ID, caption, { parse_mode: 'Markdown', reply_markup: markup });
+      }
+      console.log(`[Cron/channel] Ранковий пост: ${card.nameRu}`);
+    }
+
+    cron.schedule('0 9 * * *', async () => {
+      try { await postMorningCard(); }
+      catch (e) { console.error('[Cron/channel-morning]', e.message); }
+    }, { timezone: 'Europe/Kyiv' });
+
+    // /post — адмін вручну тригерить пост в канал (для перевірки)
+    bot.onText(/\/post/, async (msg) => {
+      if (String(msg.from?.id) !== ADMIN_ID) return;
+      try {
+        await postMorningCard();
+        await bot.sendMessage(msg.chat.id, '✅ Пост відправлено в канал');
+      } catch (e) {
+        await bot.sendMessage(msg.chat.id, `❌ Помилка: ${e.message}\n\nПеревір що бот доданий адміном в канал ${CHANNEL_ID}`);
+      }
+    });
+
+    // Вечірній пост: луна + ритуал (19:30)
+    cron.schedule('30 19 * * *', async () => {
+      try {
+        const moon = getCachedMoon();
+        const botLink = await getBotLink('channel');
+
+        const text =
+          `${moon.emoji} *Вечер. Луна — ${moon.name}*\n\n` +
+          `${getMoonDesc(moon.energy)}\n\n` +
+          `🕯️ Вечер — лучшее время для ритуалов и вопросов картам. ` +
+          `Задай свой вопрос — карты ответят 👇`;
+
+        await bot.sendMessage(CHANNEL_ID, text, {
+          parse_mode: 'Markdown',
+          reply_markup: { inline_keyboard: [[{ text: '🌙 Спросить карты', url: botLink }]] },
+        });
+        console.log('[Cron/channel] Вечірній пост відправлено');
+      } catch (e) { console.error('[Cron/channel-evening]', e.message); }
+    }, { timezone: 'Europe/Kyiv' });
+
+    console.log(`[Bot] Автопостинг у канал ${CHANNEL_ID} увімкнено (9:00 та 19:30)`);
+  }
+
   // ── Retention-пуші: 11:00 — нагадування про закінчення преміуму + win-back ─
   cron.schedule('0 11 * * *', async () => {
     const webAppUrl = process.env.WEBAPP_URL || `http://localhost:${PORT}`;
@@ -560,6 +637,77 @@ if (BOT_TOKEN) {
         console.log(`[Cron/winback] відправлено ${sent}/${rows.length}`);
       }
     } catch (e) { console.error('[Cron/winback]', e.message); }
+
+    // 3) Новачки (день 2): зареєструвались, нічого не купили — м'яке нагадування
+    try {
+      const { rows } = await pool.query(
+        `SELECT u.user_id, u.first_name FROM users u
+         WHERE u.created_at BETWEEN NOW() - INTERVAL '3 days' AND NOW() - INTERVAL '2 days'
+           AND COALESCE(u.is_premium, false) = false
+           AND NOT EXISTS (SELECT 1 FROM payments_log p WHERE p.user_id = u.user_id AND p.status = 'success')
+         LIMIT 500`
+      );
+      let sent = 0;
+      for (const u of rows) {
+        if (!(await canPush(u.user_id, 'newbie_free'))) continue;
+        try {
+          await bot.sendMessage(u.user_id,
+            `🌟 *${u.first_name || 'Дорогая'}, твой гороскоп на неделю уже готов!*\n\n` +
+            `Звёзды составили прогноз специально по твоей дате рождения — совершенно бесплатно ✨\n\n` +
+            `А ещё тебя ждёт новая карта дня 🃏`,
+            {
+              parse_mode: 'Markdown',
+              reply_markup: { inline_keyboard: [[
+                { text: '🌟 Открыть мой гороскоп', web_app: { url: `${webAppUrl}?screen=horoscope` } }
+              ]]}
+            });
+          sent++;
+        } catch (_) {}
+        await new Promise(r => setTimeout(r, 50));
+      }
+      if (rows.length) console.log(`[Cron/newbie_free] відправлено ${sent}/${rows.length}`);
+    } catch (e) { console.error('[Cron/newbie_free]', e.message); }
+
+    // 4) Новачки (день 3): знижка 50% на перший розклад «Любов» — 25⭐ замість 50
+    try {
+      const { rows } = await pool.query(
+        `SELECT u.user_id, u.first_name FROM users u
+         WHERE u.created_at BETWEEN NOW() - INTERVAL '4 days' AND NOW() - INTERVAL '3 days'
+           AND COALESCE(u.is_premium, false) = false
+           AND NOT EXISTS (SELECT 1 FROM payments_log p WHERE p.user_id = u.user_id AND p.status = 'success')
+         LIMIT 500`
+      );
+      if (rows.length) {
+        // Один invoice link на всіх — лінки Stars багаторазові
+        const offerLink = await bot.createInvoiceLink(
+          '🎁 Расклад «Любовь» со скидкой −50%',
+          'Только для тебя: расклад «Любовь» на 3 карты + персональное AI-толкование за 25 ⭐ вместо 50.',
+          'spread:love', '', 'XTR',
+          [{ label: 'Расклад «Любовь» (скидка)', amount: 25 }]
+        );
+        let sent = 0;
+        for (const u of rows) {
+          if (!(await canPush(u.user_id, 'newbie_offer'))) continue;
+          try {
+            await bot.sendMessage(u.user_id,
+              `💝 *${u.first_name || 'Дорогая'}, подарок только для тебя!*\n\n` +
+              `Карты хотят рассказать о твоей любви. Расклад «Любовь» + персональное толкование от карт:\n\n` +
+              `🎁 *25 ⭐ вместо 50* — скидка 50%\n` +
+              `⏳ Предложение сгорит через *24 часа*`,
+              {
+                parse_mode: 'Markdown',
+                reply_markup: { inline_keyboard: [
+                  [{ text: '💝 Забрать расклад за 25 ⭐', url: offerLink }],
+                  [{ text: '🔮 Открыть кабинет', web_app: { url: webAppUrl } }],
+                ]}
+              });
+            sent++;
+          } catch (_) {}
+          await new Promise(r => setTimeout(r, 50));
+        }
+        console.log(`[Cron/newbie_offer] відправлено ${sent}/${rows.length}`);
+      }
+    } catch (e) { console.error('[Cron/newbie_offer]', e.message); }
   }, { timezone: 'Europe/Kyiv' });
 
   console.log('[Bot] Telegram bot запущено');
