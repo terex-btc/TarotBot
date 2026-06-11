@@ -11,7 +11,7 @@
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=4">
+  <link rel="stylesheet" href="style.css?v=6">
 </head>
 <body>
   <canvas id="stars-canvas"></canvas>
@@ -85,123 +85,47 @@
       <header class="top-bar">
         <div class="top-bar-left">
           <div class="avatar-circle" id="user-avatar">🔮</div>
-          <button class="top-user-btn" id="btn-profile" title="Профиль — змінити ім'я та дату народження">
+          <button class="top-user-btn" id="btn-profile">
             <div class="top-name" id="top-name">...</div>
-            <div class="top-astro" id="top-astro">✏️ змінити дані</div>
+            <div class="top-astro" id="top-astro">✨ Магический кабинет</div>
           </button>
         </div>
         <div class="top-bar-right">
-          <div id="premium-badge" class="premium-badge hidden" title="Премиум активен"></div>
-          <button class="icon-btn" id="btn-support" title="Поддержка">💬</button>
-          <button class="icon-btn" id="btn-history" title="История">📜</button>
+          <div id="premium-badge" class="premium-badge hidden"></div>
+          <button class="icon-btn" id="btn-support">💬</button>
+          <button class="icon-btn" id="btn-history">📜</button>
         </div>
       </header>
 
       <div class="home-scroll">
-        <!-- Астро-стрипа -->
-        <div class="astro-strip" id="astro-strip"></div>
-
-        <!-- Сегодняшний блок: луна + карта дня -->
+        <!-- Луна сегодня -->
         <div class="today-block" id="today-block">
-          <div class="today-moon" id="today-moon-pill"></div>
+          <div class="today-moon" id="today-moon-pill">🌙</div>
           <div class="today-hint">Сегодня особый день для...</div>
         </div>
 
-        <!-- Навигация: 2 hero-карты -->
-        <div class="nav-featured">
-          <div class="nav-cell nav-feat" data-screen="tarot">
-            <div class="nav-cell-emoji">🃏</div>
-            <div class="nav-feat-body">
-              <div class="nav-cell-name">Таро</div>
-              <div class="nav-cell-sub" data-i18n="cardsSub">Расклады</div>
-            </div>
-          </div>
-          <div class="nav-cell nav-feat" data-screen="spells">
-            <div class="nav-cell-emoji">🕯️</div>
-            <div class="nav-feat-body">
-              <div class="nav-cell-name" data-i18n="spellsScreen">Заговоры</div>
-              <div class="nav-cell-sub">Ритуалы</div>
+        <!-- Карта дня — главный герой -->
+        <div class="home-card-label" data-i18n="cardOfDay">Карта дня</div>
+        <div id="daily-zone" class="daily-zone">
+          <div class="tap-card" id="tap-daily">
+            <div class="tap-card-glow"></div>
+            <div class="tap-card-body">
+              <div class="tap-card-symbol"><div class="sym-diamond"></div></div>
+              <span class="tap-card-text" data-i18n="tapCardText">Нажмите, чтобы<br>открыть карту</span>
             </div>
           </div>
         </div>
 
-        <!-- Навигация: 3 основных -->
-        <div class="nav-grid nav-grid-3">
-          <div class="nav-cell" data-screen="moon">
-            <div class="nav-cell-emoji">🌔</div>
-            <div class="nav-cell-name" data-i18n="moonSub">Календарь</div>
-          </div>
-          <div class="nav-cell" data-screen="dreams">
-            <div class="nav-cell-emoji">😴</div>
-            <div class="nav-cell-name" data-i18n="dreamsScreen">Сонник</div>
-          </div>
-          <div class="nav-cell" data-screen="premium">
-            <div class="nav-cell-emoji">👑</div>
-            <div class="nav-cell-name" data-i18n="premiumScreen">Премиум</div>
-          </div>
-        </div>
-
-        <!-- AI Оракул — баннер -->
-        <div class="ai-oracle-banner" id="nav-ai-oracle" data-screen="ai-chat">
-          <div class="aob-left">
-            <div class="aob-icon">✨</div>
-            <div class="aob-text">
-              <div class="aob-title" data-i18n="aiChatScreen">AI Оракул</div>
-              <div class="aob-sub" data-i18n="aiChatSub">Спроси о судьбе</div>
-            </div>
-          </div>
-          <div class="aob-arrow">→</div>
-        </div>
-
-        <!-- Навигация: личный кабинет -->
-        <div class="nav-personal">
-          <div class="nav-cell nav-cell-sm" data-screen="numerology">
-            <div class="nav-cell-emoji">🔢</div>
-            <div class="nav-cell-name" data-i18n="numScreen">Нумерология</div>
-          </div>
-          <div class="nav-cell nav-cell-sm" data-screen="horoscope">
-            <div class="nav-cell-emoji">🌟</div>
-            <div class="nav-cell-name" data-i18n="horoScreen">Гороскоп</div>
-          </div>
-          <div class="nav-cell nav-cell-sm" data-screen="compat">
-            <div class="nav-cell-emoji">💞</div>
-            <div class="nav-cell-name" data-i18n="compatScreen">Совместимость</div>
-          </div>
-          <div class="nav-cell nav-cell-sm" data-screen="diary">
-            <div class="nav-cell-emoji">📓</div>
-            <div class="nav-cell-name" data-i18n="diaryScreen">Дневник</div>
-          </div>
-        </div>
-
-        <!-- Карта дня (краткая) -->
-        <section class="home-section">
-          <div class="section-head">
-            <span class="section-icon"></span>
-            <span class="section-label" data-i18n="cardOfDay">Карта дня</span>
-            <span class="badge-free" data-i18n="free">БЕСПЛАТНО</span>
-          </div>
-          <div id="daily-zone" class="daily-zone">
-            <div class="tap-card" id="tap-daily">
-              <div class="tap-card-glow"></div>
-              <div class="tap-card-body">
-                <div class="tap-card-symbol"><div class="sym-diamond"></div></div>
-                <span class="tap-card-text" data-i18n="tapCardText">Нажмите, чтобы<br>открыть карту</span>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <!-- Заговоры на сегодня (превью) -->
-        <section class="home-section">
-          <div class="section-head">
-            <span class="section-icon"></span>
-            <span class="section-label" data-i18n="spellsToday">Заговоры на сегодня</span>
+        <!-- Ритуалы на сегодня (превью) -->
+        <div class="home-spells-section">
+          <div class="home-spells-head">
+            <span data-i18n="spellsToday">Ритуалы на сегодня</span>
             <button class="btn-link" id="btn-all-spells" data-i18n="allSpells">Все →</button>
           </div>
           <div id="spells-preview" class="spells-preview"></div>
-        </section>
+        </div>
 
-        <div style="height:32px"></div>
+        <div style="height:90px"></div>
       </div>
     </div>
 
@@ -279,7 +203,7 @@
             </div>
           </div>
         </section>
-        <div style="height:32px"></div>
+        <div style="height:90px"></div>
       </div>
     </div>
 
@@ -360,7 +284,7 @@
         <div class="spell-cats-title" data-i18n="spellSelectCat">Выберите категорию</div>
         <div class="spell-cats" id="spell-cats"></div>
 
-        <div style="height:32px"></div>
+        <div style="height:90px"></div>
       </div>
     </div>
 
@@ -387,7 +311,7 @@
     <!-- ══ ЛУННЫЙ КАЛЕНДАРЬ ═══════════════════════════════════════════════════ -->
     <div id="screen-moon" class="screen">
       <header class="top-bar">
-        <button class="icon-btn back-btn" data-to="home">←</button>
+        <button class="icon-btn back-btn" data-to="more">←</button>
         <div class="top-bar-title" data-i18n="moonScreen">🌙 Лунный календарь</div>
         <div style="width:40px"></div>
       </header>
@@ -397,7 +321,7 @@
     <!-- ══ ПОДДЕРЖКА ═══════════════════════════════════════════════════════════ -->
     <div id="screen-support" class="screen">
       <header class="top-bar">
-        <button class="icon-btn back-btn" data-to="home">←</button>
+        <button class="icon-btn" id="btn-back-support">←</button>
         <div class="top-bar-title" data-i18n="supportScreen">💬 Поддержка</div>
         <div style="width:40px"></div>
       </header>
@@ -418,7 +342,7 @@
     <!-- ══ ИСТОРИЯ ════════════════════════════════════════════════════════════ -->
     <div id="screen-history" class="screen">
       <header class="top-bar">
-        <button class="icon-btn back-btn" data-to="home">←</button>
+        <button class="icon-btn" id="btn-back-history">←</button>
         <div class="top-bar-title" data-i18n="historyScreen">Мои расклады</div>
         <div style="width:40px"></div>
       </header>
@@ -428,7 +352,7 @@
     <!-- ══ ТЛУМАЧЕННЯ СНІВ ══════════════════════════════════════════════════ -->
     <div id="screen-dreams" class="screen">
       <header class="top-bar">
-        <button class="icon-btn back-btn" data-to="home">←</button>
+        <button class="icon-btn back-btn" data-to="more">←</button>
         <div class="top-bar-title" data-i18n="dreamsScreen">🌙 Сонник</div>
         <div style="width:40px"></div>
       </header>
@@ -573,7 +497,7 @@
     <!-- ══ НУМЕРОЛОГІЯ ═══════════════════════════════════════════════════════ -->
     <div id="screen-numerology" class="screen">
       <header class="top-bar">
-        <button class="icon-btn back-btn" data-to="home">←</button>
+        <button class="icon-btn back-btn" data-to="more">←</button>
         <div class="top-bar-title" data-i18n="numScreen">🔢 Нумерология</div>
         <div style="width:40px"></div>
       </header>
@@ -583,7 +507,7 @@
     <!-- ══ ГОРОСКОП ══════════════════════════════════════════════════════════ -->
     <div id="screen-horoscope" class="screen">
       <header class="top-bar">
-        <button class="icon-btn back-btn" data-to="home">←</button>
+        <button class="icon-btn back-btn" data-to="more">←</button>
         <div class="top-bar-title" data-i18n="horoScreen">🌟 Гороскоп недели</div>
         <div style="width:40px"></div>
       </header>
@@ -593,7 +517,7 @@
     <!-- ══ СУМІСНІСТЬ ════════════════════════════════════════════════════════ -->
     <div id="screen-compat" class="screen">
       <header class="top-bar">
-        <button class="icon-btn back-btn" data-to="home">←</button>
+        <button class="icon-btn back-btn" data-to="more">←</button>
         <div class="top-bar-title" data-i18n="compatScreen">💞 Совместимость</div>
         <div style="width:40px"></div>
       </header>
@@ -620,7 +544,7 @@
     <!-- ══ ДНЕВНИК ════════════════════════════════════════════════════════════ -->
     <div id="screen-diary" class="screen">
       <header class="top-bar">
-        <button class="icon-btn back-btn" data-to="home">←</button>
+        <button class="icon-btn back-btn" data-to="more">←</button>
         <div class="top-bar-title" data-i18n="diaryScreen">📓 Лунный дневник</div>
         <div style="width:40px"></div>
       </header>
@@ -666,10 +590,77 @@
       </div>
     </div>
 
+    <!-- ══ ЕЩЁ (More) ══════════════════════════════════════════════════════ -->
+    <div id="screen-more" class="screen">
+      <header class="top-bar">
+        <div class="top-bar-title" style="font-family:'Cinzel',serif;font-size:16px">✨ Ещё</div>
+        <button class="icon-btn" id="btn-more-profile">👤</button>
+      </header>
+      <div class="more-scroll">
+
+        <!-- AI Оракул — featured banner -->
+        <div class="more-feature-banner" id="more-ai-oracle">
+          <div class="mfb-icon">✨</div>
+          <div class="mfb-text">
+            <div class="mfb-title" data-i18n="aiChatScreen">AI Оракул</div>
+            <div class="mfb-sub" data-i18n="aiChatSub">Спроси о судьбе</div>
+          </div>
+          <span class="mfb-badge">AI</span>
+          <span class="mfb-arrow">→</span>
+        </div>
+
+        <!-- Сетка функций 3×2 -->
+        <div class="more-grid">
+          <div class="more-cell" data-screen="horoscope">
+            <div class="more-cell-icon">🌟</div>
+            <div class="more-cell-name" data-i18n="horoScreen">Гороскоп</div>
+          </div>
+          <div class="more-cell" data-screen="numerology">
+            <div class="more-cell-icon">🔢</div>
+            <div class="more-cell-name" data-i18n="numScreen">Нумерология</div>
+          </div>
+          <div class="more-cell" data-screen="compat">
+            <div class="more-cell-icon">💞</div>
+            <div class="more-cell-name" data-i18n="compatScreen">Совместимость</div>
+          </div>
+          <div class="more-cell" data-screen="moon">
+            <div class="more-cell-icon">🌙</div>
+            <div class="more-cell-name" data-i18n="moonSub">Лун. календарь</div>
+          </div>
+          <div class="more-cell" data-screen="dreams">
+            <div class="more-cell-icon">😴</div>
+            <div class="more-cell-name" data-i18n="dreamsScreen">Сонник</div>
+          </div>
+          <div class="more-cell" data-screen="diary">
+            <div class="more-cell-icon">📓</div>
+            <div class="more-cell-name" data-i18n="diaryScreen">Дневник</div>
+          </div>
+        </div>
+
+        <!-- Премиум баннер (скрывается если активен) -->
+        <div class="more-premium-banner" id="more-premium-btn">
+          <div class="mpb-icon">👑</div>
+          <div class="mpb-text">
+            <div class="mpb-title" data-i18n="premiumTitle">Магический Премиум</div>
+            <div class="mpb-sub">Все расклады, ритуалы и AI без ограничений</div>
+          </div>
+          <span class="mpb-arrow">→</span>
+        </div>
+
+        <!-- Ссылки: история, поддержка, профиль -->
+        <div class="more-links">
+          <button class="more-link-btn" id="more-btn-history">📜 <span data-i18n="historyScreen">История</span></button>
+          <button class="more-link-btn" id="more-btn-support">💬 <span data-i18n="supportScreen">Поддержка</span></button>
+        </div>
+
+        <div style="height:90px"></div>
+      </div>
+    </div>
+
     <!-- ══ AI CHAT (Оракул) ══════════════════════════════════════════════════ -->
     <div id="screen-ai-chat" class="screen">
       <header class="top-bar">
-        <button class="icon-btn back-btn" data-to="home">←</button>
+        <button class="icon-btn back-btn" data-to="more">←</button>
         <div class="top-bar-title" data-i18n="aiChatScreen">AI Оракул</div>
         <div style="width:40px"></div>
       </header>
@@ -684,8 +675,28 @@
       </div>
     </div>
 
+    <!-- ══ BOTTOM NAV ═══════════════════════════════════════════════════════ -->
+    <nav id="bottom-nav" class="bottom-nav hidden">
+      <button class="bnav-tab" data-tab="home">
+        <span class="bnav-icon">🌙</span>
+        <span class="bnav-label">Главная</span>
+      </button>
+      <button class="bnav-tab" data-tab="tarot">
+        <span class="bnav-icon">🃏</span>
+        <span class="bnav-label">Расклады</span>
+      </button>
+      <button class="bnav-tab" data-tab="spells">
+        <span class="bnav-icon">🕯️</span>
+        <span class="bnav-label">Ритуалы</span>
+      </button>
+      <button class="bnav-tab" data-tab="more">
+        <span class="bnav-icon">✨</span>
+        <span class="bnav-label">Ещё</span>
+      </button>
+    </nav>
+
   </div>
 
-  <script type="module" src="app.js?v=4"></script>
+  <script type="module" src="app.js?v=6"></script>
 </body>
 </html>

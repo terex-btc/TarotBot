@@ -158,6 +158,20 @@ function showScreen(id, dir = 'right') {
     next.style.transform  = '';
   });
   state.prevScreen = prev?.id?.replace('screen-', '') || 'home';
+
+  // Bottom nav — показуємо лише на 4 головних вкладках
+  const _bnavScreens = new Set(['home', 'tarot', 'spells', 'more']);
+  const _nav = document.getElementById('bottom-nav');
+  if (_nav) {
+    _nav.classList.toggle('hidden', !_bnavScreens.has(id));
+    if (_bnavScreens.has(id)) setActiveTab(id);
+  }
+}
+
+function setActiveTab(tabId) {
+  document.querySelectorAll('.bnav-tab').forEach(el => {
+    el.classList.toggle('active', el.dataset.tab === tabId);
+  });
 }
 
 // ── Toast ──────────────────────────────────────────────────────────────────
@@ -387,6 +401,7 @@ function getMoonTip(energy) {
 
 function renderAstroStrip(user) {
   const strip = document.getElementById('astro-strip');
+  if (!strip) return;
   if (!user.astro) { strip.innerHTML = ''; return; }
   const { zodiac, lifePath, personalYear, moonPhase } = user.astro;
   strip.innerHTML = [
@@ -1173,6 +1188,10 @@ function initNav() {
     btn.addEventListener('click', () => showScreen(btn.dataset.to, 'left'));
   });
 
+  // Назад з підтримки/історії — повертаємось туди, звідки прийшли
+  document.getElementById('btn-back-support')?.addEventListener('click', () => showScreen(state.prevScreen, 'left'));
+  document.getElementById('btn-back-history')?.addEventListener('click', () => showScreen(state.prevScreen, 'left'));
+
   // Назад з карти Таро
   document.getElementById('btn-back-card').addEventListener('click', () => showScreen(state.prevScreen, 'left'));
 
@@ -1182,26 +1201,51 @@ function initNav() {
     showScreen(state.prevScreen, 'left');
   });
 
-  // Навігація з головного екрану (всі клітинки nav-cell)
-  document.querySelectorAll('.nav-cell[data-screen]').forEach(el => {
+  // ── Bottom nav вкладки ────────────────────────────────────────────────────
+  document.querySelectorAll('.bnav-tab').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const tab = btn.dataset.tab;
+      tg?.HapticFeedback?.selectionChanged?.();
+      if (tab === 'home')        { showScreen('home'); }
+      else if (tab === 'tarot')  { showScreen('tarot'); }
+      else if (tab === 'spells') { await openSpellsScreen(); }
+      else if (tab === 'more')   { showScreen('more'); }
+    });
+  });
+
+  // ── More screen: клітинки 3×2 ────────────────────────────────────────────
+  document.querySelectorAll('.more-cell[data-screen]').forEach(el => {
     el.addEventListener('click', async () => {
       const s = el.dataset.screen;
-      if (s === 'tarot')        { showScreen('tarot'); }
-      else if (s === 'spells')     { await openSpellsScreen(); }
-      else if (s === 'moon')       { showScreen('moon'); await renderMoonCalendar(); }
+      tg?.HapticFeedback?.impactOccurred?.('light');
+      if (s === 'moon')            { showScreen('moon'); await renderMoonCalendar(); }
       else if (s === 'dreams')     { showScreen('dreams'); await initDreamsScreen(); }
-      else if (s === 'premium')    { showScreen('premium'); await loadPremiumScreen(); }
       else if (s === 'numerology') { showScreen('numerology'); await loadNumerologyScreen(); }
       else if (s === 'horoscope')  { showScreen('horoscope'); loadHoroscopeScreen(); }
       else if (s === 'compat')     { showScreen('compat'); initCompatScreen(); }
       else if (s === 'diary')      { showScreen('diary'); loadDiaryScreen(); }
-      else if (s === 'ai-chat')    { showScreen('ai-chat'); initAiChatScreen(); }
     });
   });
 
-  // AI Oracle banner (отдельный обработчик для баннера)
-  document.getElementById('nav-ai-oracle')?.addEventListener('click', () => {
+  // More screen: AI Оракул
+  document.getElementById('more-ai-oracle')?.addEventListener('click', () => {
     showScreen('ai-chat'); initAiChatScreen();
+  });
+
+  // More screen: Преміум банер
+  document.getElementById('more-premium-btn')?.addEventListener('click', async () => {
+    showScreen('premium'); await loadPremiumScreen();
+  });
+
+  // More screen: Кнопки посилань
+  document.getElementById('more-btn-history')?.addEventListener('click', async () => {
+    showScreen('history'); await loadHistory();
+  });
+  document.getElementById('more-btn-support')?.addEventListener('click', async () => {
+    showScreen('support'); await loadSupportMessages();
+  });
+  document.getElementById('btn-more-profile')?.addEventListener('click', () => {
+    showScreen('profile'); loadProfileScreen();
   });
 
   // Кнопка «Все заговоры →» на головному
