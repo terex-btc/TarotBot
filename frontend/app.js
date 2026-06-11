@@ -7,9 +7,9 @@ if (tg) {
   tg.ready();
   tg.expand();
   tg.requestFullscreen?.();
-  tg.setHeaderColor?.('#07030f');
-  tg.setBackgroundColor?.('#07030f');
-  tg.setBottomBarColor?.('#07030f');
+  tg.setHeaderColor?.('#100614');
+  tg.setBackgroundColor?.('#100614');
+  tg.setBottomBarColor?.('#100614');
   tg.disableVerticalSwipes?.();
 
   // Встановлюємо відступ зверху з урахуванням Telegram fullscreen UI кнопок
@@ -371,7 +371,7 @@ function updateThreeCardLock(isPremium) {
   const lock  = document.getElementById('three-card-lock');
   if (badge) badge.textContent = isPremium ? L('threeCardOpen') : L('threeCardPremium');
   if (badge) badge.className = isPremium ? 'badge-free' : 'badge-premium';
-  if (lock)  lock.textContent = isPremium ? '→' : '🔒';
+  if (lock)  lock.textContent = isPremium ? '→' : '👑';
 }
 
 function getMoonTip(energy) {
@@ -428,7 +428,7 @@ function renderSpellsPreview(spells) {
 
   wrap.innerHTML = spells.slice(0, 6).map(s => `
     <div class="spell-preview-card${s.locked ? ' locked' : ''}" data-spell-id="${s.id}">
-      ${s.locked ? '<div class="spc-lock">🔒</div>' : ''}
+      ${s.locked ? '<div class="spc-lock">👑</div>' : ''}
       <div class="spc-emoji">${s.emoji}</div>
       <div class="spc-title">${s.title}</div>
       <div class="spc-sub">${s.subtitle}</div>
@@ -696,7 +696,7 @@ async function openSpellsScreen() {
   if (teaserEl) {
     if (!isPremium) {
       teaserEl.innerHTML = `
-        <div class="spt-text">🔒 ${state.lang === 'ua' ? 'Частина ритуалів доступна лише з Преміум' : 'Часть ритуалов доступна только с Премиум'}</div>
+        <div class="spt-text">👑 ${state.lang === 'ua' ? 'Частина ритуалів доступна лише з Преміум' : 'Часть ритуалов доступна только с Премиум'}</div>
         <button class="spt-btn" id="btn-spells-get-premium">👑 ${state.lang === 'ua' ? 'Відкрити' : 'Открыть'}</button>
       `;
       teaserEl.classList.remove('hidden');
@@ -773,7 +773,7 @@ function buildSpellListItem(s) {
     .map(m => moonPhaseName(m)).slice(0, 2)
     .map(n => `<span class="sli-tag moon">🌙 ${n}</span>`).join('');
   return `<div class="spell-list-item${s.locked ? ' locked' : ''}" data-spell='${JSON.stringify(s).replace(/'/g, '&#39;')}'>
-    ${s.locked ? '<div class="sli-lock">🔒</div>' : ''}
+    ${s.locked ? '<div class="sli-lock">👑</div>' : ''}
     <div class="sli-emoji">${s.emoji}</div>
     <div class="sli-info">
       <div class="sli-title">${s.title}</div>
@@ -1049,7 +1049,7 @@ async function renderMoonCalendar() {
         <div class="msc-title">${s.title}</div>
         <div class="msc-sub">${s.subtitle}</div>
       </div>
-      <div class="msc-lock">${s.locked ? '🔒' : '→'}</div>
+      <div class="msc-lock">${s.locked ? '👑' : '→'}</div>
     </div>
   `).join('');
 
@@ -1232,6 +1232,19 @@ function initNav() {
       else if (s === 'horoscope')  { showScreen('horoscope'); loadHoroscopeScreen(); }
       else if (s === 'compat')     { showScreen('compat'); initCompatScreen(); }
       else if (s === 'diary')      { showScreen('diary'); loadDiaryScreen(); }
+    });
+  });
+
+  // ── Home: категорії ──────────────────────────────────────────────────────
+  document.querySelectorAll('.hcat[data-go]').forEach(el => {
+    el.addEventListener('click', async () => {
+      const s = el.dataset.go;
+      tg?.HapticFeedback?.impactOccurred?.('light');
+      if (s === 'love')           { openSpread('love'); }
+      else if (s === 'tarot')     { showScreen('tarot'); }
+      else if (s === 'spells')    { await openSpellsScreen(); }
+      else if (s === 'horoscope') { showScreen('horoscope'); loadHoroscopeScreen(); }
+      else if (s === 'compat')    { showScreen('compat'); initCompatScreen(); }
     });
   });
 
@@ -1555,7 +1568,7 @@ async function searchDream(symbol) {
         <div class="drc-tarot">Карта Таро: <b>${data.card_hint}</b></div>
         <div class="drc-preview">${data.preview}</div>
         <div class="drc-locked">
-          <div class="drc-lock-icon">🔒</div>
+          <div class="drc-lock-icon">👑</div>
           <div class="drc-lock-text">Полное толкование — только Премиум</div>
           <button class="btn-primary btn-sm" id="btn-dream-premium">Открыть Премиум 👑</button>
         </div>
@@ -1731,7 +1744,7 @@ async function loadNumerologyScreen() {
 
     ${!isPremium ? `
     <div class="num-premium-teaser">
-      <div class="npt-lock">🔒</div>
+      <div class="npt-lock">👑</div>
       <div class="npt-text"><b>Полный нумерологический анализ</b><br>Матрица Пифагора, кармические числа и предназначение — в Премиум</div>
       <button class="btn-primary btn-sm npt-btn" id="btn-num-premium">Открыть Премиум 👑</button>
     </div>` : `

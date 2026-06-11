@@ -6,12 +6,12 @@
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="theme-color" content="#07030f">
+  <meta name="theme-color" content="#100614">
   <title>🔮 Магический кабинет</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=7">
+  <link rel="stylesheet" href="style.css?v=8">
 </head>
 <body>
   <canvas id="stars-canvas"></canvas>
@@ -122,6 +122,39 @@
           </div>
         </div>
 
+        <!-- Категории — понятная навигация -->
+        <div class="home-cats-label" data-i18n="homeCatsLabel">Что тебя волнует?</div>
+        <div class="home-cats">
+          <button class="hcat hcat-love" data-go="love">
+            <span class="hcat-icon">💖</span>
+            <span class="hcat-body">
+              <span class="hcat-name" data-i18n="hcatLove">Любовь и отношения</span>
+              <span class="hcat-desc" data-i18n="hcatLoveDesc">Что он чувствует? Расклад на двоих</span>
+            </span>
+            <span class="hcat-arrow">→</span>
+          </button>
+          <button class="hcat" data-go="tarot">
+            <span class="hcat-icon">🃏</span>
+            <span class="hcat-name" data-i18n="hcatTarot">Расклады Таро</span>
+            <span class="hcat-desc" data-i18n="hcatTarotDesc">Ответ на твой вопрос</span>
+          </button>
+          <button class="hcat" data-go="spells">
+            <span class="hcat-icon">🕯️</span>
+            <span class="hcat-name" data-i18n="hcatSpells">Ритуалы</span>
+            <span class="hcat-desc" data-i18n="hcatSpellsDesc">Деньги · Красота · Защита</span>
+          </button>
+          <button class="hcat" data-go="horoscope">
+            <span class="hcat-icon">🌟</span>
+            <span class="hcat-name" data-i18n="hcatHoro">Гороскоп</span>
+            <span class="hcat-desc" data-i18n="hcatHoroDesc">Твоя неделя по знаку</span>
+          </button>
+          <button class="hcat" data-go="compat">
+            <span class="hcat-icon">💞</span>
+            <span class="hcat-name" data-i18n="hcatCompat">Совместимость</span>
+            <span class="hcat-desc" data-i18n="hcatCompatDesc">Подходите ли вы друг другу</span>
+          </button>
+        </div>
+
         <!-- Ритуалы на сегодня (превью) -->
         <div class="home-spells-section">
           <div class="home-spells-head">
@@ -178,7 +211,7 @@
                 <div class="spread-desc" data-i18n="threeCardDesc">Общий расклад на сейчас</div>
               </div>
             </div>
-            <div class="spread-arrow" id="three-card-lock">🔒</div>
+            <div class="spread-arrow" id="three-card-lock">👑</div>
           </div>
         </section>
 
@@ -190,19 +223,19 @@
           </div>
           <div class="premium-grid">
             <div class="premium-card" data-spread="love">
-              <div class="pcard-lock">🔒</div>
+              <div class="pcard-lock">👑</div>
               <div class="pcard-emoji">❤️</div>
               <div class="pcard-name" data-i18n="loveName">Любовь</div>
               <div class="pcard-desc" data-i18n="cards4">4 карты</div>
             </div>
             <div class="premium-card" data-spread="month">
-              <div class="pcard-lock">🔒</div>
+              <div class="pcard-lock">👑</div>
               <div class="pcard-emoji">📅</div>
               <div class="pcard-name" data-i18n="monthName">Месяц</div>
               <div class="pcard-desc" data-i18n="cards4">4 карты</div>
             </div>
             <div class="premium-card" data-spread="year">
-              <div class="pcard-lock">🔒</div>
+              <div class="pcard-lock">👑</div>
               <div class="pcard-emoji">🌟</div>
               <div class="pcard-name" data-i18n="yearName">Год</div>
               <div class="pcard-desc" data-i18n="cards6">6 карт</div>
@@ -713,6 +746,6 @@
 
   </div>
 
-  <script type="module" src="app.js?v=7"></script>
+  <script type="module" src="app.js?v=8"></script>
 </body>
 </html>
