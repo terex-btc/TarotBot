@@ -2762,3 +2762,41 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   background: rgba(240,192,64,.03);
 }
 .eeb-symbol { font-size: 36px !important; }
+
+/* 13. Відгуки (соц. доказ під paywall) ------------------------------------ */
+.reviews-head {
+  font-size: 13px;
+  color: #8a7aaa;
+  text-align: center;
+  margin: 18px 0 10px;
+}
+.reviews-strip {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  padding: 4px 2px 8px;
+  margin: 10px 0 4px;
+}
+.reviews-strip::-webkit-scrollbar { display: none; }
+.review-card {
+  flex: 0 0 78%;
+  max-width: 260px;
+  scroll-snap-align: start;
+  background: rgba(255,255,255,.04);
+  border: 1px solid rgba(232,121,249,.18);
+  border-radius: 14px;
+  padding: 12px 14px;
+  text-align: left;
+}
+.review-top {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-bottom: 6px;
+}
+.review-ava { font-size: 18px; }
+.review-name { font-size: 13px; font-weight: 600; color: #e0d8ff; }
+.review-stars { margin-left: auto; font-size: 11px; color: #f0c040; letter-spacing: 1px; }
+.review-text { font-size: 12.5px; line-height: 1.45; color: #c0b8d8; }

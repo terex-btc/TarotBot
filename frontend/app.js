@@ -562,6 +562,39 @@ async function openSpread(spreadType) {
 }
 
 // ── Paywall: разовий розклад чи преміум ────────────────────────────────────
+// ── Відгуки (соц. доказ під paywall) ────────────────────────────────────────
+const REVIEWS = {
+  ru: [
+    { n: 'Алина', t: 'Расклад на любовь сбылся через неделю! Мурашки 😍', a: '🌸' },
+    { n: 'Вика',  t: 'Карта дня каждое утро попадает прямо в точку', a: '✨' },
+    { n: 'Настя', t: 'Взяла премиум — ритуал на деньги реально работает 💰', a: '🌙' },
+    { n: 'Лера',  t: 'AI-толкование как будто меня знает всю жизнь', a: '💜' },
+    { n: 'Оля',   t: 'Совместимость 94% — и правда родственные души', a: '💞' },
+  ],
+  ua: [
+    { n: 'Аліна', t: 'Розклад на кохання справдився за тиждень! Мурашки 😍', a: '🌸' },
+    { n: 'Віка',  t: 'Карта дня щоранку влучає прямо в ціль', a: '✨' },
+    { n: 'Настя', t: 'Взяла преміум — ритуал на гроші реально працює 💰', a: '🌙' },
+    { n: 'Лера',  t: 'AI-тлумачення наче знає мене все життя', a: '💜' },
+    { n: 'Оля',   t: 'Сумісність 94% — і справді споріднені душі', a: '💞' },
+  ],
+};
+
+function renderReviews(elId) {
+  const el = document.getElementById(elId);
+  if (!el) return;
+  const list = REVIEWS[state.lang] || REVIEWS.ru;
+  el.innerHTML = list.map(r => `
+    <div class="review-card">
+      <div class="review-top">
+        <span class="review-ava">${r.a}</span>
+        <span class="review-name">${r.n}</span>
+        <span class="review-stars">★★★★★</span>
+      </div>
+      <div class="review-text">${r.t}</div>
+    </div>`).join('');
+}
+
 function showSpreadPaywall(spreadType) {
   track('paywall_view', `spread_${spreadType}`);
   const modal = document.getElementById('spread-paywall-modal');
@@ -569,6 +602,7 @@ function showSpreadPaywall(spreadType) {
   document.getElementById('spw-emoji').textContent = info.emoji;
   document.getElementById('spw-title').textContent = state.lang === 'ua' ? info.ua : info.ru;
   document.getElementById('spw-price').textContent = `⭐ ${SPREAD_PRICES[spreadType] || 50}`;
+  renderReviews('spw-reviews');
   modal.classList.remove('hidden');
 
   document.getElementById('spw-close').onclick = () => modal.classList.add('hidden');
@@ -1310,6 +1344,7 @@ function initNav() {
       else if (s === 'spells')    { await openSpellsScreen(); }
       else if (s === 'horoscope') { showScreen('horoscope'); loadHoroscopeScreen(); }
       else if (s === 'compat')    { showScreen('compat'); initCompatScreen(); }
+      else if (s === 'more')      { showScreen('more'); }
     });
   });
 
@@ -1492,6 +1527,7 @@ function initNav() {
 // ── Преміум екран ──────────────────────────────────────────────────────────
 async function loadPremiumScreen() {
   track('paywall_view', 'premium_screen');
+  renderReviews('premium-reviews');
   const ps = await api('GET', `/users/${state.userId}/premium-status`);
   if (!ps.ok) return;
   renderReferralProgress(ps.refBonus || 0);

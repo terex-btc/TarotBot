@@ -720,6 +720,10 @@ app.set('bot', bot || null);
 // Глобальний rate limit для всіх /api — 120 запитів/хвилину з одного IP
 app.use('/api', limits.global);
 
+// Перевірка підпису Telegram WebApp для всіх /api — кладе req.telegramUserId.
+// Якщо BOT_TOKEN не заданий (dev) — пропускає. У проді блокує запити без валідного initData.
+app.use('/api', verifyTelegramAuth);
+
 app.use('/api/cards',    require('./routes/cards'));
 app.use('/api/readings', limits.readings, require('./routes/readings'));
 app.use('/api/users',    require('./routes/users'));

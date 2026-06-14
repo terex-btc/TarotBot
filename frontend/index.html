@@ -11,7 +11,7 @@
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=9">
+  <link rel="stylesheet" href="style.css?v=10">
 </head>
 <body>
   <canvas id="stars-canvas"></canvas>
@@ -143,15 +143,10 @@
             <span class="hcat-name" data-i18n="hcatSpells">Ритуалы</span>
             <span class="hcat-desc" data-i18n="hcatSpellsDesc">Деньги · Красота · Защита</span>
           </button>
-          <button class="hcat" data-go="horoscope">
-            <span class="hcat-icon">🌟</span>
-            <span class="hcat-name" data-i18n="hcatHoro">Гороскоп</span>
-            <span class="hcat-desc" data-i18n="hcatHoroDesc">Твоя неделя по знаку</span>
-          </button>
-          <button class="hcat" data-go="compat">
-            <span class="hcat-icon">💞</span>
-            <span class="hcat-name" data-i18n="hcatCompat">Совместимость</span>
-            <span class="hcat-desc" data-i18n="hcatCompatDesc">Подходите ли вы друг другу</span>
+          <button class="hcat hcat-more" data-go="more">
+            <span class="hcat-icon">✨</span>
+            <span class="hcat-name" data-i18n="hcatMore">Ещё</span>
+            <span class="hcat-desc" data-i18n="hcatMoreDesc">Гороскоп · Совместимость · Сонник</span>
           </button>
         </div>
 
@@ -285,6 +280,7 @@
             <div class="spw-opt-price" data-i18n="spwPremiumPrice">от ⭐ 299</div>
           </button>
         </div>
+        <div class="reviews-strip" id="spw-reviews"></div>
         <div class="modal-note" data-i18n="payNote">Оплата через Telegram Stars · Безопасно</div>
       </div>
     </div>
@@ -515,6 +511,10 @@
           <span id="btn-buy-label" data-i18n="buyBtn">Выбрать план 👑</span>
         </button>
         <p class="premium-note" data-i18n="payNote">Оплата через Telegram Stars · Безопасно</p>
+
+        <!-- Отзывы -->
+        <div class="reviews-head" data-i18n="reviewsHead">Девушки уже доверились картам ✨</div>
+        <div class="reviews-strip" id="premium-reviews"></div>
 
         <!-- Что включено -->
         <div class="premium-features">
@@ -774,6 +774,6 @@
 
   </div>
 
-  <script type="module" src="app.js?v=9"></script>
+  <script type="module" src="app.js?v=10"></script>
 </body>
 </html>
