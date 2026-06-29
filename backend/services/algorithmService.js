@@ -141,16 +141,21 @@ function selectCards(birthDate, targetDate, spreadType, count, isAdmin = false) 
   const seed = hashSeed(seedStr);
   const rng = seededRandom(seed);
 
-  // Ваги карт (0–21)
-  const weights = new Array(22).fill(1.0);
+  // Ваги карт (0–77: 22 Старших + 56 Молодших Арканів)
+  const weights = new Array(78).fill(1.0);
+
+  // Важкі Молодші Аркани (для адмінського «щасливого» розкладу їх виключаємо)
+  const NEGATIVE_MINOR_IDS = new Set([26, 31, 40, 43, 52, 54, 56, 57, 58, 59, 68]);
 
   // Для адміна: виключаємо важкі карти та суттєво підсилюємо позитивні
   if (isAdmin) {
-    for (let i = 0; i < 22; i++) {
-      if (!POSITIVE_CARD_IDS.has(i)) {
-        weights[i] = 0; // виключаємо Вежу, Смерть, Диявола, Повішеного, Місяць
+    for (let i = 0; i < 78; i++) {
+      if (i < 22) {
+        // Старші Аркани: лишаємо тільки позитивні
+        weights[i] = POSITIVE_CARD_IDS.has(i) ? 3.0 : 0;
       } else {
-        weights[i] = 3.0; // базовий буст для всіх позитивних
+        // Молодші Аркани: прибираємо важкі, решту лишаємо нейтральними
+        weights[i] = NEGATIVE_MINOR_IDS.has(i) ? 0 : 1.5;
       }
     }
     // Особливий буст для найкращих карт
@@ -237,7 +242,18 @@ function selectCards(birthDate, targetDate, spreadType, count, isAdmin = false) 
 }
 
 // ── Вердикт по картам ─────────────────────────────────────────────────────
-const POSITIVE_CARD_IDS_SET = new Set([0,1,2,3,4,5,6,7,8,10,11,14,17,19,20,21]);
+const POSITIVE_CARD_IDS_SET = new Set([
+  // Старші Аркани
+  0,1,2,3,4,5,6,7,8,10,11,14,17,19,20,21,
+  // Жезли (сприятливі)
+  22,23,24,25,27,29,32,33,34,35,
+  // Кубки (сприятливі)
+  36,37,38,41,44,45,46,47,48,49,
+  // Мечі (сприятливі)
+  50,55,60,62,63,
+  // Пентаклі (сприятливі)
+  64,66,69,70,71,72,73,74,75,76,77
+]);
 
 function scoreCards(cards) {
   if (!cards || !cards.length) return 0;

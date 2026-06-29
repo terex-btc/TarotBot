@@ -378,25 +378,42 @@ if (BOT_TOKEN) {
   });
 
   // ── Моніторинг polling: 409 = другий інстанс краде апдейти (критично) ──────
-  let _lastPollAlert = 0;
-  let _pollErrStreak = 0;
+  // Короткі 409 при деплої Railway (старий інстанс ще не згас) — це норма й
+  // тривають кілька секунд. Алертимо лише якщо конфлікт НЕ зникає довше grace-вікна.
+  let _lastPollAlert = 0;     // коли востаннє слали алерт (антиспам)
+  let _pollErrStreak = 0;     // скільки помилок підряд (для не-409 проблем)
+  let _conflict409Since = 0;  // коли почалася поточна серія 409 (0 = немає)
+  const CONFLICT_GRACE_MS = 90 * 1000;   // ігноруємо 409 коротші за 90с (деплой)
+  const ALERT_COOLDOWN_MS = 30 * 60 * 1000;
   bot.on('polling_error', (error) => {
     const msg = error?.message || String(error);
     console.error('[Bot] Polling error:', msg);
     const is409 = /409|conflict/i.test(msg); // запущено два інстанси з одним токеном
-    _pollErrStreak++;
-    // Алертимо адміна, але не частіше ніж раз на 10 хв, щоб не залити чат
     const now = Date.now();
-    if ((is409 || _pollErrStreak >= 5) && now - _lastPollAlert > 10 * 60 * 1000) {
-      _lastPollAlert = now;
-      const reason = is409
-        ? '⚠️ *Polling 409 Conflict* — бот запущений у двох місцях одночасно. Зупини зайвий інстанс!'
-        : `⚠️ *Bot polling errors* (${_pollErrStreak} підряд): ${msg.slice(0, 120)}`;
-      bot.sendMessage(ADMIN_ID, reason, { parse_mode: 'Markdown' }).catch(() => {});
+    _pollErrStreak++;
+
+    if (is409) {
+      if (!_conflict409Since) _conflict409Since = now; // старт серії конфліктів
+      const lasting = now - _conflict409Since;
+      // Алертимо лише якщо конфлікт триває довше grace-вікна (стійкий другий інстанс)
+      if (lasting > CONFLICT_GRACE_MS && now - _lastPollAlert > ALERT_COOLDOWN_MS) {
+        _lastPollAlert = now;
+        bot.sendMessage(ADMIN_ID,
+          `⚠️ *Polling 409 Conflict* — бот запущений у двох місцях одночасно вже ${Math.round(lasting / 1000)}с. Зупини зайвий інстанс!`,
+          { parse_mode: 'Markdown' }).catch(() => {});
+      }
+    } else {
+      _conflict409Since = 0; // не-409 помилка скидає серію конфліктів
+      if (_pollErrStreak >= 5 && now - _lastPollAlert > ALERT_COOLDOWN_MS) {
+        _lastPollAlert = now;
+        bot.sendMessage(ADMIN_ID,
+          `⚠️ *Bot polling errors* (${_pollErrStreak} підряд): ${msg.slice(0, 120)}`,
+          { parse_mode: 'Markdown' }).catch(() => {});
+      }
     }
   });
-  // Скидаємо лічильник помилок, коли апдейти знову приходять нормально
-  bot.on('message', () => { _pollErrStreak = 0; });
+  // Апдейти знову приходять нормально → конфлікт зник, скидаємо лічильники
+  bot.on('message', () => { _pollErrStreak = 0; _conflict409Since = 0; });
 
   // ── Щоденні сповіщення: 9:00 ранку кожен день ────────────────────────────
   // Кеш фази місяця — оновлюємо раз на день (використовується і в cron, і в /moon команді)
