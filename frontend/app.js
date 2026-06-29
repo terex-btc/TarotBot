@@ -254,7 +254,7 @@ function initIntroScreen() {
   const birthIn = document.getElementById('input-birth');
   const btn     = document.getElementById('btn-start');
   if (state.tgUser?.first_name && !nameIn.value) nameIn.value = state.tgUser.first_name;
-  const maxD = new Date(); maxD.setFullYear(maxD.getFullYear() - 14);
+  const maxD = new Date(); maxD.setFullYear(maxD.getFullYear() - 18); // сервіс 18+
   birthIn.max = maxD.toISOString().split('T')[0];
   const check = () => { btn.disabled = !(nameIn.value.trim().length >= 2 && birthIn.value); };
   nameIn.addEventListener('input', check);
@@ -333,7 +333,7 @@ async function renderHome() {
     tarotMeta.innerHTML = [
       `<div class="meta-pill">${m.zodiac?.emoji} <strong>${m.zodiac?.name}</strong></div>`,
       `<div class="meta-pill">🔢 Путь <strong>${m.lifePath}</strong></div>`,
-      `<div class="meta-pill">${m.moonPhase?.emoji} <strong>${m.moonPhase?.name}</strong></div>`,
+      `<div class="meta-pill" id="tarot-moon-pill">${m.moonPhase?.emoji} <strong>${m.moonPhase?.name}</strong></div>`,
     ].join('');
   }
 
@@ -348,6 +348,9 @@ async function renderHome() {
     const pill = document.getElementById('today-moon-pill');
     pill.innerHTML = `${moonData.moon.emoji} ${moonData.moon.name}`;
     document.querySelector('.today-hint').textContent = getMoonTip(moonData.moon.energy);
+    // Синхронізуємо фазу місяця на екрані Таро зі свіжим значенням (а не astro з реєстрації)
+    const tarotMoon = document.getElementById('tarot-moon-pill');
+    if (tarotMoon) tarotMoon.innerHTML = `${moonData.moon.emoji} <strong>${moonData.moon.name}</strong>`;
     renderSpellsPreview(moonData.spells);
   }
 
