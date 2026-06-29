@@ -349,16 +349,11 @@ async function renderHome() {
     state.spellCredits   = ps.spellCredits || 0;
     updatePremiumBadge(ps);
     updatePremiumCards(ps.isPremium);
-    updateThreeCardLock(ps.isPremium);
   } else {
     updatePremiumCards(user.isPremium);
-    updateThreeCardLock(user.isPremium);
   }
 
-  await Promise.all([
-    loadDailyCard('daily-zone', 'tap-daily'),
-    loadDailyCard('daily-zone-tarot', 'tap-daily-tarot'),
-  ]);
+  await loadDailyCard('daily-zone', 'tap-daily');
 }
 
 function updatePremiumBadge(ps) {
@@ -371,14 +366,6 @@ function updatePremiumBadge(ps) {
   } else {
     badge.classList.add('hidden');
   }
-}
-
-function updateThreeCardLock(isPremium) {
-  const badge = document.getElementById('three-card-badge');
-  const lock  = document.getElementById('three-card-lock');
-  if (badge) badge.textContent = isPremium ? L('threeCardOpen') : L('threeCardPremium');
-  if (badge) badge.className = isPremium ? 'badge-free' : 'badge-premium';
-  if (lock)  lock.textContent = isPremium ? '→' : '👑';
 }
 
 function getMoonTip(energy) {
@@ -457,16 +444,19 @@ function renderSpellsPreview(spells) {
 }
 
 function updatePremiumCards(isPremium) {
-  document.querySelectorAll('.premium-card[data-spread]').forEach(el => {
-    el.classList.toggle('unlocked', !!isPremium);
-    if (!isPremium) {
-      const spreadType = el.dataset.spread;
-      const existing = el.querySelector('.blurred-preview');
-      if (!existing) {
-        el.insertAdjacentHTML('beforeend', renderBlurredSpreadPreview(spreadType));
-      }
+  const credits = state.premiumStatus?.spreadCredits || {};
+  document.querySelectorAll('.spread-row[data-spread]').forEach(el => {
+    const type  = el.dataset.spread;
+    const tag   = el.querySelector('.sr-tag');
+    const owned = !!isPremium || (credits[type] || 0) > 0;
+    el.classList.toggle('unlocked', owned);
+    if (!tag) return;
+    if (owned) {
+      tag.textContent = L('spreadOpen');
+      tag.className   = 'sr-tag sr-tag-open';
     } else {
-      el.querySelector('.blurred-preview')?.remove();
+      tag.innerHTML = `⭐ ${SPREAD_PRICES[type] || 50}`;
+      tag.className = 'sr-tag sr-tag-price';
     }
   });
 }
@@ -499,6 +489,7 @@ function renderDailyRevealed(zone, reading) {
   const meaning = card.isReversed ? ru(card.reversed) : ru(card.upright);
   const userName = state.user?.firstName || '';
   const personalLabel = userName ? `<div class="dr-personal">✨ ${t('personalCard', state.lang)} ${userName}</div>` : '';
+  const showAiTaste = !state.user?.isPremium;
   zone.innerHTML = `<div class="daily-revealed" id="dr-${zone.id}">
     ${personalLabel}
     ${cardImg(card, 'daily-card-img')}
@@ -509,15 +500,70 @@ function renderDailyRevealed(zone, reading) {
       <div class="dr-hint">${L('cardTapHint')}</div>
       <button class="dr-share-btn" id="dr-share-${zone.id}">📲</button>
     </div>
+    ${showAiTaste ? `
+    <div class="dr-ai" id="dr-ai-${zone.id}">
+      <button class="dr-ai-btn" id="dr-ai-btn-${zone.id}">${L('dailyAiBtn')}</button>
+      <div class="dr-ai-hint">${L('dailyAiHint')}</div>
+    </div>` : ''}
   </div>`;
   document.getElementById(`dr-${zone.id}`).addEventListener('click', e => {
-    if (e.target.closest('.dr-share-btn')) return;
+    if (e.target.closest('.dr-share-btn') || e.target.closest('.dr-ai')) return;
     openCardDetail(card);
   });
   document.getElementById(`dr-share-${zone.id}`)?.addEventListener('click', e => {
     e.stopPropagation();
     shareCard(card, name, meaning);
   });
+  if (showAiTaste) {
+    document.getElementById(`dr-ai-btn-${zone.id}`)?.addEventListener('click', e => {
+      e.stopPropagation();
+      requestDailyAi(zone.id, reading, card);
+    });
+  }
+}
+
+// Безкоштовне AI-тлумачення карти дня (1 раз для не-преміум)
+async function requestDailyAi(zoneId, reading, card) {
+  const box = document.getElementById(`dr-ai-${zoneId}`);
+  if (!box) return;
+  track('daily_ai_click');
+  box.innerHTML = `<div class="aib-loading"><div class="aib-spinner"></div><span>${L('aiLoading')}</span></div>`;
+  tg?.HapticFeedback?.impactOccurred?.('medium');
+  try {
+    const data = await api('POST', '/ai/interpret', {
+      cards:      [card],
+      positions:  [{ ru: 'Карта дня', ua: 'Карта дня' }],
+      spreadName: reading.spreadName || { ru: 'Карта дня', ua: 'Карта дня' },
+      question:   '',
+      userAstro:  state.user?.astro || null,
+      lang:       state.lang,
+      userId:     state.userId,
+      freeDaily:  true,
+    });
+    if (data.ok && data.interpretation) {
+      box.innerHTML = `
+        <div class="dr-ai-result">
+          <div class="aib-header"><span class="aib-icon">🔮</span><span class="aib-title">AI</span><span class="aib-badge">персонально</span></div>
+          <div class="aib-text">${esc(data.interpretation)}</div>
+        </div>`;
+      tg?.HapticFeedback?.notificationOccurred?.('success');
+    } else if (data.needPremium) {
+      box.innerHTML = `
+        <div class="dr-ai-paywall">
+          <div class="drp-title">${L('dailyAiPaywallTitle')}</div>
+          <div class="drp-sub">${L('dailyAiPaywallSub')}</div>
+          <button class="btn-upsell" id="drp-btn-${zoneId}">${L('dailyAiPaywallBtn')}</button>
+        </div>`;
+      document.getElementById(`drp-btn-${zoneId}`)?.addEventListener('click', async e => {
+        e.stopPropagation();
+        showScreen('premium'); await loadPremiumScreen();
+      });
+    } else {
+      box.innerHTML = `<div class="dr-ai-hint">${L('aiDefault') || ''}</div>`;
+    }
+  } catch (_) {
+    box.innerHTML = `<div class="dr-ai-hint">${L('aiDefault') || ''}</div>`;
+  }
 }
 
 // ── Питання перед розкладом ────────────────────────────────────────────────
@@ -1372,12 +1418,8 @@ function initNav() {
   // Кнопка «Все заговоры →» на головному
   document.getElementById('btn-all-spells')?.addEventListener('click', () => openSpellsScreen());
 
-  // Розклади Таро
-  document.querySelector('[data-spread="three_card"]')?.addEventListener('click', () => openSpread('three_card'));
-  document.querySelectorAll('.premium-card[data-spread]').forEach(el => el.addEventListener('click', () => openSpread(el.dataset.spread)));
-
-  // Заговоры → категорія (повторюємо і в tarot-screen)
-  document.querySelectorAll('.premium-card[data-spread]').forEach(el => el.addEventListener('click', () => openSpread(el.dataset.spread)));
+  // Розклади Таро — єдиний список
+  document.querySelectorAll('.spread-row[data-spread]').forEach(el => el.addEventListener('click', () => openSpread(el.dataset.spread)));
 
   // Кнопка AI-інтерпретації
   document.getElementById('btn-show-summary').addEventListener('click', async () => {
@@ -1450,33 +1492,7 @@ function initNav() {
     btn.disabled = true;
     document.getElementById('btn-buy-label').textContent = L('premiumCreatingInvoice');
     try {
-      const data = await api('POST', '/payments/invoice', { planId: selectedPlan, userId: state.userId });
-      if (!data.ok) throw new Error(data.error);
-      tg?.openInvoice?.(data.link, async (status) => {
-        if (status === 'paid') {
-          tg?.HapticFeedback?.notificationOccurred?.('success');
-          toast(L('premiumPaySuccess'));
-          // Поллінг: чекаємо isPremium=true (webhook може прийти з затримкою до 9с)
-          const ps = await pollUntil(
-            () => api('GET', `/users/${state.userId}/premium-status`),
-            d => d.ok && d.isPremium
-          );
-          if (ps) {
-            state.user.isPremium = ps.isPremium;
-            state.spellCredits   = ps.spellCredits || 0;
-            updatePremiumBadge(ps);
-            updatePremiumCards(ps.isPremium);
-            updateThreeCardLock(ps.isPremium);
-            if (state.moonData?.spells) renderSpellsPreview(state.moonData.spells);
-            toast(L('premiumActivated'));
-          } else {
-            toast(L('premiumPayPending'));
-          }
-          showScreen('home', 'left');
-        } else if (status === 'cancelled') {
-          toast(L('paymentCancelled'));
-        }
-      });
+      await purchasePremium(selectedPlan);
     } catch (_) {
       toast(L('invoiceError'));
     } finally {
@@ -1524,12 +1540,104 @@ function initNav() {
   document.getElementById('btn-history').addEventListener('click', async () => { showScreen('history'); await loadHistory(); });
 }
 
+// ── Покупка преміуму (спільна логіка для планів і welcome-офера) ──────────────
+async function purchasePremium(planId) {
+  const data = await api('POST', '/payments/invoice', { planId, userId: state.userId });
+  if (!data.ok) throw new Error(data.error || 'invoice_error');
+  return new Promise(resolve => {
+    tg?.openInvoice?.(data.link, async (status) => {
+      if (status === 'paid') {
+        tg?.HapticFeedback?.notificationOccurred?.('success');
+        toast(L('premiumPaySuccess'));
+        // Поллінг: чекаємо isPremium=true (webhook може прийти з затримкою до 9с)
+        const ps = await pollUntil(
+          () => api('GET', `/users/${state.userId}/premium-status`),
+          d => d.ok && d.isPremium
+        );
+        if (ps) {
+          state.user.isPremium = ps.isPremium;
+          state.premiumStatus  = ps;
+          state.spellCredits   = ps.spellCredits || 0;
+          updatePremiumBadge(ps);
+          updatePremiumCards(ps.isPremium);
+          if (state.moonData?.spells) renderSpellsPreview(state.moonData.spells);
+          toast(L('premiumActivated'));
+        } else {
+          toast(L('premiumPayPending'));
+        }
+        showScreen('home', 'left');
+        resolve(true);
+      } else {
+        if (status === 'cancelled') toast(L('paymentCancelled'));
+        resolve(false);
+      }
+    });
+  });
+}
+
+// ── Welcome-оффер: знижка для новачків у першу добу ──────────────────────────
+const WELCOME_WINDOW_MS = 24 * 60 * 60 * 1000;
+let _welcomeTimer = null;
+
+function getWelcomeOffer() {
+  if (state.user?.isPremium) return { active: false, msLeft: 0 };
+  const created = state.user?.createdAt;
+  const createdMs = created ? new Date(created).getTime() : 0;
+  if (!createdMs) return { active: false, msLeft: 0 };
+  const msLeft = (createdMs + WELCOME_WINDOW_MS) - Date.now();
+  return { active: msLeft > 0, msLeft };
+}
+
+function fmtCountdown(ms) {
+  const s   = Math.max(0, Math.floor(ms / 1000));
+  const h   = String(Math.floor(s / 3600)).padStart(2, '0');
+  const m   = String(Math.floor((s % 3600) / 60)).padStart(2, '0');
+  const sec = String(s % 60).padStart(2, '0');
+  return `${h}:${m}:${sec}`;
+}
+
+function renderWelcomeOffer(isPremium) {
+  const offerEl = document.getElementById('welcome-offer');
+  if (!offerEl) return;
+  if (_welcomeTimer) { clearInterval(_welcomeTimer); _welcomeTimer = null; }
+  const offer = getWelcomeOffer();
+  if (!offer.active || isPremium) { offerEl.classList.add('hidden'); return; }
+
+  offerEl.classList.remove('hidden');
+  const timerEl = document.getElementById('wo-timer');
+  const tick = () => {
+    const o = getWelcomeOffer();
+    if (!o.active) {
+      offerEl.classList.add('hidden');
+      if (_welcomeTimer) { clearInterval(_welcomeTimer); _welcomeTimer = null; }
+      return;
+    }
+    if (timerEl) timerEl.textContent = fmtCountdown(o.msLeft);
+  };
+  tick();
+  _welcomeTimer = setInterval(tick, 1000);
+
+  const woBtn = document.getElementById('btn-welcome-buy');
+  if (woBtn && !woBtn._wired) {
+    woBtn._wired = true;
+    woBtn.addEventListener('click', () => guardedCall('buy_welcome', async () => {
+      track('buy_click', 'premium_welcome');
+      woBtn.disabled = true;
+      try { await purchasePremium('premium_welcome'); }
+      catch (_) { toast(L('invoiceError')); }
+      finally { woBtn.disabled = false; }
+    }));
+  }
+}
+
 // ── Преміум екран ──────────────────────────────────────────────────────────
 async function loadPremiumScreen() {
   track('paywall_view', 'premium_screen');
   renderReviews('premium-reviews');
   const ps = await api('GET', `/users/${state.userId}/premium-status`);
   if (!ps.ok) return;
+  if (state.user) state.user.isPremium = ps.isPremium;
+  renderWelcomeOffer(ps.isPremium);
   renderReferralProgress(ps.refBonus || 0);
   const invited = document.getElementById('fpb-invited');
   if (invited && ps.refBonus > 0) {
@@ -2358,25 +2466,6 @@ function renderReferralProgress(refBonus) {
           <div class="rs-reward">${g === 1 ? L('refReward1') : g === 3 ? L('refReward3') : L('refReward7')}</div>
         </div>
       `).join('')}
-    </div>
-  `;
-}
-
-// ══ БЛЮР РОЗКЛАДІВ (превью для замкнутих) ════════════════════════════════════
-
-function renderBlurredSpreadPreview(spreadType) {
-  const fakeCards = ['🌟','🌙','⭐','✨','🔮'];
-  return `
-    <div class="blurred-preview">
-      ${fakeCards.slice(0, spreadType === 'celtic' ? 5 : 3).map(e => `
-        <div class="bp-card">
-          <div class="bp-card-inner">${e}</div>
-        </div>
-      `).join('')}
-      <div class="bp-overlay">
-        <div class="bp-lock">👑</div>
-        <div class="bp-text">${L('premiumOnly')}</div>
-      </div>
     </div>
   `;
 }

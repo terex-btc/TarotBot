@@ -11,6 +11,8 @@ const PLANS = {
   premium_365: { stars: 1990, days: 365, label: '1 год',    emoji: '👑', type: 'subscription' },
   // Win-back: знижка для тих, у кого закінчився преміум (лінк надсилається пушем)
   premium_30_promo: { stars: 199, days: 30, label: '1 месяц со скидкой −33%', emoji: '🎁', type: 'subscription' },
+  // Welcome: разова знижка для новачків у першу сесію (таймер на фронті)
+  premium_welcome: { stars: 199, days: 30, label: '1 месяц · приветственная цена', emoji: '🎁', type: 'subscription' },
 };
 
 // Мікроплатежі — окремі заговори

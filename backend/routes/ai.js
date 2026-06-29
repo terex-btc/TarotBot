@@ -1,6 +1,33 @@
 'use strict';
 const express = require('express');
 const router  = express.Router();
+const { pool } = require('../db');
+
+// Безкоштовне AI-тлумачення карти дня — дозволяємо не-преміуму лише 1 раз.
+// Повертає true, якщо запит можна виконати (преміум або ще не використано).
+async function allowFreeDaily(userId) {
+  if (!userId) return false;
+  try {
+    const { rows } = await pool.query(
+      `SELECT is_premium, premium_expiry FROM users WHERE user_id=$1`, [String(userId)]
+    );
+    const u = rows[0];
+    const premium = u && ((u.premium_expiry && Date.now() < Number(u.premium_expiry)) || u.is_premium);
+    if (premium) return true;
+    const { rows: cnt } = await pool.query(
+      `SELECT COUNT(*)::int AS n FROM activity_log WHERE user_id=$1 AND event_type='ai_free'`,
+      [String(userId)]
+    );
+    if (cnt[0].n >= 1) return false;
+    pool.query(
+      `INSERT INTO activity_log (user_id, event_type, meta) VALUES ($1,'ai_free','daily')`,
+      [String(userId)]
+    ).catch(() => {});
+    return true;
+  } catch (_) {
+    return true; // у разі помилки БД — не блокуємо UX
+  }
+}
 
 // Lazy init — щоб не крашити сервер якщо ANTHROPIC_API_KEY не задано
 let _anthropic = null;
@@ -37,11 +64,16 @@ router.post('/interpret', async (req, res) => {
     if (!process.env.ANTHROPIC_API_KEY) {
       return res.status(503).json({ ok: false, error: 'AI not configured' });
     }
-    const { cards, positions, spreadName, question, userAstro, lang, userId } = req.body;
+    const { cards, positions, spreadName, question, userAstro, lang, userId, freeDaily } = req.body;
     if (userId && !checkRateLimit(String(userId))) {
       return res.status(429).json({ ok: false, error: 'rate_limit', message: 'Не більше 5 запитів на хвилину' });
     }
     if (!cards || !cards.length) return res.status(400).json({ ok: false, error: 'cards required' });
+
+    // Безкоштовний AI на карті дня — лише 1 раз для не-преміум юзера
+    if (freeDaily && !(await allowFreeDaily(userId))) {
+      return res.json({ ok: false, needPremium: true });
+    }
 
     const l = lang || 'ru';
 

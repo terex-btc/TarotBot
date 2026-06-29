@@ -11,7 +11,7 @@
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=10">
+  <link rel="stylesheet" href="style.css?v=11">
 </head>
 <body>
   <canvas id="stars-canvas"></canvas>
@@ -174,69 +174,43 @@
         <!-- Астро-блок -->
         <div class="reading-meta" id="tarot-meta"></div>
 
-        <!-- Карта дня -->
-        <section class="home-section">
-          <div class="section-head">
-            <span class="section-icon"></span>
-            <span class="section-label" data-i18n="cardOfDay">Карта дня</span>
-            <span class="badge-free" data-i18n="free">БЕСПЛАТНО</span>
-          </div>
-          <div id="daily-zone-tarot" class="daily-zone">
-            <div class="tap-card" id="tap-daily-tarot">
-              <div class="tap-card-glow"></div>
-              <div class="tap-card-body">
-                <span class="tap-card-emoji">🌟</span>
-                <span class="tap-card-text" data-i18n="tapCardText">Нажмите, чтобы открыть карту</span>
-              </div>
-            </div>
-          </div>
-        </section>
+        <div class="tarot-intro" data-i18n="tarotIntro">Выбери расклад — карты ответят на твой вопрос</div>
 
-        <!-- Три карты (премиум) -->
-        <section class="home-section">
-          <div class="section-head">
-            <span class="section-icon"></span>
-            <span class="section-label" data-i18n="spreads">Расклады</span>
-          </div>
-          <div class="spread-btn" data-spread="three_card">
-            <div class="spread-btn-left">
-              <div class="spread-emojis">🃏🃏🃏</div>
-              <div>
-                <div class="spread-name" data-i18n="threeCardSpread">Прошлое · Настоящее · Будущее</div>
-                <div class="spread-desc" data-i18n="threeCardDesc">Общий расклад на сейчас</div>
-              </div>
-            </div>
-            <div class="spread-arrow" id="three-card-lock">👑</div>
-          </div>
-        </section>
-
-        <!-- Премиум расклады -->
-        <section class="home-section">
-          <div class="section-head">
-            <span class="section-icon"></span>
-            <span class="section-label" data-i18n="premiumSpreads">Премиум расклады</span>
-          </div>
-          <div class="premium-grid">
-            <div class="premium-card" data-spread="love">
-              <div class="pcard-lock">👑</div>
-              <div class="pcard-emoji">❤️</div>
-              <div class="pcard-name" data-i18n="loveName">Любовь</div>
-              <div class="pcard-desc" data-i18n="cards4">4 карты</div>
-            </div>
-            <div class="premium-card" data-spread="month">
-              <div class="pcard-lock">👑</div>
-              <div class="pcard-emoji">📅</div>
-              <div class="pcard-name" data-i18n="monthName">Месяц</div>
-              <div class="pcard-desc" data-i18n="cards4">4 карты</div>
-            </div>
-            <div class="premium-card" data-spread="year">
-              <div class="pcard-lock">👑</div>
-              <div class="pcard-emoji">🌟</div>
-              <div class="pcard-name" data-i18n="yearName">Год</div>
-              <div class="pcard-desc" data-i18n="cards6">6 карт</div>
-            </div>
-          </div>
-        </section>
+        <!-- Единый список раскладов -->
+        <div class="spread-list">
+          <button class="spread-row" data-spread="three_card">
+            <span class="sr-emoji">🃏</span>
+            <span class="sr-body">
+              <span class="sr-name" data-i18n="threeCardSpread">Прошлое · Настоящее · Будущее</span>
+              <span class="sr-desc" data-i18n="threeCardDesc">Общий расклад на сейчас</span>
+            </span>
+            <span class="sr-tag"></span>
+          </button>
+          <button class="spread-row" data-spread="love">
+            <span class="sr-emoji">❤️</span>
+            <span class="sr-body">
+              <span class="sr-name" data-i18n="loveName">Любовь</span>
+              <span class="sr-desc" data-i18n="loveSpreadDesc">Что он чувствует? 4 карты на двоих</span>
+            </span>
+            <span class="sr-tag"></span>
+          </button>
+          <button class="spread-row" data-spread="month">
+            <span class="sr-emoji">📅</span>
+            <span class="sr-body">
+              <span class="sr-name" data-i18n="monthName">Месяц</span>
+              <span class="sr-desc" data-i18n="monthSpreadDesc">Что ждёт тебя в этом месяце — 4 карты</span>
+            </span>
+            <span class="sr-tag"></span>
+          </button>
+          <button class="spread-row" data-spread="year">
+            <span class="sr-emoji">🌟</span>
+            <span class="sr-body">
+              <span class="sr-name" data-i18n="yearName">Год</span>
+              <span class="sr-desc" data-i18n="yearSpreadDesc">Большой расклад на год — 6 карт</span>
+            </span>
+            <span class="sr-tag"></span>
+          </button>
+        </div>
         <div style="height:90px"></div>
       </div>
     </div>
@@ -464,6 +438,19 @@
         <div style="width:40px"></div>
       </header>
       <div class="premium-scroll">
+
+        <!-- Welcome-оффер с таймером (только новичкам в первую сессию) -->
+        <div class="welcome-offer hidden" id="welcome-offer">
+          <div class="wo-badge" data-i18n="welcomeOfferTitle">🎁 Подарок новичку — Премиум −33%</div>
+          <div class="wo-sub" data-i18n="welcomeOfferSub">Только в первый день: месяц Премиума за 199 ⭐ вместо 299</div>
+          <div class="wo-timer-row">
+            <span class="wo-timer-label" data-i18n="welcomeOfferExpire">Предложение сгорит через</span>
+            <span class="wo-timer" id="wo-timer">23:59:59</span>
+          </div>
+          <button class="btn-primary btn-gold wo-btn" id="btn-welcome-buy">
+            <span data-i18n="welcomeOfferBtn">Забрать за 199 ⭐</span>
+          </button>
+        </div>
 
         <!-- Философия обмена энергиями -->
         <div class="energy-exchange-block">
@@ -774,6 +761,6 @@
 
   </div>
 
-  <script type="module" src="app.js?v=10"></script>
+  <script type="module" src="app.js?v=11"></script>
 </body>
 </html>

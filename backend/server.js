@@ -218,7 +218,7 @@ if (BOT_TOKEN) {
 
       // ── Преміум підписка ──────────────────────────────────────────────────
       if (payload.startsWith('premium_')) {
-        const daysMap = { premium_30: 30, premium_90: 90, premium_365: 365, premium_30_promo: 30 };
+        const daysMap = { premium_30: 30, premium_90: 90, premium_365: 365, premium_30_promo: 30, premium_welcome: 30 };
         const days = daysMap[payload] || 30;
 
         // Продовжуємо від поточного expiry якщо вже є преміум

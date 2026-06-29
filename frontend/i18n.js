@@ -373,6 +373,26 @@ export const T = {
     upsellSub: 'Расклад на месяц, год и любовь — открой Премиум',
     upsellBtn: 'Открыть Премиум 👑',
 
+    // ── Welcome offer (таймер для новичков) ──
+    welcomeOfferTitle: '🎁 Подарок новичку — Премиум −33%',
+    welcomeOfferSub: 'Только в первый день: месяц Премиума за 199 ⭐ вместо 299',
+    welcomeOfferBtn: 'Забрать за 199 ⭐',
+    welcomeOfferExpire: 'Предложение сгорит через',
+
+    // ── AI на карте дня ──
+    dailyAiBtn: '✨ AI-толкование · бесплатно',
+    dailyAiHint: 'Персональное толкование от AI — попробуй бесплатно',
+    dailyAiPaywallTitle: 'Понравилось AI-толкование?',
+    dailyAiPaywallSub: 'Открой безлимитные AI-толкования и все расклады с Премиумом',
+    dailyAiPaywallBtn: 'Открыть Премиум 👑',
+
+    // ── Экран Таро ──
+    tarotIntro: 'Выбери расклад — карты ответят на твой вопрос',
+    spreadOpen: 'Открыть →',
+    loveSpreadDesc: 'Что он чувствует? 4 карты на двоих',
+    monthSpreadDesc: 'Что ждёт тебя в этом месяце — 4 карты',
+    yearSpreadDesc: 'Большой расклад на год — 6 карт',
+
     // ── AI Chat ──
     aiChatScreen: 'AI Оракул',
     aiChatSub: 'Спроси о судьбе',
@@ -755,6 +775,26 @@ export const T = {
     upsellTitle: 'Хочеш дізнатись що чекає весь місяць?',
     upsellSub: 'Розклад на місяць, рік і кохання — відкрий Преміум',
     upsellBtn: 'Відкрити Преміум 👑',
+
+    // ── Welcome offer (таймер для новачків) ──
+    welcomeOfferTitle: '🎁 Подарунок новачку — Преміум −33%',
+    welcomeOfferSub: 'Лише в перший день: місяць Преміуму за 199 ⭐ замість 299',
+    welcomeOfferBtn: 'Забрати за 199 ⭐',
+    welcomeOfferExpire: 'Пропозиція згорить через',
+
+    // ── AI на карті дня ──
+    dailyAiBtn: '✨ AI-тлумачення · безкоштовно',
+    dailyAiHint: 'Персональне тлумачення від AI — спробуй безкоштовно',
+    dailyAiPaywallTitle: 'Сподобалось AI-тлумачення?',
+    dailyAiPaywallSub: 'Відкрий безлімітні AI-тлумачення та всі розклади з Преміумом',
+    dailyAiPaywallBtn: 'Відкрити Преміум 👑',
+
+    // ── Екран Таро ──
+    tarotIntro: 'Обери розклад — карти дадуть відповідь на твоє запитання',
+    spreadOpen: 'Відкрити →',
+    loveSpreadDesc: 'Що він відчуває? 4 карти на двох',
+    monthSpreadDesc: 'Що чекає на тебе цього місяця — 4 карти',
+    yearSpreadDesc: 'Великий розклад на рік — 6 карт',
 
     // ── AI Chat ──
     aiChatScreen: 'AI Оракул',
