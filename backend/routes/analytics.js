@@ -5,7 +5,16 @@ const { pool } = require('../db');
 const { validateUserId } = require('../middleware/security');
 
 // Білий список подій воронки (payment пишеться в payments_log, reading — в readingService)
-const ALLOWED_EVENTS = new Set(['open_app', 'paywall_view', 'buy_click']);
+const ALLOWED_EVENTS = new Set([
+  'open_app',       // запуск міні-аппи
+  'splash_start',   // натиснув "Почати" на splash
+  'register',       // завершив реєстрацію (ім'я + дата)
+  'daily_open',     // відкрив карту дня
+  'daily_ai_click', // натиснув безкоштовне AI на карті дня
+  'spread_open',    // відкрив екран розкладу
+  'paywall_view',   // побачив paywall
+  'buy_click',      // натиснув купити
+]);
 
 // POST /api/analytics/event — { userId, event, meta? }
 router.post('/event', async (req, res) => {

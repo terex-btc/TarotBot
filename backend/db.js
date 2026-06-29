@@ -109,6 +109,10 @@ const PG_SCHEMA = `
   );
   ALTER TABLE users ADD COLUMN IF NOT EXISTS source TEXT;
   CREATE INDEX IF NOT EXISTS activity_log_event_idx ON activity_log(event_type, created_at DESC);
+  -- Ідемпотентність платежів: charge_id від Telegram унікальний на кожну оплату.
+  -- Partial unique — старі рядки з NULL не конфліктують між собою.
+  ALTER TABLE payments_log ADD COLUMN IF NOT EXISTS charge_id TEXT;
+  CREATE UNIQUE INDEX IF NOT EXISTS payments_log_charge_uniq ON payments_log(charge_id) WHERE charge_id IS NOT NULL;
 `;
 
 async function initDB() {

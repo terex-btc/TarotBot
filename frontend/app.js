@@ -236,7 +236,15 @@ function initStars() {
 function initSplashScreen() {
   document.getElementById('btn-splash-start')?.addEventListener('click', () => {
     tg?.HapticFeedback?.impactOccurred?.('medium');
+    track('splash_start');
     showScreen('intro');
+  });
+
+  // Посилання на умови зі splash — повертаємось назад на splash, а не на home
+  document.getElementById('splash-terms-link')?.addEventListener('click', (e) => {
+    e.preventDefault();
+    document.querySelector('#screen-terms .back-btn')?.setAttribute('data-to', 'splash');
+    showScreen('terms');
   });
 }
 
@@ -468,6 +476,7 @@ async function loadDailyCard(zoneId, tapId) {
   if (!zone || !tap) return;
   tap.onclick = async () => {
     tap.onclick = null;
+    track('daily_open');
     zone.innerHTML = `<div style="text-align:center;padding:50px 0;color:var(--text2);font-size:14px;">${L('cardLoading')}</div>`;
     const data = await api('POST', `/readings/${state.userId}`, { spreadType: 'daily', lang: state.lang });
     if (data.ok && data.reading) renderDailyRevealed(zone, data.reading);
@@ -597,6 +606,7 @@ const SPREAD_LABELS = {
 };
 
 async function openSpread(spreadType) {
+  track('spread_open', spreadType);
   const needsPremium = ['love', 'month', 'year', 'three_card'].includes(spreadType);
   if (!needsPremium || state.user?.isPremium) { showQuestionModal(spreadType); return; }
   // Є куплений разовий кредит на цей розклад — пропускаємо
@@ -2425,6 +2435,7 @@ async function loadProfileScreen() {
   });
 
   document.getElementById('profile-terms')?.addEventListener('click', () => {
+    document.querySelector('#screen-terms .back-btn')?.setAttribute('data-to', 'home');
     showScreen('terms');
   });
 

@@ -278,11 +278,15 @@ async function loadFunnel() {
   const wrap = document.getElementById('funnel-wrap');
   if (!f.ok || !wrap) return;
   const steps = [
-    { label: '📱 Открыли приложение', val: f.openApp,  color: '#6ab4e8' },
-    { label: '🃏 Сделали расклад',     val: f.readings, color: '#9b4fff' },
-    { label: '👀 Видели пейвол',       val: f.paywall,  color: '#c9a0ff' },
-    { label: '🖱️ Нажали «купить»',     val: f.buyClick, color: '#f0a040' },
-    { label: '⭐ Оплатили',            val: f.payers,   color: '#f0c040' },
+    { label: '📱 Открыли приложение', val: f.openApp,    color: '#6ab4e8' },
+    { label: '▶️ Нажали «Начать»',     val: f.splash,     color: '#5fa8d8' },
+    { label: '📝 Регистрация',         val: f.register,   color: '#7a8fe0' },
+    { label: '🌙 Карта дня',           val: f.dailyOpen,  color: '#8a6fe8' },
+    { label: '🔮 Открыли расклад',     val: f.spreadOpen, color: '#9b4fff' },
+    { label: '🃏 Сделали расклад',     val: f.readings,   color: '#a85fff' },
+    { label: '👀 Видели пейвол',       val: f.paywall,    color: '#c9a0ff' },
+    { label: '🖱️ Нажали «купить»',     val: f.buyClick,   color: '#f0a040' },
+    { label: '⭐ Оплатили',            val: f.payers,     color: '#f0c040' },
   ];
   const max = Math.max(1, steps[0].val);
   wrap.innerHTML = steps.map((s, i) => {
@@ -611,23 +615,35 @@ router.get('/api/funnel', auth, async (req, res) => {
   try {
     const days = Math.min(90, Math.max(1, parseInt(req.query.days) || 7));
     const interval = `${days} days`;
-    const [openApp, daily, paywall, buyClick, payers, payments] = await Promise.all([
-      pool.query(`SELECT COUNT(DISTINCT user_id) FROM activity_log WHERE event_type='open_app' AND created_at > NOW() - $1::interval`, [interval]),
+    const distinct = (ev) => pool.query(
+      `SELECT COUNT(DISTINCT user_id) FROM activity_log WHERE event_type=$2 AND created_at > NOW() - $1::interval`,
+      [interval, ev]
+    );
+    const [openApp, splash, register, dailyOpen, spreadOpen, daily, paywall, buyClick, payers, payments] = await Promise.all([
+      distinct('open_app'),
+      distinct('splash_start'),
+      distinct('register'),
+      distinct('daily_open'),
+      distinct('spread_open'),
       pool.query(`SELECT COUNT(DISTINCT user_id) FROM activity_log WHERE event_type='reading' AND created_at > NOW() - $1::interval`, [interval]),
-      pool.query(`SELECT COUNT(DISTINCT user_id) FROM activity_log WHERE event_type='paywall_view' AND created_at > NOW() - $1::interval`, [interval]),
-      pool.query(`SELECT COUNT(DISTINCT user_id) FROM activity_log WHERE event_type='buy_click' AND created_at > NOW() - $1::interval`, [interval]),
+      distinct('paywall_view'),
+      distinct('buy_click'),
       pool.query(`SELECT COUNT(DISTINCT user_id) FROM payments_log WHERE status='success' AND created_at > NOW() - $1::interval`, [interval]),
       pool.query(`SELECT COUNT(*) as cnt, COALESCE(SUM(stars),0) as stars FROM payments_log WHERE status='success' AND created_at > NOW() - $1::interval`, [interval]),
     ]);
     res.json({
       ok: true, days,
-      openApp:  Number(openApp.rows[0].count),
-      readings: Number(daily.rows[0].count),
-      paywall:  Number(paywall.rows[0].count),
-      buyClick: Number(buyClick.rows[0].count),
-      payers:   Number(payers.rows[0].count),
-      payments: Number(payments.rows[0].cnt),
-      stars:    Number(payments.rows[0].stars),
+      openApp:    Number(openApp.rows[0].count),
+      splash:     Number(splash.rows[0].count),
+      register:   Number(register.rows[0].count),
+      dailyOpen:  Number(dailyOpen.rows[0].count),
+      spreadOpen: Number(spreadOpen.rows[0].count),
+      readings:   Number(daily.rows[0].count),
+      paywall:    Number(paywall.rows[0].count),
+      buyClick:   Number(buyClick.rows[0].count),
+      payers:     Number(payers.rows[0].count),
+      payments:   Number(payments.rows[0].cnt),
+      stars:      Number(payments.rows[0].stars),
     });
   } catch (e) { res.status(500).json({ ok: false, error: e.message }); }
 });

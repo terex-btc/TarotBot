@@ -196,12 +196,13 @@ if (BOT_TOKEN) {
   bot.on('successful_payment', async (msg) => {
     const chatId  = msg.chat.id;
     const uid     = String(chatId);
-    const payment = msg.successful_payment;
-    const payload = payment.invoice_payload;
-    const stars   = payment.total_amount;
+    const payment  = msg.successful_payment;
+    const payload  = payment.invoice_payload;
+    const stars    = payment.total_amount;
+    const chargeId = payment.telegram_payment_charge_id || null;
     const webAppUrl = process.env.WEBAPP_URL || `http://localhost:${PORT}`;
 
-    console.log(`[Pay] successful_payment — uid=${uid} stars=${stars} payload=${payload}`);
+    console.log(`[Pay] successful_payment — uid=${uid} stars=${stars} payload=${payload} charge=${chargeId}`);
 
     try {
       // Гарантуємо що юзер існує в БД
@@ -209,11 +210,29 @@ if (BOT_TOKEN) {
         `INSERT INTO users (user_id) VALUES ($1) ON CONFLICT DO NOTHING`,
         [uid]
       );
-      // Логуємо платіж в analytics
-      await pool.query(
-        `INSERT INTO payments_log (user_id, payload, stars, status) VALUES ($1,$2,$3,'success')`,
-        [uid, payload, stars]
-      ).catch(() => {}); // не блокуємо якщо таблиця ще не створена
+
+      // ── Ідемпотентність: атомарний шлюз по charge_id ──────────────────────
+      // Telegram може повторно надіслати successful_payment (ретраї). Логуємо
+      // платіж ДО нарахування — якщо charge_id вже є, пропускаємо весь обробник,
+      // щоб не нарахувати кредити/преміум двічі.
+      if (chargeId) {
+        const gate = await pool.query(
+          `INSERT INTO payments_log (user_id, payload, stars, status, charge_id)
+           VALUES ($1,$2,$3,'success',$4)
+           ON CONFLICT (charge_id) DO NOTHING RETURNING id`,
+          [uid, payload, stars, chargeId]
+        );
+        if (gate.rowCount === 0) {
+          console.warn(`[Pay] DUPLICATE charge ${chargeId} uid=${uid} — already processed, skip`);
+          return;
+        }
+      } else {
+        // Без charge_id (теоретично не буває для Stars) — логуємо без шлюзу
+        await pool.query(
+          `INSERT INTO payments_log (user_id, payload, stars, status) VALUES ($1,$2,$3,'success')`,
+          [uid, payload, stars]
+        ).catch(() => {});
+      }
       bumpActivity?.();
 
       // ── Преміум підписка ──────────────────────────────────────────────────
@@ -358,9 +377,26 @@ if (BOT_TOKEN) {
     }
   });
 
+  // ── Моніторинг polling: 409 = другий інстанс краде апдейти (критично) ──────
+  let _lastPollAlert = 0;
+  let _pollErrStreak = 0;
   bot.on('polling_error', (error) => {
-    console.error('[Bot] Polling error:', error.message);
+    const msg = error?.message || String(error);
+    console.error('[Bot] Polling error:', msg);
+    const is409 = /409|conflict/i.test(msg); // запущено два інстанси з одним токеном
+    _pollErrStreak++;
+    // Алертимо адміна, але не частіше ніж раз на 10 хв, щоб не залити чат
+    const now = Date.now();
+    if ((is409 || _pollErrStreak >= 5) && now - _lastPollAlert > 10 * 60 * 1000) {
+      _lastPollAlert = now;
+      const reason = is409
+        ? '⚠️ *Polling 409 Conflict* — бот запущений у двох місцях одночасно. Зупини зайвий інстанс!'
+        : `⚠️ *Bot polling errors* (${_pollErrStreak} підряд): ${msg.slice(0, 120)}`;
+      bot.sendMessage(ADMIN_ID, reason, { parse_mode: 'Markdown' }).catch(() => {});
+    }
   });
+  // Скидаємо лічильник помилок, коли апдейти знову приходять нормально
+  bot.on('message', () => { _pollErrStreak = 0; });
 
   // ── Щоденні сповіщення: 9:00 ранку кожен день ────────────────────────────
   // Кеш фази місяця — оновлюємо раз на день (використовується і в cron, і в /moon команді)
@@ -715,6 +751,14 @@ if (BOT_TOKEN) {
 
 // Передаємо bot в app для використання в роутах
 app.set('bot', bot || null);
+
+// ─── Healthcheck (публічний, для UptimeRobot/Railway) ───────────────────────────
+// БЕЗ Telegram-авторизації — щоб зовнішній монітор міг пінгувати. Перевіряє і БД.
+app.get('/healthz', async (req, res) => {
+  let db = false;
+  try { await pool.query('SELECT 1'); db = true; } catch (_) {}
+  res.status(db ? 200 : 503).json({ ok: db, bot: !!bot, db });
+});
 
 // ─── Routes ───────────────────────────────────────────────────────────────────
 // Глобальний rate limit для всіх /api — 120 запитів/хвилину з одного IP

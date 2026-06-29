@@ -206,6 +206,8 @@ body {
 .sf-item span { color: var(--text2); }
 .btn-splash { width: 100%; margin-top: 4px; }
 .splash-note { font-size: 11px; color: var(--text3); }
+.splash-legal { font-size: 10px; line-height: 1.5; color: var(--text3); opacity: .8; margin-top: 10px; max-width: 320px; }
+.splash-legal a { color: var(--accent, #c9a0ff); text-decoration: underline; }
 
 .intro-wrap {
   padding: 40px 20px 60px;
