@@ -382,14 +382,20 @@ if (BOT_TOKEN) {
   // тривають кілька секунд. Алертимо лише якщо конфлікт НЕ зникає довше grace-вікна.
   let _lastPollAlert = 0;     // коли востаннє слали алерт (антиспам)
   let _pollErrStreak = 0;     // скільки помилок підряд (для не-409 проблем)
+  let _lastPollErrAt = 0;     // час останньої помилки (для визначення "підряд")
   let _conflict409Since = 0;  // коли почалася поточна серія 409 (0 = немає)
   const CONFLICT_GRACE_MS = 90 * 1000;   // ігноруємо 409 коротші за 90с (деплой)
+  const STREAK_WINDOW_MS = 2 * 60 * 1000; // помилки рахуються "підряд" лише в межах 2 хв
   const ALERT_COOLDOWN_MS = 30 * 60 * 1000;
   bot.on('polling_error', (error) => {
     const msg = error?.message || String(error);
     console.error('[Bot] Polling error:', msg);
     const is409 = /409|conflict/i.test(msg); // запущено два інстанси з одним токеном
     const now = Date.now();
+    // Разові мережеві збої (ECONNRESET раз на кілька днів) не мають накопичуватись:
+    // якщо з минулої помилки пройшло > 2 хв — це нова серія, а не продовження старої
+    if (now - _lastPollErrAt > STREAK_WINDOW_MS) _pollErrStreak = 0;
+    _lastPollErrAt = now;
     _pollErrStreak++;
 
     if (is409) {
@@ -444,7 +450,11 @@ if (BOT_TOKEN) {
             ]]},
           });
           sent++;
-        } catch (_) { failed++; }
+        } catch (e) {
+          failed++;
+          // Логуємо причину (403 = юзер заблокував бота — це норма, інше — треба дивитись)
+          console.error(`[Cron/${logTag}] не доставлено ${user.user_id}: ${e.message?.slice(0, 150)}`);
+        }
       }));
       if (i + BATCH < rows.length) await new Promise(r => setTimeout(r, 1100));
     }
