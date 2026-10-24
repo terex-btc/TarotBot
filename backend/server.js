@@ -120,6 +120,18 @@ if (BOT_TOKEN) {
     });
   });
 
+  // /app — прев'ю нового застосунку Lunara (те саме, що піде в App Store)
+  bot.onText(/^\/app(?:@\w+)?$/, async (msg) => {
+    const base = `${process.env.WEBAPP_URL || `http://localhost:${PORT}`}/app/`;
+    await bot.sendMessage(msg.chat.id, '✨ *Lunara — Tarot & Astrology*\nPreview of the App Store version.', {
+      parse_mode: 'Markdown',
+      reply_markup: { inline_keyboard: [
+        [{ text: '🔮 Open Lunara', web_app: { url: base } }],
+        [{ text: '🌙 Start from onboarding', web_app: { url: `${base}?onb=1` } }],
+      ] },
+    });
+  });
+
   // /moon — лунный календарь
   bot.onText(/\/moon/, async (msg) => {
     const chatId = msg.chat.id;
