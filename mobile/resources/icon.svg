@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="38%" r="75%">
+      <stop offset="0" stop-color="#4a2fd1"/>
+      <stop offset=".55" stop-color="#241673"/>
+      <stop offset="1" stop-color="#0d0a1f"/>
+    </radialGradient>
+    <linearGradient id="card" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#6b4dff"/>
+      <stop offset=".6" stop-color="#4127c4"/>
+      <stop offset="1" stop-color="#2a1a85"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="50%" cy="50%" r="50%">
+      <stop offset="0" stop-color="#ffe9a8" stop-opacity=".75"/>
+      <stop offset="1" stop-color="#ffe9a8" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="1024" height="1024" fill="url(#bg)"/>
+  <g fill="#fff">
+    <circle cx="170" cy="190" r="6"/><circle cx="860" cy="250" r="5"/><circle cx="820" cy="820" r="7"/>
+    <circle cx="210" cy="840" r="5"/><circle cx="120" cy="520" r="4"/><circle cx="905" cy="560" r="4"/>
+  </g>
+  <g transform="rotate(-6 512 512)">
+    <rect x="322" y="212" width="380" height="600" rx="44" fill="url(#card)" stroke="#d8ccff" stroke-opacity=".55" stroke-width="6"/>
+    <rect x="350" y="240" width="324" height="544" rx="28" fill="none" stroke="#d8ccff" stroke-opacity=".3" stroke-width="3"/>
+    <circle cx="512" cy="500" r="200" fill="url(#glow)"/>
+    <circle cx="512" cy="500" r="104" fill="none" stroke="#f3e3ae" stroke-width="8"/>
+    <path d="M512 404 L530 482 L608 500 L530 518 L512 596 L494 518 L416 500 L494 482Z" fill="#fff4cf"/>
+    <path d="M512 446 L521 491 L566 500 L521 509 L512 554 L503 509 L458 500 L503 491Z" fill="#f2c75c" transform="rotate(45 512 500)"/>
+    <path d="M478 300 a34 34 0 1 0 68 0 a27 27 0 1 1 -68 0Z" fill="#efe5ff"/>
+    <path d="M478 704 a34 34 0 1 1 68 0 a27 27 0 1 0 -68 0Z" fill="#efe5ff" opacity=".85"/>
+  </g>
+</svg>

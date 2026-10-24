@@ -60,6 +60,17 @@ npm start
 | `love` | Любов | 3 |
 | `celtic` | Кельтський хрест | 6 |
 
+## Застосунок для App Store (`mobile/`)
+
+Новий продукт **Lunara** (EN за замовчуванням + RU/UA) — окремо від старого фронтенду `frontend/`, який і далі обслуговує бота.
+- Код: `mobile/www` (vanilla ES-модулі, без збирача). Інструкція: `mobile/README.md`.
+- Сервер віддає його на `/app/`; на iOS/Android — через Capacitor (`mobile/capacitor.config.json`).
+- Локально без БД і бота: `node mobile/dev/mock-server.js` → http://localhost:4173/app/
+- Вхід: у Telegram — initData (`X-Tg-Auth`); на iOS/вебі — анонімний акаунт на пристрій: `POST /api/app/session` → токен `X-App-Auth` (userId = 19 цифр, починається з 9; бот таким не пише).
+- Оплата лише через App Store / Google Play (RevenueCat): вебхук `POST /api/app/revenuecat`, звірка `POST /api/app/iap/sync`. Telegram Stars у застосунку немає.
+- Гороскоп на день: `GET /api/app/horoscope/:sign?lang=&date=` — AI (Claude Opus 5.5), кеш на добу в пам'яті.
+- Оракул (`/api/ai/chat`) перевіряє преміум на сервері.
+
 ## Змінні оточення
 
 Файл `backend/.env`:
@@ -68,6 +79,9 @@ PORT=3000
 BOT_TOKEN=токен_від_BotFather
 WEBAPP_URL=https://your-domain.com
 ADMIN_KEY=секретний_ключ
+APP_AUTH_SECRET=підпис_токенів_застосунку
+REVENUECAT_WEBHOOK_AUTH=секрет_вебхука_revenuecat
+REVENUECAT_SECRET_KEY=sk_...
 ```
 
 ## Розгортання

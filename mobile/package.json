@@ -1,0 +1,32 @@
+{
+  "name": "lunara-app",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Lunara — Tarot & Astrology (iOS/Android via Capacitor, web, Telegram)",
+  "scripts": {
+    "dev": "node dev/mock-server.js",
+    "assets:copy": "node scripts/copy-assets.js",
+    "ios:add": "npm run assets:copy && npx cap add ios",
+    "ios:sync": "npm run assets:copy && npx cap sync ios",
+    "ios:open": "npx cap open ios",
+    "icons": "npx @capacitor/assets generate --iconBackgroundColor '#0d0a1f' --splashBackgroundColor '#0d0a1f'"
+  },
+  "dependencies": {
+    "@capacitor/android": "^8.5.3",
+    "@capacitor/app": "^8.1.2",
+    "@capacitor/browser": "^8.0.5",
+    "@capacitor/core": "^8.5.3",
+    "@capacitor/haptics": "^8.0.2",
+    "@capacitor/ios": "^8.5.3",
+    "@capacitor/local-notifications": "^8.3.1",
+    "@capacitor/preferences": "^8.0.1",
+    "@capacitor/share": "^8.0.3",
+    "@capacitor/splash-screen": "^8.0.2",
+    "@capacitor/status-bar": "^8.0.4",
+    "@revenuecat/purchases-capacitor": "^13.7.6"
+  },
+  "devDependencies": {
+    "@capacitor/assets": "^3.0.5",
+    "@capacitor/cli": "^8.5.3"
+  }
+}

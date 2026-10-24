@@ -3,3 +3,7 @@ backend/.env
 backend/storage/*.json
 *.log
 .DS_Store
+
+# Mobile app (Capacitor)
+mobile/node_modules/
+mobile/www/assets/

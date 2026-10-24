@@ -1,0 +1,25 @@
+{
+  "appId": "app.lunara.tarot",
+  "appName": "Lunara",
+  "webDir": "www",
+  "backgroundColor": "#0d0a1f",
+  "ios": {
+    "contentInset": "never",
+    "backgroundColor": "#0d0a1f",
+    "limitsNavigationsToAppBoundDomains": false
+  },
+  "android": {
+    "backgroundColor": "#0d0a1f"
+  },
+  "plugins": {
+    "SplashScreen": {
+      "launchShowDuration": 3000,
+      "launchAutoHide": false,
+      "backgroundColor": "#0d0a1f",
+      "showSpinner": false
+    },
+    "LocalNotifications": {
+      "iconColor": "#6b4dff"
+    }
+  }
+}

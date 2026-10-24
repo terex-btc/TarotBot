@@ -64,12 +64,63 @@ function rateLimit(limit, windowMs, keyBy = 'ip') {
   };
 }
 
+// ─── App (iOS / Android / web) auth ───────────────────────────────────────────
+// Нативний застосунок не має Telegram initData. Клієнт генерує випадковий deviceId,
+// сервер видає числовий userId (19 цифр, починається з 9 — Telegram id максимум 16 цифр,
+// тож перетину немає і validateUserId не треба міняти) та токен = HMAC(userId).
+// Клієнт шле заголовок X-App-Auth: <userId>.<sig>
+
+const APP_USER_RE = /^9\d{18}$/;
+
+function appSecret() {
+  if (process.env.APP_AUTH_SECRET) return process.env.APP_AUTH_SECRET;
+  // Фолбек: похідний ключ від BOT_TOKEN/ADMIN_KEY (сам токен не світиться)
+  const base = process.env.BOT_TOKEN || process.env.ADMIN_KEY || 'dev-app-secret';
+  return crypto.createHash('sha256').update(`app-auth:${base}`).digest('hex');
+}
+
+function isAppUserId(id) {
+  return APP_USER_RE.test(String(id || ''));
+}
+
+function appUserIdFromDevice(deviceId) {
+  const hex = crypto.createHash('sha256').update(`app:${deviceId}`).digest('hex');
+  return '9' + BigInt('0x' + hex.slice(0, 16)).toString().padStart(18, '0').slice(-18);
+}
+
+function appSig(userId) {
+  return crypto.createHmac('sha256', appSecret()).update(`app:${userId}`).digest('hex').slice(0, 40);
+}
+
+function signAppToken(userId) {
+  return `${userId}.${appSig(userId)}`;
+}
+
+function verifyAppToken(token) {
+  const [uid, sig] = String(token || '').split('.');
+  if (!isAppUserId(uid) || !sig) return null;
+  const expected = appSig(uid);
+  if (sig.length !== expected.length) return null;
+  return crypto.timingSafeEqual(Buffer.from(sig), Buffer.from(expected)) ? uid : null;
+}
+
 // ─── Telegram WebApp initData Verification ────────────────────────────────────
 // Документація: https://core.telegram.org/bots/webapps#validating-data-received-via-the-mini-app
 // Перевіряємо HMAC підпис initData.
 // Витягуємо userId — і кладемо в req.telegramUserId.
 
 function verifyTelegramAuth(req, res, next) {
+  // Запит із застосунку (iOS/Android/web) — свій токен замість Telegram initData.
+  // req.telegramUserId історично так зветься, але це просто id власника запиту.
+  const appToken = req.headers['x-app-auth'];
+  if (appToken) {
+    const uid = verifyAppToken(appToken);
+    if (!uid) return res.status(401).json({ ok: false, error: 'invalid_auth' });
+    req.telegramUserId = uid;
+    req.isAppUser = true;
+    return next();
+  }
+
   const BOT_TOKEN = process.env.BOT_TOKEN;
 
   // Якщо токен не налаштований — пропускаємо (dev-режим)
@@ -180,4 +231,7 @@ const limits = {
   support:   rateLimit(20, 60_000, 'userId'),
 };
 
-module.exports = { rateLimit, verifyTelegramAuth, ownerOnly, validateUserId, limits };
+module.exports = {
+  rateLimit, verifyTelegramAuth, ownerOnly, validateUserId, limits,
+  isAppUserId, appUserIdFromDevice, signAppToken, verifyAppToken,
+};

@@ -10,7 +10,10 @@ const { setUserPremium, addRefBonus } = require('./routes/users');
 const { handleAdminReply }            = require('./routes/support');
 const { getMoonPhase }                = require('./services/algorithmService');
 const { bumpActivity }                = require('./routes/admin');
-const { verifyTelegramAuth, ownerOnly, validateUserId, limits } = require('./middleware/security');
+const { verifyTelegramAuth, ownerOnly, validateUserId, limits, isAppUserId } = require('./middleware/security');
+
+// Юзери iOS/Android-застосунку не мають Telegram-чату — бот їм не пише
+const tgOnly = rows => rows.filter(u => !isAppUserId(u.user_id));
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -46,6 +49,13 @@ app.use(express.static(path.join(__dirname, '../frontend'), {
     } else if (/\.(js|css|png|jpg|svg|ico|woff2?)$/.test(filePath)) {
       res.setHeader('Cache-Control', 'public, max-age=3600');
     }
+  },
+}));
+
+// Новий застосунок (той самий код, що йде в iOS через Capacitor) — /app/
+app.use('/app', express.static(path.join(__dirname, '../mobile/www'), {
+  setHeaders(res, filePath) {
+    if (/\.(html|js|css)$/.test(filePath)) res.setHeader('Cache-Control', 'no-cache');
   },
 }));
 
@@ -436,6 +446,7 @@ if (BOT_TOKEN) {
 
   // ── Допоміжна функція: відправка батчами ─────────────────────────────────
   async function sendBatch(rows, buildMsg, webAppUrl, logTag) {
+    rows = tgOnly(rows);
     let sent = 0, failed = 0;
     const BATCH = 25;
     for (let i = 0; i < rows.length; i += BATCH) {
@@ -641,7 +652,7 @@ if (BOT_TOKEN) {
         [now, now + 2 * 86400000]
       );
       let sent = 0;
-      for (const u of rows) {
+      for (const u of tgOnly(rows)) {
         if (!(await canPush(u.user_id, 'expire_warn'))) continue;
         const daysLeft = Math.max(1, Math.ceil((Number(u.premium_expiry) - now) / 86400000));
         try {
@@ -678,7 +689,7 @@ if (BOT_TOKEN) {
           [{ label: 'Премиум 1 месяц (скидка)', amount: 199 }]
         );
         let sent = 0;
-        for (const u of rows) {
+        for (const u of tgOnly(rows)) {
           if (!(await canPush(u.user_id, 'winback'))) continue;
           try {
             await bot.sendMessage(u.user_id,
@@ -711,7 +722,7 @@ if (BOT_TOKEN) {
          LIMIT 500`
       );
       let sent = 0;
-      for (const u of rows) {
+      for (const u of tgOnly(rows)) {
         if (!(await canPush(u.user_id, 'newbie_free'))) continue;
         try {
           await bot.sendMessage(u.user_id,
@@ -749,7 +760,7 @@ if (BOT_TOKEN) {
           [{ label: 'Расклад «Любовь» (скидка)', amount: 25 }]
         );
         let sent = 0;
-        for (const u of rows) {
+        for (const u of tgOnly(rows)) {
           if (!(await canPush(u.user_id, 'newbie_offer'))) continue;
           try {
             await bot.sendMessage(u.user_id,
@@ -790,6 +801,9 @@ app.get('/healthz', async (req, res) => {
 // ─── Routes ───────────────────────────────────────────────────────────────────
 // Глобальний rate limit для всіх /api — 120 запитів/хвилину з одного IP
 app.use('/api', limits.global);
+
+// Застосунок: сесія, гороскоп, вебхук RevenueCat — до перевірки Telegram-підпису
+app.use('/api/app', require('./routes/app'));
 
 // Перевірка підпису Telegram WebApp для всіх /api — кладе req.telegramUserId.
 // Якщо BOT_TOKEN не заданий (dev) — пропускає. У проді блокує запити без валідного initData.

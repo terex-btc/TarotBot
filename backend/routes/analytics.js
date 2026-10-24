@@ -14,6 +14,19 @@ const ALLOWED_EVENTS = new Set([
   'spread_open',    // відкрив екран розкладу
   'paywall_view',   // побачив paywall
   'buy_click',      // натиснув купити
+  // ── Застосунок (mobile/www) ──
+  'onb_slide',      // перегорнув слайд онбордингу (meta = номер)
+  'onb_profile',    // ввів ім'я та дату народження
+  'onb_done',       // закінчив онбординг
+  'paywall_close',  // закрив paywall без покупки
+  'trial_start',    // почав пробний період (meta = продукт)
+  'purchase',       // успішна покупка (meta = продукт)
+  'restore',        // відновив покупки
+  'oracle_send',    // написав Оракулу
+  'horoscope_open', // відкрив гороскоп
+  'moon_open',      // відкрив місячний календар
+  'card_view',      // відкрив карту в бібліотеці
+  'notif_allow',    // дозволив щоденне нагадування
 ]);
 
 // POST /api/analytics/event — { userId, event, meta? }
