@@ -106,6 +106,7 @@ app.get('/api/app/horoscope/:sign', (req, res) => {
   };
   setTimeout(() => res.json({ ok: true, sign: req.params.sign, horoscope: en }), 700);
 });
+app.post('/api/app/demo-unlock', (req, res) => { premium = true; res.json({ ok: true, premiumExpiry: Date.now() + 7 * 86400000 }); });
 app.post('/api/app/iap/sync', (req, res) => res.status(503).json({ ok: false, error: 'iap_not_configured' }));
 
 app.use('/app', express.static(path.join(__dirname, '../www'), { etag: false, maxAge: 0 }));

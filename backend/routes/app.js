@@ -208,4 +208,35 @@ router.post('/iap/sync', verifyTelegramAuth, async (req, res) => {
   }
 });
 
+// ══ Демо-доступ ══════════════════════════════════════════════════════════════
+// Посилання /app/?demo=<DEMO_CODE> вмикає PRO на 7 днів на цьому пристрої —
+// щоб показувати застосунок спонсорам/друзям. Код міняється в Railway Variables.
+const DEMO_DAYS = 7;
+router.post('/demo-unlock', limits.init, verifyTelegramAuth, async (req, res) => {
+  const code = String(req.body?.code || '');
+  const expected = process.env.DEMO_CODE || '';
+  const userId = req.telegramUserId;
+  if (!userId) return res.status(401).json({ ok: false, error: 'auth_required' });
+  if (!expected || code.length !== expected.length ||
+      !require('crypto').timingSafeEqual(Buffer.from(code), Buffer.from(expected))) {
+    return res.status(403).json({ ok: false, error: 'invalid_code' });
+  }
+  try {
+    const expiry = Date.now() + DEMO_DAYS * 86400000;
+    // Рядка юзера може ще не бути (онбординг попереду) — створюємо; /users/init потім доповнить
+    await pool.query(`
+      INSERT INTO users (user_id, is_premium, premium_expiry) VALUES ($1, true, $2)
+      ON CONFLICT (user_id) DO UPDATE SET
+        is_premium = true,
+        premium_expiry = GREATEST(COALESCE(users.premium_expiry, 0), $2),
+        updated_at = NOW()
+    `, [userId, expiry]);
+    pool.query(`INSERT INTO activity_log (user_id, event_type, meta) VALUES ($1,'iap','DEMO')`, [userId]).catch(() => {});
+    res.json({ ok: true, premiumExpiry: expiry });
+  } catch (e) {
+    console.error('[app/demo-unlock] error:', e.message);
+    res.status(500).json({ ok: false, error: 'db_error' });
+  }
+});
+
 module.exports = router;

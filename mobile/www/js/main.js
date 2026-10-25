@@ -4,7 +4,7 @@ import { ensureSession, api } from './api.js';
 import { state, refreshPremium, track, onStateChange } from './state.js';
 import { initLang, t } from './i18n.js';
 import { icons } from './art.js';
-import { closeAllLayers } from './ui.js';
+import { closeAllLayers, toast } from './ui.js';
 import { runOnboarding } from './screens/onboarding.js';
 import { mountToday } from './screens/today.js';
 import { mountSpreads } from './screens/spreads.js';
@@ -70,12 +70,22 @@ async function boot() {
   track('open_app', startParam || platform);
   purchases.init(state.userId);
 
+  // Демо-посилання ?demo=<код> — PRO на 7 днів на цьому пристрої (для показу спонсорам/друзям)
+  const demo = new URLSearchParams(location.search).get('demo');
+  if (demo) {
+    const r = await api('POST', '/app/demo-unlock', { code: demo });
+    const url = new URL(location.href);
+    url.searchParams.delete('demo');
+    history.replaceState(null, '', url.pathname + url.search + url.hash);
+    if (r.ok) { state.isPremium = true; state.premiumExpiry = r.premiumExpiry; toast(t('demoUnlocked')); }
+  }
+
   // ?onb=1 (або start_param=onb у Telegram) — показати онбординг навіть існуючому юзеру (демо)
   const forceOnb = /[?&#]onb=1/.test(location.href) || startParam === 'onb';
   const res = await api('GET', `/users/${state.userId}`);
   if (res.ok && res.user?.birthDate && !forceOnb) {
     state.user = res.user;
-    state.isPremium = !!res.user.isPremium;
+    state.isPremium = !!res.user.isPremium || state.isPremium;
     state.premiumExpiry = res.user.premiumExpiry || null;
     refreshPremium();
     await minDelay;

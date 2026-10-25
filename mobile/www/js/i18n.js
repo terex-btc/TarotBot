@@ -248,6 +248,7 @@ en: {
 
   // ── Me ──
   accountId: 'Account ID',
+  demoUnlocked: 'Demo access: PRO is on for 7 days ✨',
   editProfile: 'Edit profile', proActive: 'PRO is active', proUntil: 'Active until {date}', manageSub: 'Manage subscription',
   upgradeTitle: 'Lunara PRO', upgradeSub: 'All spreads, unlimited AI readings and the Oracle.',
   yourChart: 'Your chart', personalYear: 'Personal year',
@@ -471,6 +472,7 @@ ru: {
   reversedLocked: 'Перевёрнутые значения — в PRO',
 
   accountId: 'ID аккаунта',
+  demoUnlocked: 'Демо-доступ: PRO включён на 7 дней ✨',
   editProfile: 'Изменить профиль', proActive: 'PRO активен', proUntil: 'Действует до {date}', manageSub: 'Управлять подпиской',
   upgradeTitle: 'Lunara PRO', upgradeSub: 'Все расклады, безлимитные AI-толкования и Оракул.',
   yourChart: 'Твоя карта', personalYear: 'Личный год',
@@ -694,6 +696,7 @@ ua: {
   reversedLocked: 'Перевернуті значення — в PRO',
 
   accountId: 'ID акаунта',
+  demoUnlocked: 'Демо-доступ: PRO увімкнено на 7 днів ✨',
   editProfile: 'Змінити профіль', proActive: 'PRO активний', proUntil: 'Діє до {date}', manageSub: 'Керувати підпискою',
   upgradeTitle: 'Lunara PRO', upgradeSub: 'Усі розклади, безлімітні AI-тлумачення та Оракул.',
   yourChart: 'Твоя карта', personalYear: 'Особистий рік',
