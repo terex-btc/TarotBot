@@ -5,8 +5,8 @@
 | Де | Як відкривається | Вхід | Оплата |
 |---|---|---|---|
 | iOS / Android | Capacitor-обгортка | анонімний акаунт на пристрій (`X-App-Auth`) | App Store / Google Play через RevenueCat |
-| Telegram | `https://<railway>/app/` як Mini App | Telegram initData (той самий акаунт, що й у боті) | немає — показується «скоро в App Store» |
-| Браузер | `https://<railway>/app/` | анонімний акаунт | немає |
+| Telegram | `https://lunara-tarot.up.railway.app/app/` як Mini App | Telegram initData (той самий акаунт, що й у боті) | немає — показується «скоро в App Store» |
+| Браузер | `https://lunara-tarot.up.railway.app/app/` | анонімний акаунт | немає |
 
 Мова за замовчуванням — англійська; російська/українська вмикаються за мовою пристрою або в «Я → Language».
 
@@ -22,7 +22,7 @@ node mobile/dev/mock-server.js
 ## Показати в Telegram (демо)
 
 1. Задеплоїти гілку на Railway (сервер віддає застосунок на `/app/`).
-2. У @BotFather: `/newapp` → вибрати бота → URL `https://<railway-домен>/app/` → коротка назва, напр. `lunara`.
+2. У @BotFather: `/newapp` → вибрати бота → URL `https://lunara-tarot.up.railway.app/app/` → коротка назва, напр. `lunara`.
 3. Посилання на демо: `https://t.me/<бот>/lunara`. Щоб показати онбординг людині, яка вже є в боті: `https://t.me/<бот>/lunara?startapp=onb`.
 4. Щоб друг бачив PRO-функції: видати йому преміум в адмінці (`/admin` → «Выдать 👑» за його Telegram ID).
 

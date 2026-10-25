@@ -7,7 +7,7 @@ export const CONFIG = {
   APP_TAGLINE: 'Tarot & Astrology',
 
   // Сервер (на нативі запити йдуть сюди; у браузері/Telegram — на той самий origin)
-  API_ORIGIN: 'https://kind-passion-production-f299.up.railway.app',
+  API_ORIGIN: 'https://lunara-tarot.up.railway.app',
 
   // RevenueCat: публічний iOS-ключ (appl_...) з дашборду RevenueCat → API keys
   REVENUECAT_IOS_KEY: '',
