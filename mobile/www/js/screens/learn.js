@@ -11,6 +11,7 @@ import { LESSONS, DECK_SPREADS } from '../learn-content.js';
 import { cardName, cardKeywords, cardImg, openCardDetail } from './library.js';
 import { showPaywall } from './paywall.js';
 import { userAstro } from './today.js';
+import { loadDetails, overallPicture, overallHtml, cardBlocksHtml } from '../reading.js';
 
 const FREE_LESSONS = 3;               // перші уроки безкоштовні, далі — PRO
 const DONE_KEY = 'lunara_learn_done';
@@ -185,6 +186,8 @@ function openReadMyDeck() {
   const result = async () => {
     track('deck_read_done', st.spread.id);
     haptic('success');
+    await loadDetails();
+    const helpers = { name: cardName, keywords: c => cardKeywords(c), img: cardImg };
     box.innerHTML = `<div class="rmd-result">
         ${st.question ? `<div class="q-badge">“${esc(st.question)}”</div>` : ''}
         <div class="rd-grid n${Math.min(st.picks.length, 3)}">${st.picks.map((c, i) => `
@@ -195,15 +198,12 @@ function openReadMyDeck() {
             <div class="rd-name">${esc(cardName(c))}${c.isReversed ? ` · ${t('reversedShort')}` : ''}</div>
           </div>`).join('')}
         </div>
-        <div class="rd-list">${st.picks.map((c, i) => `
-          <button class="rd-row" data-i="${i}"><span class="rd-thumb${c.isReversed ? ' rev' : ''}">${cardImg(c)}</span>
-            <span class="rd-row-text"><small>${esc(st.spread.positions[i][L])}</small><b>${esc(cardName(c))}${c.isReversed ? ` <em>${t('reversedShort')}</em>` : ''}</b>
-            <span>${esc(cardKeywords(c).slice(0, 3).join(' · '))}</span></span>${icons.chevron}</button>`).join('')}
-        </div>
-        <div class="ai-box" id="rmd-ai"><div class="ai-box-head">${sparkle()}<span>${t('aiReading')}</span></div>${spinner(t('aiThinking'))}</div>
+        ${cardBlocksHtml(st.picks, st.spread.positions, { spreadId: st.spread.id, ...helpers })}
+        ${overallHtml(overallPicture(st.picks, st.spread.positions, { ...helpers, spreadId: st.spread.id }))}
+        <div class="ai-box" id="rmd-ai"><div class="ai-box-head">${sparkle()}<span>${t('aiReadingPersonal')}</span></div>${spinner(t('aiThinking'))}</div>
         <button class="btn-ghost" id="rmd-again">${t('rmdAgain')}</button>
       </div>`;
-    box.querySelectorAll('.rd-row').forEach(b => b.onclick = () => openCardDetail(st.picks[Number(b.dataset.i)]));
+    box.querySelectorAll('.rb-head').forEach(b => b.onclick = () => openCardDetail(st.picks[Number(b.dataset.i)]));
     box.querySelector('#rmd-again').onclick = () => { st.spread = null; st.question = ''; step1(); };
     layer.querySelector('.push-body').scrollTop = 0;
     const ai = await api('POST', '/ai/interpret', {
@@ -213,14 +213,14 @@ function openReadMyDeck() {
     const aiBox = box.querySelector('#rmd-ai');
     if (!aiBox) return;
     if (ai.ok && ai.interpretation) {
-      aiBox.innerHTML = `<div class="ai-box-head">${sparkle()}<span>${t('aiReading')}</span></div><p class="ai-text"></p>`;
+      aiBox.innerHTML = `<div class="ai-box-head">${sparkle()}<span>${t('aiReadingPersonal')}</span></div><p class="ai-text"></p>`;
       typeText(aiBox.querySelector('.ai-text'), ai.interpretation);
     } else if (ai.error === 'premium_required') {
-      aiBox.innerHTML = `<div class="ai-box-head">${sparkle()}<span>${t('aiReading')}</span></div><p class="muted">${t('aiFreeUsed')}</p>
+      aiBox.innerHTML = `<div class="ai-box-head">${sparkle()}<span>${t('aiReadingPersonal')}</span></div><p class="muted">${t('aiFreeUsed')}</p>
         <button class="btn-primary small" id="rmd-unlock"><span>${t('unlockPro')}</span></button>`;
       aiBox.querySelector('#rmd-unlock').onclick = () => showPaywall({ source: 'deck_read' });
     } else {
-      aiBox.innerHTML = `<div class="ai-box-head">${sparkle()}<span>${t('aiReading')}</span></div><p class="muted">${t('aiUnavailable')}</p>`;
+      aiBox.remove();   // без AI вистачає «Загальної картини»
     }
   };
 

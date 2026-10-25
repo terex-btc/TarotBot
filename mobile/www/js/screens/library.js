@@ -5,6 +5,7 @@ import { haptic } from '../platform.js';
 import { pushScreen, esc, spinner } from '../ui.js';
 import { icons } from '../art.js';
 import { showPaywall } from './paywall.js';
+import { loadDetails, cardDetail, yesNo, tx } from '../reading.js';
 
 export const cardName = c => (getLang() === 'ru' ? c.nameRu : getLang() === 'ua' ? c.nameUa : c.name) || c.name;
 export const cardKeywords = (c, reversed = c.isReversed) => {
@@ -73,15 +74,24 @@ export function openCardDetail(card, { fromLibrary = false } = {}) {
   const body = layer.querySelector('#cd-body');
   const renderBody = () => {
     const locked = showRev && !state.isPremium;
+    const d = cardDetail(card);
+    const T = tx();
+    const yn = yesNo({ ...card, isReversed: showRev });
     body.innerHTML = `
       <div class="chips center">${cardKeywords(card, showRev).map(k => `<span class="chip">${esc(k)}</span>`).join('')}</div>
       <div class="cd-section${locked ? ' locked' : ''}">
         <h3>${t(showRev ? 'meaningReversed' : 'meaningUpright')}</h3>
-        <p>${esc(card.description?.[L] || card.description?.en || '')}</p>
-        ${showRev ? `<p>${esc(t('reversedNote', { keywords: cardKeywords(card, true).join(', ').toLowerCase() }))}</p>` : ''}
+        <p>${esc(d ? (showRev ? d.rev : d.up) : (card.description?.[L] || card.description?.en || ''))}</p>
+        ${!d && showRev ? `<p>${esc(t('reversedNote', { keywords: cardKeywords(card, true).join(', ').toLowerCase() }))}</p>` : ''}
         ${locked ? `<div class="lock-over"><span>${icons.lock}</span><p>${t('reversedLocked')}</p>
           <button class="btn-primary small" id="cd-unlock"><span>${t('unlockPro')}</span></button></div>` : ''}
-      </div>`;
+      </div>
+      ${d ? `<div class="cd-grid${locked ? ' locked' : ''}">
+        <div class="cd-section"><h3>${T.lbl.love}</h3><p>${esc(d.love)}</p></div>
+        <div class="cd-section"><h3>${T.lbl.work}</h3><p>${esc(d.work)}</p></div>
+        <div class="cd-section cd-adv"><h3>${T.lbl.advice}</h3><p class="serif">${esc(d.advice)}</p></div>
+        <div class="cd-section cd-yn"><h3>${T.lbl.yn}</h3><b class="yn-${yn}">${T.yn[yn]}</b></div>
+      </div>` : ''}`;
     body.querySelector('#cd-unlock')?.addEventListener('click', () => showPaywall({ source: 'card_reversed' }));
     layer.querySelector('#cd-img').classList.toggle('rev', showRev);
   };
@@ -92,6 +102,7 @@ export function openCardDetail(card, { fromLibrary = false } = {}) {
     renderBody();
   });
   renderBody();
+  loadDetails().then(() => { if (layer.isConnected) renderBody(); });
   const off = onStateChange(w => { if (w === 'premium') renderBody(); });
   layer.addEventListener('transitionend', () => { if (!layer.isConnected) off(); });
 }

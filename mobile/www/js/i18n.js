@@ -247,6 +247,11 @@ en: {
   reversedLocked: 'Reversed meanings are part of PRO',
 
   // ── Me ──
+  sp3Long: 'The classic spread for any question. The first card shows what led you here, the second — the energy of the present moment, the third — where things are heading. Together they tell a story and show what you can change.',
+  spLoveLong: 'A deep look at a relationship. You’ll see your own state, the other person’s feelings, what truly connects you and the potential of this bond — whether you are in a relationship or only hoping for one.',
+  spMonthLong: 'Your forecast for the next 30 days: the overall tone, the main challenge, the opportunities not to miss and the likely outcome. Good to do at the start of the month or on a new moon.',
+  spYearLong: 'A big six-card reading for the year ahead: the central theme, lessons and opportunities, love, career and the final result. Ideal for birthdays and the new year.',
+  aiReadingPersonal: 'Personal AI reading', adviceOfDay: 'Advice of the day',
   tabLearn: 'Learn',
   learnTitle: 'Learn tarot', learnSub: 'From your first card to confident readings — with your own deck.',
   learnProgress: 'Your progress', learnAllDone: 'Course completed — you’re reading like a pro ✨', learnKeepGoing: 'A few minutes a day is enough',
@@ -485,6 +490,11 @@ ru: {
   reversedNote: 'В перевёрнутом положении карта указывает на: {keywords}.',
   reversedLocked: 'Перевёрнутые значения — в PRO',
 
+  sp3Long: 'Классический расклад на любой вопрос. Первая карта показывает, что привело тебя сюда, вторая — энергию настоящего момента, третья — куда всё движется. Вместе они рассказывают историю и показывают, что ты можешь изменить.',
+  spLoveLong: 'Глубокий взгляд на отношения. Ты увидишь своё состояние, чувства другого человека, что вас на самом деле связывает и потенциал этой связи — неважно, вы уже вместе или ты только надеешься.',
+  spMonthLong: 'Прогноз на ближайшие 30 дней: общий тон, главный вызов, возможности, которые нельзя упустить, и вероятный итог. Хорошо делать в начале месяца или в новолуние.',
+  spYearLong: 'Большой расклад на шесть карт на год вперёд: главная тема, уроки и возможности, любовь, карьера и итоговый результат. Идеален на день рождения и Новый год.',
+  aiReadingPersonal: 'Личное AI-толкование', adviceOfDay: 'Совет дня',
   tabLearn: 'Обучение',
   learnTitle: 'Обучение Таро', learnSub: 'От первой карты до уверенных раскладов — на твоей собственной колоде.',
   learnProgress: 'Твой прогресс', learnAllDone: 'Курс пройден — ты читаешь как профи ✨', learnKeepGoing: 'Достаточно нескольких минут в день',
@@ -723,6 +733,11 @@ ua: {
   reversedNote: 'У перевернутому положенні карта вказує на: {keywords}.',
   reversedLocked: 'Перевернуті значення — в PRO',
 
+  sp3Long: 'Класичний розклад на будь-яке питання. Перша карта показує, що привело тебе сюди, друга — енергію теперішнього моменту, третя — куди все рухається. Разом вони розповідають історію й показують, що ти можеш змінити.',
+  spLoveLong: 'Глибокий погляд на стосунки. Ти побачиш свій стан, почуття іншої людини, що вас насправді поєднує, і потенціал цього зв’язку — неважливо, ви вже разом чи ти лише сподіваєшся.',
+  spMonthLong: 'Прогноз на найближчі 30 днів: загальний тон, головний виклик, можливості, які не можна проґавити, і ймовірний підсумок. Добре робити на початку місяця або на молодик.',
+  spYearLong: 'Великий розклад на шість карт на рік уперед: головна тема, уроки й можливості, кохання, кар’єра та підсумковий результат. Ідеальний на день народження й Новий рік.',
+  aiReadingPersonal: 'Особисте AI-тлумачення', adviceOfDay: 'Порада дня',
   tabLearn: 'Навчання',
   learnTitle: 'Навчання Таро', learnSub: 'Від першої карти до впевнених розкладів — на твоїй власній колоді.',
   learnProgress: 'Твій прогрес', learnAllDone: 'Курс пройдено — ти читаєш як профі ✨', learnKeepGoing: 'Достатньо кількох хвилин на день',

@@ -8,12 +8,19 @@ import { cardBack, sparkle, icons } from '../art.js';
 import { showPaywall } from './paywall.js';
 import { cardName, cardKeywords, cardImg, openCardDetail } from './library.js';
 import { userAstro } from './today.js';
+import { loadDetails, overallPicture, overallHtml, cardBlocksHtml } from '../reading.js';
 
+const P = (en, ru, ua) => ({ en, ru, ua });
 export const SPREADS = [
-  { id: 'three_card', count: 3, title: 'sp3Title', desc: 'sp3Desc', q: ['sp3Q1', 'sp3Q2', 'sp3Q3'] },
-  { id: 'love',       count: 4, title: 'spLoveTitle', desc: 'spLoveDesc', q: ['spLoveQ1', 'spLoveQ2', 'spLoveQ3'] },
-  { id: 'month',      count: 4, title: 'spMonthTitle', desc: 'spMonthDesc', q: ['spMonthQ1', 'spMonthQ2'] },
-  { id: 'year',       count: 6, title: 'spYearTitle', desc: 'spYearDesc', q: ['spYearQ1', 'spYearQ2'] },
+  { id: 'three_card', count: 3, title: 'sp3Title', desc: 'sp3Desc', long: 'sp3Long', q: ['sp3Q1', 'sp3Q2', 'sp3Q3'],
+    positions: [P('Past', 'Прошлое', 'Минуле'), P('Present', 'Настоящее', 'Теперішнє'), P('Future', 'Будущее', 'Майбутнє')] },
+  { id: 'love', count: 4, title: 'spLoveTitle', desc: 'spLoveDesc', long: 'spLoveLong', q: ['spLoveQ1', 'spLoveQ2', 'spLoveQ3'],
+    positions: [P('Your state', 'Ваше состояние', 'Ваш стан'), P('Partner', 'Партнёр', 'Партнер'), P('Connection', 'Связь', 'Зв’язок'), P('Potential', 'Потенциал', 'Потенціал')] },
+  { id: 'month', count: 4, title: 'spMonthTitle', desc: 'spMonthDesc', long: 'spMonthLong', q: ['spMonthQ1', 'spMonthQ2'],
+    positions: [P('General energy', 'Общая энергия', 'Загальна енергія'), P('Challenge', 'Вызов месяца', 'Виклик місяця'), P('Opportunities', 'Возможности', 'Можливості'), P('Outcome', 'Итог', 'Підсумок')] },
+  { id: 'year', count: 6, title: 'spYearTitle', desc: 'spYearDesc', long: 'spYearLong', q: ['spYearQ1', 'spYearQ2'],
+    positions: [P('Year theme', 'Тема года', 'Тема року'), P('Challenges', 'Вызовы', 'Виклики'), P('Opportunities', 'Возможности', 'Можливості'),
+      P('Love', 'Любовь', 'Кохання'), P('Career', 'Карьера', 'Кар’єра'), P('Outcome', 'Результат', 'Результат')] },
 ];
 
 let root;
@@ -37,6 +44,7 @@ function render() {
           <span class="sc-text">
             <span class="sc-title serif">${t(s.title)}</span>
             <span class="sc-desc">${t(s.desc)}</span>
+            <span class="sc-pos">${s.positions.map(p => esc(p[getLang()] || p.en)).join(' · ')}</span>
             <span class="sc-meta">${t('nCards', { n: s.count })} · ${sparkle()} AI</span>
           </span>
           ${state.isPremium ? '' : `<span class="sc-lock">PRO</span>`}
@@ -56,6 +64,8 @@ export function openSpread(spread) {
   if (!state.isPremium) { showPaywall({ source: `spread_${spread.id}` }); return; }
   const layer = openSheet(`<div class="ask">
       <h2 class="serif">${t(spread.title)}</h2>
+      <p class="ask-long">${t(spread.long)}</p>
+      <div class="ask-pos">${spread.positions.map((p, i) => `<span><b>${i + 1}</b>${esc(p[getLang()] || p.en)}</span>`).join('')}</div>
       <p class="muted">${t('askQuestionSub')}</p>
       <textarea id="q-input" class="field area" maxlength="300" rows="3" placeholder="${t('questionPlaceholder')}"></textarea>
       <div class="chips wrap">${spread.q.map(k => `<button class="chip btn-chip" data-q="${esc(t(k))}">${t(k)}</button>`).join('')}</div>
@@ -128,20 +138,16 @@ async function showResult(layer, reading, question) {
   const L = getLang();
   layer.querySelector('#rd-hint').textContent = t('readingReady');
   const box = layer.querySelector('#rd-result');
+  await loadDetails();
+  const helpers = { name: cardName, keywords: c => cardKeywords(c), img: cardImg };
+  const overall = overallPicture(reading.cards, reading.positions, { ...helpers, spreadId: reading.spreadType });
   box.innerHTML = `
-    <h3 class="serif section-title">${t('yourCards')}</h3>
-    <div class="rd-list">${reading.cards.map((c, i) => `
-      <button class="rd-row" data-i="${i}">
-        <span class="rd-thumb${c.isReversed ? ' rev' : ''}">${cardImg(c)}</span>
-        <span class="rd-row-text"><small>${esc(posLabel(reading.positions?.[i]))}</small>
-          <b>${esc(cardName(c))}${c.isReversed ? ` <em>${t('reversedShort')}</em>` : ''}</b>
-          <span>${esc(cardKeywords(c).slice(0, 3).join(' · '))}</span></span>
-        ${icons.chevron}
-      </button>`).join('')}
-    </div>
-    <div class="ai-box" id="rd-ai"><div class="ai-box-head">${sparkle()}<span>${t('aiReading')}</span></div>${spinner(t('aiThinking'))}</div>
+    <h3 class="section-title">${t('yourCards')}</h3>
+    ${cardBlocksHtml(reading.cards, reading.positions, { spreadId: reading.spreadType, ...helpers })}
+    ${overallHtml(overall)}
+    <div class="ai-box hidden" id="rd-ai"><div class="ai-box-head">${sparkle()}<span>${t('aiReadingPersonal')}</span></div>${spinner(t('aiThinking'))}</div>
     <div class="ds-actions"><button class="round-btn" id="rd-share">${icons.share}</button></div>`;
-  box.querySelectorAll('.rd-row').forEach(b => b.onclick = () => openCardDetail(reading.cards[Number(b.dataset.i)]));
+  box.querySelectorAll('.rb-head').forEach(b => b.onclick = () => openCardDetail(reading.cards[Number(b.dataset.i)]));
   box.querySelector('#rd-share').onclick = async () => {
     const names = reading.cards.map(cardName).join(', ');
     const ok = await share({ title: t('appName'), text: t('shareReading', { cards: names }) });
@@ -149,17 +155,19 @@ async function showResult(layer, reading, question) {
   };
   setTimeout(() => box.scrollIntoView({ behavior: 'smooth', block: 'start' }), 300);
 
+  // Персональне AI-тлумачення — доповнення до «Загальної картини», якщо AI доступний
+  const aiBox = box.querySelector('#rd-ai');
+  aiBox.classList.remove('hidden');
   const ai = await api('POST', '/ai/interpret', {
     cards: reading.cards, positions: reading.positions, spreadName: reading.spreadName,
     question, userAstro: userAstro(), lang: L, userId: state.userId,
   });
-  const aiBox = box.querySelector('#rd-ai');
   if (ai.ok && ai.interpretation) {
-    aiBox.innerHTML = `<div class="ai-box-head">${sparkle()}<span>${t('aiReading')}</span></div><p class="ai-text"></p>`;
+    aiBox.innerHTML = `<div class="ai-box-head">${sparkle()}<span>${t('aiReadingPersonal')}</span></div><p class="ai-text"></p>`;
     typeText(aiBox.querySelector('.ai-text'), ai.interpretation);
     haptic('success');
   } else {
-    aiBox.innerHTML = `<div class="ai-box-head">${sparkle()}<span>${t('aiReading')}</span></div><p class="ai-text">${esc(reading.interpretation && L !== 'en' ? reading.interpretation : t('aiUnavailable'))}</p>`;
+    aiBox.remove();
   }
 }
 
@@ -180,13 +188,13 @@ export async function openHistory() {
         <small>${esc(new Date(r.createdAt).toLocaleDateString(locale(), { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }))}</small>
         <span>${esc(r.cards.map(cardName).join(' · '))}</span></span>
     </button>`).join('')}</div>`;
-  box.querySelectorAll('.hist-item').forEach(b => b.onclick = () => {
+  box.querySelectorAll('.hist-item').forEach(b => b.onclick = async () => {
     const r = items[Number(b.dataset.i)];
-    const l2 = pushScreen(`<div class="rd-list">${r.cards.map((c, i) => `
-      <button class="rd-row" data-i="${i}"><span class="rd-thumb${c.isReversed ? ' rev' : ''}">${cardImg(c)}</span>
-        <span class="rd-row-text"><small>${esc(posLabel(r.positions?.[i]))}</small><b>${esc(cardName(c))}</b>
-        <span>${esc(cardKeywords(c).slice(0, 3).join(' · '))}</span></span>${icons.chevron}</button>`).join('')}</div>`,
+    await loadDetails();
+    const helpers = { name: cardName, keywords: c => cardKeywords(c), img: cardImg };
+    const l2 = pushScreen(`${cardBlocksHtml(r.cards, r.positions, { spreadId: r.spreadType, ...helpers })}
+      ${r.cards.length > 1 ? overallHtml(overallPicture(r.cards, r.positions, { ...helpers, spreadId: r.spreadType })) : ''}`,
       { title: esc(posLabel(r.spreadName)) });
-    l2.querySelectorAll('.rd-row').forEach(x => x.onclick = () => openCardDetail(r.cards[Number(x.dataset.i)]));
+    l2.querySelectorAll('.rb-head').forEach(x => x.onclick = () => openCardDetail(r.cards[Number(x.dataset.i)]));
   });
 }

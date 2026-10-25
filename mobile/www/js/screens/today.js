@@ -9,6 +9,7 @@ import { zodiacOf, lifePath, personalYear, personalDay, moonAt, upcomingPhases, 
 import { showPaywall } from './paywall.js';
 import { openCardDetail, cardName, cardKeywords, cardImg } from './library.js';
 import { openCompat, openMe } from './me.js';
+import { loadDetails, cardDetail, yesNo, tx } from '../reading.js';
 
 let root;
 
@@ -143,6 +144,7 @@ function render(goTab) {
 // ══ Карта дня ════════════════════════════════════════════════════════════════
 export async function openDaily() {
   const L = getLang();
+  loadDetails();   // розширені значення карт — підвантажуємо заздалегідь
   const dateLabel = new Date().toLocaleDateString(locale(), { weekday: 'long', month: 'long', day: 'numeric' });
   const layer = openSheet(`<div class="daily">
       <div class="sky">${clouds('day')}<div class="sun-glow"></div>${hills({ a: '#6aa98c', b: '#4d8a73' })}</div>
@@ -181,11 +183,20 @@ export async function openDaily() {
     else requestAnimationFrame(() => cardEl.classList.add('flipped'));
     hint.remove();
     const kws = cardKeywords(card);
+    const d = cardDetail(card);
+    const T = tx();
+    const yn = yesNo(card);
     info.innerHTML = `
       <h2 class="serif ds-name">${esc(cardName(card))}</h2>
       ${card.isReversed ? `<div class="rev-tag">${t('reversed')}</div>` : ''}
-      <p class="ds-text">${esc(card.description?.[L] || card.description?.en || '')}</p>
+      <p class="ds-text">${esc(d ? (card.isReversed ? d.rev : d.up) : (card.description?.[L] || card.description?.en || ''))}</p>
       <div class="chips center">${kws.map(k => `<span class="chip">${esc(k)}</span>`).join('')}</div>
+      ${d ? `<div class="ds-aspects">
+        <div class="asp"><span>${T.lbl.love}</span><p>${esc(d.love)}</p></div>
+        <div class="asp"><span>${T.lbl.work}</span><p>${esc(d.work)}</p></div>
+        <div class="asp asp-adv"><span>${t('adviceOfDay')}</span><p class="serif">${esc(d.advice)}</p></div>
+        <div class="asp asp-yn"><span>${T.lbl.yn}</span><b class="yn-${yn}">${T.yn[yn]}</b></div>
+      </div>` : ''}
       <div class="ds-ai" id="ds-ai">
         <button class="btn-ai" id="ds-ai-btn">${sparkle()}<span>${t('aiInsightBtn')}</span></button>
         <p class="ds-ai-note">${state.isPremium ? t('aiInsightNotePro') : t('aiInsightNoteFree')}</p>
@@ -205,7 +216,7 @@ export async function openDaily() {
     emit('daily');
   };
 
-  if (reading) { reveal(true); return; }
+  if (reading) { await loadDetails(); reveal(true); return; }
 
   // Тасування → карта вилітає з колоди → спалах та іскри → переворот. Кожен етап з вібрацією.
   const wait = ms => new Promise(r => setTimeout(r, ms));
@@ -236,6 +247,7 @@ export async function openDaily() {
     await wait(520);
     deck.classList.add('burst-on');       // спалах + іскри
     haptic('rigid');
+    await loadDetails();
     reveal(false);
     await wait(650);
     haptic('success');
