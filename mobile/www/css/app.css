@@ -151,6 +151,7 @@ img { display: block; max-width: 100%; }
 .section-title { font-size: 13px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; color: var(--text3); margin: 28px 4px 12px; }
 .disclaimer { color: var(--text3); font-size: 12px; text-align: center; margin: 28px 20px 0; line-height: 1.5; }
 .version { color: var(--text3); font-size: 11px; text-align: center; margin-top: 8px; opacity: .7; }
+.account-id { display: block; margin: 4px auto 0; padding: 4px 10px; -webkit-user-select: text; user-select: text; }
 .eyebrow { font-size: 13px; letter-spacing: .14em; text-transform: uppercase; color: var(--lav2); font-weight: 700; }
 
 /* ── Layers: push / sheet / full ─────────────────────────────────────── */

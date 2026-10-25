@@ -85,6 +85,7 @@ function render() {
     </div>
     <p class="disclaimer">${t('disclaimer')}</p>
     <p class="version">${CONFIG.APP_NAME} · ${platform} · v1.0</p>
+    <button class="version account-id" id="me-id">${t('accountId')}: ${esc(state.userId)}</button>
   </div>`;
 
   const $ = s => root.querySelector(s);
@@ -99,6 +100,10 @@ function render() {
   $('#me-terms').onclick = () => openUrl(legalUrl('terms'));
   $('#me-privacy').onclick = () => openUrl(legalUrl('privacy'));
   $('#me-delete').onclick = confirmDelete;
+  // ID акаунта — щоб підтримка/адмін могли видати PRO (адмінка → «Выдать 👑»)
+  $('#me-id').onclick = async () => {
+    try { await navigator.clipboard.writeText(state.userId); toast(t('copied')); } catch (_) {}
+  };
   root.querySelectorAll('#me-lang button').forEach(b => b.onclick = () => {
     if (b.dataset.l === getLang()) return;
     haptic('select');

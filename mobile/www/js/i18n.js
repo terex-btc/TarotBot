@@ -247,6 +247,7 @@ en: {
   reversedLocked: 'Reversed meanings are part of PRO',
 
   // ── Me ──
+  accountId: 'Account ID',
   editProfile: 'Edit profile', proActive: 'PRO is active', proUntil: 'Active until {date}', manageSub: 'Manage subscription',
   upgradeTitle: 'Lunara PRO', upgradeSub: 'All spreads, unlimited AI readings and the Oracle.',
   yourChart: 'Your chart', personalYear: 'Personal year',
@@ -469,6 +470,7 @@ ru: {
   reversedNote: 'В перевёрнутом положении карта указывает на: {keywords}.',
   reversedLocked: 'Перевёрнутые значения — в PRO',
 
+  accountId: 'ID аккаунта',
   editProfile: 'Изменить профиль', proActive: 'PRO активен', proUntil: 'Действует до {date}', manageSub: 'Управлять подпиской',
   upgradeTitle: 'Lunara PRO', upgradeSub: 'Все расклады, безлимитные AI-толкования и Оракул.',
   yourChart: 'Твоя карта', personalYear: 'Личный год',
@@ -691,6 +693,7 @@ ua: {
   reversedNote: 'У перевернутому положенні карта вказує на: {keywords}.',
   reversedLocked: 'Перевернуті значення — в PRO',
 
+  accountId: 'ID акаунта',
   editProfile: 'Змінити профіль', proActive: 'PRO активний', proUntil: 'Діє до {date}', manageSub: 'Керувати підпискою',
   upgradeTitle: 'Lunara PRO', upgradeSub: 'Усі розклади, безлімітні AI-тлумачення та Оракул.',
   yourChart: 'Твоя карта', personalYear: 'Особистий рік',

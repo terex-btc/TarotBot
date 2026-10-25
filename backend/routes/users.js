@@ -5,6 +5,7 @@ const { pool } = require('../db');
 const { calcLifePath, getZodiac, getMoonPhase, calcPersonalYear, calcDayNumber } = require('../services/algorithmService');
 const { bumpActivity } = require('./admin');
 const { validateUserId, ownerOnly, limits } = require('../middleware/security');
+const { isAdmin } = require('../config/admins');
 
 // ── Хелпери ───────────────────────────────────────────────────────────────────
 function isPremiumActive(user) {
@@ -24,7 +25,7 @@ function rowToUser(row) {
     firstName:     row.first_name,
     birthDate:     row.birth_date,
     lang:          row.lang,
-    isPremium:     isPremiumActive(row),
+    isPremium:     isPremiumActive(row) || isAdmin(row.user_id), // адмін бачить усе як PRO
     premiumExpiry: row.premium_expiry ? Number(row.premium_expiry) : null,
     refBonus:      row.ref_bonus || 0,
     astro:         row.astro,
@@ -119,7 +120,7 @@ router.get('/:userId/premium-status', validateUserId, ownerOnly, async (req, res
     creditsRes.rows.forEach(r => { spreadCredits[r.spread_type] = r.credits; });
     if (!rows.length) return res.json({ ok: true, isPremium: false, premiumExpiry: null, refBonus: 0, daysLeft: null, spellCredits: 0, spreadCredits });
     const user   = rows[0];
-    const active = isPremiumActive(user);
+    const active = isPremiumActive(user) || isAdmin(req.params.userId);
     const expiry = user.premium_expiry ? Number(user.premium_expiry) : null;
     res.json({
       ok:           true,
