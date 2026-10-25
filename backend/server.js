@@ -407,6 +407,7 @@ if (BOT_TOKEN) {
   let _lastPollErrAt = 0;     // час останньої помилки (для визначення "підряд")
   let _conflict409Since = 0;  // коли почалася поточна серія 409 (0 = немає)
   const CONFLICT_GRACE_MS = 90 * 1000;   // ігноруємо 409 коротші за 90с (деплой)
+  const CONFLICT_GAP_MS = 30 * 1000;     // пауза між 409 довша за це — нова серія
   const STREAK_WINDOW_MS = 2 * 60 * 1000; // помилки рахуються "підряд" лише в межах 2 хв
   const ALERT_COOLDOWN_MS = 30 * 60 * 1000;
   bot.on('polling_error', (error) => {
@@ -414,14 +415,18 @@ if (BOT_TOKEN) {
     console.error('[Bot] Polling error:', msg);
     const is409 = /409|conflict/i.test(msg); // запущено два інстанси з одним токеном
     const now = Date.now();
+    const gap = now - _lastPollErrAt;
     // Разові мережеві збої (ECONNRESET раз на кілька днів) не мають накопичуватись:
     // якщо з минулої помилки пройшло > 2 хв — це нова серія, а не продовження старої
-    if (now - _lastPollErrAt > STREAK_WINDOW_MS) _pollErrStreak = 0;
+    if (gap > STREAK_WINDOW_MS) _pollErrStreak = 0;
     _lastPollErrAt = now;
     _pollErrStreak++;
 
     if (is409) {
-      if (!_conflict409Since) _conflict409Since = now; // старт серії конфліктів
+      // Справжній конфлікт дає 409 на кожен запит (кожні кілька секунд). Пауза > 30с
+      // означає, що минулий конфлікт (короткий деплой) скінчився — інакше два деплої
+      // з різницею в 10 хв склеювались у «конфлікт 600с» і слався хибний алерт
+      if (!_conflict409Since || gap > CONFLICT_GAP_MS) _conflict409Since = now; // старт серії
       const lasting = now - _conflict409Since;
       // Алертимо лише якщо конфлікт триває довше grace-вікна (стійкий другий інстанс)
       if (lasting > CONFLICT_GRACE_MS && now - _lastPollAlert > ALERT_COOLDOWN_MS) {
@@ -442,6 +447,15 @@ if (BOT_TOKEN) {
   });
   // Апдейти знову приходять нормально → конфлікт зник, скидаємо лічильники
   bot.on('message', () => { _pollErrStreak = 0; _conflict409Since = 0; });
+
+  // Railway при деплої шле SIGTERM старому контейнеру — одразу відпускаємо getUpdates,
+  // щоб новий інстанс не ловив 409, поки старий догасає
+  for (const sig of ['SIGTERM', 'SIGINT']) {
+    process.once(sig, async () => {
+      try { await bot.stopPolling({ cancel: true }); } catch (_) {}
+      process.exit(0);
+    });
+  }
 
   // ── Щоденні сповіщення: 9:00 ранку кожен день ────────────────────────────
   // Кеш фази місяця — оновлюємо раз на день (використовується і в cron, і в /moon команді)
