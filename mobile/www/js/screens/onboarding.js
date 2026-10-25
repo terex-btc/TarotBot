@@ -181,6 +181,8 @@ export function runOnboarding({ onDone }) {
       return;
     }
     state.user = res.user;
+    state.isPremium = !!res.user.isPremium || state.isPremium;
+    state.freePro = !!res.user.freePro;
     state.focus = data.focus;
     try { localStorage.setItem('lunara_focus', JSON.stringify(data.focus)); } catch (_) {}
     track('onb_profile', z.key);

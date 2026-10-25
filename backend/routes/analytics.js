@@ -27,6 +27,11 @@ const ALLOWED_EVENTS = new Set([
   'moon_open',      // відкрив місячний календар
   'card_view',      // відкрив карту в бібліотеці
   'notif_allow',    // дозволив щоденне нагадування
+  'lesson_open',    // відкрив урок (meta = id)
+  'lesson_done',    // пройшов урок
+  'deck_read_open', // «Прочитати мою колоду»
+  'deck_read_done', // отримав тлумачення своєї колоди
+  'flash_open',     // картки-тренажер
 ]);
 
 // POST /api/analytics/event — { userId, event, meta? }

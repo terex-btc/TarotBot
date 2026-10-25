@@ -168,5 +168,6 @@ export const icons = {
   restore: I('<path d="M20 12a8 8 0 1 1-2.4-5.7M20 4.5v4h-4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>'),
   numbers: I('<path d="M9 4L7 20M17 4l-2 16M4.5 9h15M4 15h15" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>'),
   crown: I('<path d="M3.5 8l4.5 4 4-6.5 4 6.5 4.5-4-2 11h-13Z" fill="currentColor"/>'),
+  learn: I('<path d="M12 6.5C10 5 7 4.6 3.5 5v13c3.5-.4 6.5 0 8.5 1.5 2-1.5 5-1.9 8.5-1.5V5C17 4.6 14 5 12 6.5Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M12 6.5v13" stroke="currentColor" stroke-width="1.8"/>'),
   search: I('<circle cx="11" cy="11" r="6.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M16 16l4.5 4.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>'),
 };

@@ -8,7 +8,7 @@ import { cardBack, moonSvg, zodiacGlyph, eyeArt, sparkle, clouds, hills, starsFi
 import { zodiacOf, lifePath, personalYear, personalDay, moonAt, upcomingPhases, SIGNS } from '../astro.js';
 import { showPaywall } from './paywall.js';
 import { openCardDetail, cardName, cardKeywords, cardImg } from './library.js';
-import { openCompat } from './me.js';
+import { openCompat, openMe } from './me.js';
 
 let root;
 
@@ -62,6 +62,7 @@ function render(goTab) {
       ${state.isPremium
         ? `<span class="pro-pill on">PRO</span>`
         : `<button class="pro-pill" id="h-pro">PRO</button>`}
+      <button class="icon-btn soft" id="h-gear" aria-label="${t('settings')}">${icons.gear}</button>
     </header>
 
     <div class="tiles">
@@ -128,7 +129,8 @@ function render(goTab) {
   </div>`;
 
   const $ = s => root.querySelector(s);
-  $('#h-avatar').onclick = () => goTab('me');
+  $('#h-avatar').onclick = () => { haptic('light'); openMe(); };
+  $('#h-gear').onclick = () => { haptic('light'); openMe(); };
   $('#h-pro')?.addEventListener('click', () => showPaywall({ source: 'home_pro' }));
   $('#t-daily').onclick = () => { haptic('light'); openDaily(); };
   $('#t-spread').onclick = () => { haptic('light'); goTab('spreads'); };
@@ -148,10 +150,16 @@ export async function openDaily() {
       <div class="daily-scroll scroll">
         <div class="ds-date">${esc(dateLabel)}</div>
         <div class="ds-stage">
-          <div class="ds-card" id="ds-card">
-            <div class="flip">
-              <div class="face back">${cardBack()}</div>
-              <div class="face front" id="ds-front"></div>
+          <div class="deck" id="ds-deck">
+            ${[0, 1, 2, 3].map(i => `<div class="deck-card" style="--i:${i}">${cardBack({ glow: false })}</div>`).join('')}
+            <div class="burst"></div>
+            <div class="sparks">${Array.from({ length: 14 }, (_, i) =>
+              `<i style="--a:${Math.round(i * 360 / 14 + Math.random() * 12)}deg;--r:${90 + Math.round(Math.random() * 70)}px;--s:${(Math.random() * .5 + .6).toFixed(2)}"></i>`).join('')}</div>
+            <div class="ds-card" id="ds-card">
+              <div class="flip">
+                <div class="face back">${cardBack()}</div>
+                <div class="face front" id="ds-front"></div>
+              </div>
             </div>
           </div>
           <p class="ds-hint" id="ds-hint">${t('tapToReveal')}</p>
@@ -161,6 +169,7 @@ export async function openDaily() {
     </div>`, { cls: 'daily-layer' });
 
   const cardEl = layer.querySelector('#ds-card');
+  const deck = layer.querySelector('#ds-deck');
   const info = layer.querySelector('#ds-info');
   const hint = layer.querySelector('#ds-hint');
 
@@ -168,7 +177,7 @@ export async function openDaily() {
   const reveal = (instant) => {
     const card = reading.cards[0];
     layer.querySelector('#ds-front').innerHTML = `<div class="card-frame${card.isReversed ? ' rev' : ''}">${cardImg(card)}</div>`;
-    if (instant) cardEl.classList.add('flipped', 'instant');
+    if (instant) { cardEl.classList.add('flipped', 'instant'); deck.classList.add('dealt', 'instant'); }
     else requestAnimationFrame(() => cardEl.classList.add('flipped'));
     hint.remove();
     const kws = cardKeywords(card);
@@ -198,17 +207,21 @@ export async function openDaily() {
 
   if (reading) { reveal(true); return; }
 
-  cardEl.onclick = async () => {
+  // Тасування → карта вилітає з колоди → спалах та іскри → переворот. Кожен етап з вібрацією.
+  const wait = ms => new Promise(r => setTimeout(r, ms));
+  const draw = async () => {
     if (cardEl.dataset.busy) return;
     cardEl.dataset.busy = '1';
     haptic('medium');
-    cardEl.classList.add('shuffling');
+    deck.classList.add('shuffling');
     hint.textContent = t('drawing');
+    const ticks = setInterval(() => haptic('select'), 160);
     const [res] = await Promise.all([
       api('POST', `/readings/${state.userId}`, { spreadType: 'daily', lang: L }),
-      new Promise(r => setTimeout(r, 900)),
+      wait(1300),
     ]);
-    cardEl.classList.remove('shuffling');
+    clearInterval(ticks);
+    deck.classList.remove('shuffling');
     if (!res.ok || !res.reading) {
       delete cardEl.dataset.busy;
       hint.textContent = t(res.error === 'offline' ? 'errOffline' : 'errGeneric');
@@ -217,9 +230,18 @@ export async function openDaily() {
     reading = state.daily = res.reading;
     try { localStorage.setItem('lunara_daily', JSON.stringify({ date: localDate(), userId: state.userId, reading })); } catch (_) {}
     track('daily_open');
-    haptic('success');
+    deck.classList.add('dealt');          // решта колоди відходить, карта злітає
+    cardEl.classList.add('flyout');
+    haptic('heavy');
+    await wait(520);
+    deck.classList.add('burst-on');       // спалах + іскри
+    haptic('rigid');
     reveal(false);
+    await wait(650);
+    haptic('success');
   };
+  cardEl.onclick = draw;
+  deck.onclick = e => { if (!e.target.closest('#ds-card')) draw(); };
 }
 
 async function dailyAi(box, reading, card) {

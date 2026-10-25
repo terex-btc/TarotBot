@@ -109,6 +109,13 @@ function verifyAppToken(token) {
   return crypto.timingSafeEqual(Buffer.from(sig), Buffer.from(expected)) ? uid : null;
 }
 
+// Тимчасовий режим «PRO для всіх» у новому застосунку (Lunara), поки немає оплати.
+// Вмикається змінною LUNARA_FREE_PRO=1 у Railway. Старий бот (frontend/) не зачіпається:
+// його запити не мають X-App-Auth і не шлють X-Client: lunara.
+function isLunaraFreePro(req) {
+  return process.env.LUNARA_FREE_PRO === '1' && (!!req.isAppUser || req.headers['x-client'] === 'lunara');
+}
+
 // ─── Telegram WebApp initData Verification ────────────────────────────────────
 // Документація: https://core.telegram.org/bots/webapps#validating-data-received-via-the-mini-app
 // Перевіряємо HMAC підпис initData.
@@ -238,5 +245,5 @@ const limits = {
 
 module.exports = {
   rateLimit, verifyTelegramAuth, ownerOnly, validateUserId, limits,
-  isAppUserId, appUserIdFromDevice, signAppToken, verifyAppToken,
+  isAppUserId, appUserIdFromDevice, signAppToken, verifyAppToken, isLunaraFreePro,
 };

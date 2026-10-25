@@ -6,7 +6,7 @@ const BASE = isNative ? CONFIG.API_ORIGIN : '';
 let appToken = null;
 
 export async function api(method, path, body) {
-  const headers = { 'Content-Type': 'application/json' };
+  const headers = { 'Content-Type': 'application/json', 'X-Client': 'lunara' };
   if (appToken) headers['X-App-Auth'] = appToken;
   else if (telegramInitData) headers['X-Tg-Auth'] = telegramInitData;
   try {

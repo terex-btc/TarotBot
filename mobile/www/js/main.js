@@ -10,14 +10,14 @@ import { mountToday } from './screens/today.js';
 import { mountSpreads } from './screens/spreads.js';
 import { mountOracle } from './screens/oracle.js';
 import { mountLibrary } from './screens/library.js';
-import { mountMe } from './screens/me.js';
+import { mountLearn } from './screens/learn.js';
 
 const TABS = [
   { id: 'today',   icon: 'today',   label: 'tabToday' },
   { id: 'spreads', icon: 'spreads', label: 'tabSpreads' },
   { id: 'oracle',  icon: 'oracle',  label: 'tabAsk' },
   { id: 'cards',   icon: 'cards',   label: 'tabCards' },
-  { id: 'me',      icon: 'me',      label: 'tabMe' },
+  { id: 'learn',   icon: 'learn',   label: 'tabLearn' },
 ];
 let current = 'today';
 const mounted = new Set();
@@ -41,7 +41,7 @@ export function goTab(id) {
   if (!mounted.has(id)) {
     mounted.add(id);
     ({ today: () => mountToday(el, { goTab }), spreads: () => mountSpreads(el), oracle: () => mountOracle(el),
-       cards: () => mountLibrary(el), me: () => mountMe(el) })[id]();
+       cards: () => mountLibrary(el), learn: () => mountLearn(el) })[id]();
   }
 }
 
@@ -86,6 +86,7 @@ async function boot() {
   if (res.ok && res.user?.birthDate && !forceOnb) {
     state.user = res.user;
     state.isPremium = !!res.user.isPremium || state.isPremium;
+    state.freePro = !!res.user.freePro;
     state.premiumExpiry = res.user.premiumExpiry || null;
     refreshPremium();
     await minDelay;

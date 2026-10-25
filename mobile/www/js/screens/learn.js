@@ -1,0 +1,275 @@
+// ══ Вкладка «Навчання»: уроки, «Прочитати мою колоду», картки-тренажер ═════
+// Для тих, хто вчиться на власній фізичній колоді: витягнув карти вдома —
+// вніс їх сюди — отримав значення й AI-тлумачення.
+import { t, getLang } from '../i18n.js';
+import { state, track, loadCards, cardSuit, onStateChange } from '../state.js';
+import { api } from '../api.js';
+import { haptic, storage } from '../platform.js';
+import { pushScreen, closeLayer, esc, spinner, typeText, toast } from '../ui.js';
+import { sparkle, icons } from '../art.js';
+import { LESSONS, DECK_SPREADS } from '../learn-content.js';
+import { cardName, cardKeywords, cardImg, openCardDetail } from './library.js';
+import { showPaywall } from './paywall.js';
+import { userAstro } from './today.js';
+
+const FREE_LESSONS = 3;               // перші уроки безкоштовні, далі — PRO
+const DONE_KEY = 'lunara_learn_done';
+const KNOWN_KEY = 'lunara_flash_known';
+
+let root;
+const readSet = key => { try { return new Set(JSON.parse(storage.get(key) || '[]')); } catch (_) { return new Set(); } };
+const saveSet = (key, set) => storage.set(key, JSON.stringify([...set]));
+
+export function mountLearn(el) {
+  root = el;
+  render();
+  onStateChange(w => { if (['premium', 'lang', 'learn'].includes(w)) render(); });
+}
+
+function render() {
+  const L = getLang();
+  const done = readSet(DONE_KEY);
+  const known = readSet(KNOWN_KEY);
+  const pct = Math.round(done.size / LESSONS.length * 100);
+  root.innerHTML = `<div class="scroll tab-scroll">
+    <header class="tab-head"><h1 class="serif">${t('learnTitle')}</h1><p>${t('learnSub')}</p></header>
+
+    <div class="learn-progress">
+      <div class="lp-ring" style="--p:${pct}"><span class="serif">${done.size}/${LESSONS.length}</span></div>
+      <div><b>${t('learnProgress')}</b><span>${done.size === LESSONS.length ? t('learnAllDone') : t('learnKeepGoing')}</span></div>
+    </div>
+
+    <h3 class="section-title">${t('practice')}</h3>
+    <button class="practice-card pc-deck" id="lr-deck">
+      <span class="pc-art">${['card_06', 'card_17', 'cups_02'].map((c, i) =>
+        `<span class="pc-c" style="--i:${i}"><img src="/assets/cards/${c}.jpg" alt="" loading="lazy"></span>`).join('')}</span>
+      <span class="pc-text"><b class="serif">${t('readMyDeck')}</b><span>${t('readMyDeckSub')}</span></span>
+      ${icons.chevron}
+    </button>
+    <button class="practice-card pc-flash" id="lr-flash">
+      <span class="pc-icon">${icons.cards}</span>
+      <span class="pc-text"><b class="serif">${t('flashcards')}</b><span>${t('flashcardsSub', { n: known.size })}</span></span>
+      ${icons.chevron}
+    </button>
+
+    <h3 class="section-title">${t('lessons')}</h3>
+    <div class="lesson-list">${LESSONS.map((l, i) => {
+      const locked = i >= FREE_LESSONS && !state.isPremium;
+      return `<button class="lesson-row${done.has(l.id) ? ' done' : ''}" data-i="${i}">
+        <span class="lr-num">${done.has(l.id) ? icons.check : `<span>${i + 1}</span>`}</span>
+        <span class="lr-text"><b>${esc(l.title[L])}</b><small>${l.emoji} ${t('minutes', { n: l.minutes })}</small></span>
+        ${locked ? '<span class="sc-lock static">PRO</span>' : icons.chevron}
+      </button>`;
+    }).join('')}</div>
+    <p class="disclaimer">${t('disclaimer')}</p>
+  </div>`;
+
+  root.querySelector('#lr-deck').onclick = () => { haptic('light'); openReadMyDeck(); };
+  root.querySelector('#lr-flash').onclick = () => { haptic('light'); openFlashcards(); };
+  root.querySelectorAll('.lesson-row').forEach(b => b.onclick = () => {
+    haptic('light');
+    const i = Number(b.dataset.i);
+    if (i >= FREE_LESSONS && !state.isPremium) { showPaywall({ source: 'lesson' }); return; }
+    openLesson(i);
+  });
+}
+
+// ── Урок ─────────────────────────────────────────────────────────────────────
+function openLesson(i) {
+  const L = getLang();
+  const l = LESSONS[i];
+  track('lesson_open', l.id);
+  loadCards().then(cards => {
+    const strip = layer.querySelector('#ls-cards');
+    if (strip && cards?.length) strip.innerHTML = l.cards.map(id => cards[id]).filter(Boolean)
+      .map((c, k) => `<button class="ls-card" data-id="${c.id}" style="--k:${k}">${cardImg(c)}</button>`).join('');
+    strip?.querySelectorAll('.ls-card').forEach(b => b.onclick = () => openCardDetail(cards[Number(b.dataset.id)], { fromLibrary: true }));
+  });
+  const layer = pushScreen(`<article class="lesson">
+      <div class="ls-hero"><span class="ls-emoji">${l.emoji}</span>
+        <small>${t('lessonN', { n: i + 1, total: LESSONS.length })} · ${t('minutes', { n: l.minutes })}</small>
+        <h1 class="serif">${esc(l.title[L])}</h1></div>
+      <div class="ls-cards" id="ls-cards"></div>
+      ${l.sections.map(s => `<section class="ls-sec"><h3>${esc(s.h[L])}</h3><p>${esc(s.p[L])}</p></section>`).join('')}
+      <div class="ls-practice"><div class="ai-box-head">${sparkle()}<span>${t('tryWithDeck')}</span></div><p>${esc(l.practice[L])}</p></div>
+      <button class="btn-primary" id="ls-done"><span>${i < LESSONS.length - 1 ? t('completeNext') : t('completeLesson')}</span>${icons.chevron}</button>
+    </article>`, { title: '' });
+  layer.querySelector('#ls-done').onclick = () => {
+    const done = readSet(DONE_KEY);
+    done.add(l.id);
+    saveSet(DONE_KEY, done);
+    haptic('success');
+    track('lesson_done', l.id);
+    render();
+    closeLayer(layer, { silent: true });
+    const next = i + 1;
+    if (next < LESSONS.length) {
+      if (next >= FREE_LESSONS && !state.isPremium) showPaywall({ source: 'lesson' });
+      else openLesson(next);
+    } else toast(t('learnAllDone'));
+  };
+}
+
+// ── «Прочитати мою колоду» ───────────────────────────────────────────────────
+function openReadMyDeck() {
+  track('deck_read_open');
+  const L = getLang();
+  const st = { spread: null, question: '', picks: [], pos: 0 };
+  const layer = pushScreen(`<div id="rmd"></div>`, { title: t('readMyDeck') });
+  const box = layer.querySelector('#rmd');
+
+  const step1 = () => {
+    box.innerHTML = `<div class="rmd-intro">
+        <p class="muted">${t('rmdIntro')}</p>
+        <label class="lbl">${t('rmdChooseSpread')}</label>
+        <div class="rmd-spreads">${DECK_SPREADS.map(s => `
+          <button class="rmd-spread${st.spread?.id === s.id ? ' on' : ''}" data-id="${s.id}">
+            <span class="rmd-n">${s.count}</span><span>${esc(s.title[L])}</span></button>`).join('')}
+        </div>
+        <label class="lbl">${t('rmdQuestion')}</label>
+        <textarea class="field area" id="rmd-q" rows="2" maxlength="300" placeholder="${t('questionPlaceholder')}">${esc(st.question)}</textarea>
+        <button class="btn-primary" id="rmd-next" ${st.spread ? '' : 'disabled'}><span>${t('rmdPickCards')}</span>${icons.chevron}</button>
+      </div>`;
+    const next = box.querySelector('#rmd-next');
+    box.querySelectorAll('.rmd-spread').forEach(b => b.onclick = () => {
+      haptic('select');
+      st.spread = DECK_SPREADS.find(s => s.id === b.dataset.id);
+      box.querySelectorAll('.rmd-spread').forEach(x => x.classList.toggle('on', x === b));
+      next.disabled = false;
+    });
+    next.onclick = () => {
+      st.question = box.querySelector('#rmd-q').value.trim();
+      st.picks = []; st.pos = 0;
+      pickStep();
+    };
+  };
+
+  // Вибір карти для поточної позиції з усіх 78
+  const pickStep = async () => {
+    const cards = await loadCards();
+    const pos = st.spread.positions[st.pos];
+    let filter = 'all', query = '', reversed = false;
+    box.innerHTML = `<div class="rmd-pick">
+        <div class="rmd-step">${t('rmdStep', { n: st.pos + 1, total: st.spread.count })} · <b>${esc(pos[L])}</b></div>
+        <label class="search">${icons.search}<input id="rmd-search" type="search" placeholder="${t('searchCards')}" autocomplete="off"></label>
+        <div class="filter-rail">${['all', 'major', 'wands', 'cups', 'swords', 'pentacles'].map(s =>
+          `<button class="filter${s === 'all' ? ' on' : ''}" data-s="${s}">${t('suit_' + s)}</button>`).join('')}</div>
+        <label class="rev-toggle"><input type="checkbox" class="toggle" id="rmd-rev"><span>${t('rmdReversed')}</span></label>
+        <div class="lib-grid small" id="rmd-grid"></div>
+      </div>`;
+    const grid = box.querySelector('#rmd-grid');
+    const used = new Set(st.picks.map(p => p.id));
+    const draw = () => {
+      const list = cards.filter(c => !used.has(c.id) && (filter === 'all' || cardSuit(c) === filter) &&
+        (!query || [c.name, c.nameRu, c.nameUa].some(n => String(n || '').toLowerCase().includes(query))));
+      grid.innerHTML = list.map(c => `<button class="lib-card" data-id="${c.id}">
+        <span class="lib-img${reversed ? ' rev' : ''}">${cardImg(c)}</span><span class="lib-name">${esc(cardName(c))}</span></button>`).join('')
+        || `<p class="muted center">${t('nothingFound')}</p>`;
+      grid.querySelectorAll('.lib-card').forEach(b => b.onclick = () => {
+        haptic('medium');
+        st.picks.push({ ...cards.find(c => String(c.id) === b.dataset.id), isReversed: reversed });
+        st.pos++;
+        if (st.pos < st.spread.count) pickStep(); else result();
+      });
+    };
+    box.querySelector('#rmd-search').oninput = e => { query = e.target.value.trim().toLowerCase(); draw(); };
+    box.querySelectorAll('.filter').forEach(b => b.onclick = () => {
+      haptic('select'); filter = b.dataset.s;
+      box.querySelectorAll('.filter').forEach(x => x.classList.toggle('on', x === b)); draw();
+    });
+    box.querySelector('#rmd-rev').onchange = e => { reversed = e.target.checked; haptic('select'); draw(); };
+    layer.querySelector('.push-body').scrollTop = 0;
+    draw();
+  };
+
+  const result = async () => {
+    track('deck_read_done', st.spread.id);
+    haptic('success');
+    box.innerHTML = `<div class="rmd-result">
+        ${st.question ? `<div class="q-badge">“${esc(st.question)}”</div>` : ''}
+        <div class="rd-grid n${Math.min(st.picks.length, 3)}">${st.picks.map((c, i) => `
+          <div class="rd-slot" style="--i:${i}">
+            <div class="rd-card flipped"><div class="flip"><div class="face back"></div>
+              <div class="face front"><div class="card-frame${c.isReversed ? ' rev' : ''}">${cardImg(c)}</div></div></div></div>
+            <div class="rd-pos">${esc(st.spread.positions[i][L])}</div>
+            <div class="rd-name">${esc(cardName(c))}${c.isReversed ? ` · ${t('reversedShort')}` : ''}</div>
+          </div>`).join('')}
+        </div>
+        <div class="rd-list">${st.picks.map((c, i) => `
+          <button class="rd-row" data-i="${i}"><span class="rd-thumb${c.isReversed ? ' rev' : ''}">${cardImg(c)}</span>
+            <span class="rd-row-text"><small>${esc(st.spread.positions[i][L])}</small><b>${esc(cardName(c))}${c.isReversed ? ` <em>${t('reversedShort')}</em>` : ''}</b>
+            <span>${esc(cardKeywords(c).slice(0, 3).join(' · '))}</span></span>${icons.chevron}</button>`).join('')}
+        </div>
+        <div class="ai-box" id="rmd-ai"><div class="ai-box-head">${sparkle()}<span>${t('aiReading')}</span></div>${spinner(t('aiThinking'))}</div>
+        <button class="btn-ghost" id="rmd-again">${t('rmdAgain')}</button>
+      </div>`;
+    box.querySelectorAll('.rd-row').forEach(b => b.onclick = () => openCardDetail(st.picks[Number(b.dataset.i)]));
+    box.querySelector('#rmd-again').onclick = () => { st.spread = null; st.question = ''; step1(); };
+    layer.querySelector('.push-body').scrollTop = 0;
+    const ai = await api('POST', '/ai/interpret', {
+      cards: st.picks, positions: st.spread.positions, spreadName: st.spread.title,
+      question: st.question, userAstro: userAstro(), lang: L, userId: state.userId,
+    });
+    const aiBox = box.querySelector('#rmd-ai');
+    if (!aiBox) return;
+    if (ai.ok && ai.interpretation) {
+      aiBox.innerHTML = `<div class="ai-box-head">${sparkle()}<span>${t('aiReading')}</span></div><p class="ai-text"></p>`;
+      typeText(aiBox.querySelector('.ai-text'), ai.interpretation);
+    } else if (ai.error === 'premium_required') {
+      aiBox.innerHTML = `<div class="ai-box-head">${sparkle()}<span>${t('aiReading')}</span></div><p class="muted">${t('aiFreeUsed')}</p>
+        <button class="btn-primary small" id="rmd-unlock"><span>${t('unlockPro')}</span></button>`;
+      aiBox.querySelector('#rmd-unlock').onclick = () => showPaywall({ source: 'deck_read' });
+    } else {
+      aiBox.innerHTML = `<div class="ai-box-head">${sparkle()}<span>${t('aiReading')}</span></div><p class="muted">${t('aiUnavailable')}</p>`;
+    }
+  };
+
+  step1();
+}
+
+// ── Картки-тренажер: картинка → згадай значення → перевір себе ──────────────
+async function openFlashcards() {
+  track('flash_open');
+  const cards = await loadCards();
+  if (!cards?.length) { toast(t('errOffline')); return; }
+  const layer = pushScreen(`<div class="flash" id="flash"></div>`, { title: t('flashcards'), onClose: render });
+  const box = layer.querySelector('#flash');
+  const known = readSet(KNOWN_KEY);
+  let current = null;
+
+  const next = () => {
+    // спершу ті, що ще не вивчені
+    const pool = cards.filter(c => !known.has(c.id));
+    const from = pool.length ? pool : cards;
+    current = from[Math.floor(Math.random() * from.length)];
+    box.innerHTML = `
+      <div class="flash-count">${t('flashKnown', { n: known.size, total: cards.length })}</div>
+      <div class="flash-track"><i style="width:${known.size / cards.length * 100}%"></i></div>
+      <button class="flash-card" id="fc"><div class="flip">
+        <div class="face back fc-front">${cardImg(current)}</div>
+        <div class="face front fc-back">
+          <small>${t('suit_' + cardSuit(current))}</small>
+          <h2 class="serif">${esc(cardName(current))}</h2>
+          <div class="chips center">${cardKeywords(current, false).map(k => `<span class="chip">${esc(k)}</span>`).join('')}</div>
+          <p>${esc(current.description?.[getLang()] || current.description?.en || '')}</p>
+        </div></div></button>
+      <p class="muted center" id="fc-hint">${t('flashHint')}</p>
+      <div class="flash-actions hidden" id="fc-actions">
+        <button class="btn-ghost" id="fc-again">${t('flashAgain')}</button>
+        <button class="btn-primary" id="fc-know"><span>${t('flashKnow')}</span></button>
+      </div>`;
+    const fc = box.querySelector('#fc');
+    fc.onclick = () => {
+      if (fc.classList.contains('flipped')) return;
+      haptic('medium');
+      fc.classList.add('flipped');
+      box.querySelector('#fc-hint').classList.add('hidden');
+      box.querySelector('#fc-actions').classList.remove('hidden');
+    };
+    box.querySelector('#fc-again').onclick = () => { haptic('light'); next(); };
+    box.querySelector('#fc-know').onclick = () => {
+      known.add(current.id); saveSet(KNOWN_KEY, known); haptic('success'); next();
+    };
+  };
+  next();
+}

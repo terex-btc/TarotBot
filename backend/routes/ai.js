@@ -3,6 +3,7 @@ const express = require('express');
 const router  = express.Router();
 const { pool } = require('../db');
 const { isAdmin } = require('../config/admins');
+const { isLunaraFreePro } = require('../middleware/security');
 
 // Безкоштовне AI-тлумачення карти дня — дозволяємо не-преміуму лише 1 раз.
 // Повертає true, якщо запит можна виконати (преміум або ще не використано).
@@ -101,7 +102,7 @@ router.post('/interpret', async (req, res) => {
       return res.json({ ok: false, needPremium: true });
     }
     // Анонімні акаунти застосунку створюються безкоштовно — без преміуму AI лише через freeDaily
-    if (!freeDaily && req.isAppUser && !(await isPremiumUser(userId))) {
+    if (!freeDaily && req.isAppUser && !isLunaraFreePro(req) && !(await isPremiumUser(userId))) {
       return res.status(402).json({ ok: false, error: 'premium_required' });
     }
 
@@ -185,7 +186,7 @@ router.post('/chat', async (req, res) => {
     const userId = req.telegramUserId || req.body.userId;
 
     // Оракул — тільки для преміуму (раніше перевірявся лише в клієнті)
-    if (!(await isPremiumUser(userId))) {
+    if (!isLunaraFreePro(req) && !(await isPremiumUser(userId))) {
       return res.status(402).json({ ok: false, error: 'premium_required' });
     }
 

@@ -11,12 +11,18 @@ import { showPaywall, restorePurchases } from './paywall.js';
 import { openHistory } from './spreads.js';
 import { fmtTime } from './onboarding.js';
 
-let root;
+let root = null, layerEl = null, unsub = null;
 
-export function mountMe(el) {
-  root = el;
+// Профіль відкривається шаром з аватарки / шестерні на головній (як у референсі — без окремого таба)
+export function openMe() {
+  if (layerEl?.isConnected) return;
+  layerEl = pushScreen('<div id="me-root"></div>', {
+    title: t('profile'),
+    onClose: () => { unsub?.(); unsub = null; root = null; layerEl = null; },
+  });
+  root = layerEl.querySelector('#me-root');
   render();
-  onStateChange(w => { if (['premium', 'user', 'lang'].includes(w)) render(); });
+  unsub = onStateChange(w => { if (root && ['premium', 'user', 'lang'].includes(w)) render(); });
 }
 
 function render() {
@@ -29,7 +35,8 @@ function render() {
   const birth = new Date(`${u.birthDate}T12:00:00`).toLocaleDateString(locale(), { day: 'numeric', month: 'long', year: 'numeric' });
   const reminderOn = storage.get('lunara_reminder') === '1';
 
-  root.innerHTML = `<div class="scroll tab-scroll">
+  layerEl.querySelector('.push-title').textContent = t('profile');
+  root.innerHTML = `<div class="me-inner">
     <header class="me-head">
       <div class="me-avatar">${zodiacGlyph(z.key, { stroke: 6 })}</div>
       <h1 class="serif">${esc(u.firstName || '')}</h1>
@@ -40,7 +47,8 @@ function render() {
     ${state.isPremium ? `
       <div class="pro-card on">
         <div class="pro-card-top"><span class="pro-pill on">PRO</span><b>${t('proActive')}</b></div>
-        ${state.premiumExpiry ? `<p>${t('proUntil', { date: new Date(state.premiumExpiry).toLocaleDateString(locale(), { day: 'numeric', month: 'long', year: 'numeric' }) })}</p>` : ''}
+        ${state.freePro ? `<p>${t('freeProNote')}</p><button class="btn-ghost small" id="me-pw-preview">${t('seePaywall')}</button>` : ''}
+        ${!state.freePro && state.premiumExpiry ? `<p>${t('proUntil', { date: new Date(state.premiumExpiry).toLocaleDateString(locale(), { day: 'numeric', month: 'long', year: 'numeric' }) })}</p>` : ''}
         ${isNative ? `<button class="btn-ghost small" id="me-manage">${t('manageSub')}</button>` : ''}
       </div>` : `
       <button class="pro-card" id="me-upgrade">
@@ -93,6 +101,7 @@ function render() {
   $('#me-upgrade')?.addEventListener('click', () => showPaywall({ source: 'me' }));
   $('#me-py-unlock')?.addEventListener('click', () => showPaywall({ source: 'personal_year' }));
   $('#me-manage')?.addEventListener('click', () => purchases.manage());
+  $('#me-pw-preview')?.addEventListener('click', () => showPaywall({ source: 'preview', force: true }));
   $('#me-compat').onclick = () => openCompat();
   $('#me-history').onclick = () => openHistory();
   $('#me-restore').onclick = () => restorePurchases();

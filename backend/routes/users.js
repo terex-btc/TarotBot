@@ -4,7 +4,7 @@ const router  = express.Router();
 const { pool } = require('../db');
 const { calcLifePath, getZodiac, getMoonPhase, calcPersonalYear, calcDayNumber } = require('../services/algorithmService');
 const { bumpActivity } = require('./admin');
-const { validateUserId, ownerOnly, limits } = require('../middleware/security');
+const { validateUserId, ownerOnly, limits, isLunaraFreePro } = require('../middleware/security');
 const { isAdmin } = require('../config/admins');
 
 // ── Хелпери ───────────────────────────────────────────────────────────────────
@@ -17,7 +17,7 @@ function isPremiumActive(user) {
   return !!(user.is_premium || user.isPremium);
 }
 
-function rowToUser(row) {
+function rowToUser(row, freePro = false) {
   if (!row) return null;
   return {
     userId:        row.user_id,
@@ -25,7 +25,8 @@ function rowToUser(row) {
     firstName:     row.first_name,
     birthDate:     row.birth_date,
     lang:          row.lang,
-    isPremium:     isPremiumActive(row) || isAdmin(row.user_id), // адмін бачить усе як PRO
+    isPremium:     isPremiumActive(row) || isAdmin(row.user_id) || freePro, // адмін / режим «PRO для всіх»
+    freePro,
     premiumExpiry: row.premium_expiry ? Number(row.premium_expiry) : null,
     refBonus:      row.ref_bonus || 0,
     astro:         row.astro,
@@ -82,7 +83,7 @@ router.post('/init', limits.init, async (req, res) => {
       bumpActivity?.();
     }
 
-    res.json({ ok: true, user: rowToUser(rows[0]) });
+    res.json({ ok: true, user: rowToUser(rows[0], isLunaraFreePro(req)) });
   } catch (e) {
     console.error('[users/init] error:', e.message);
     res.status(500).json({ ok: false, error: 'db_error' });
@@ -99,7 +100,7 @@ router.post('/:userId/premium', async (req, res) => {
       [req.params.userId]
     );
     if (!rows.length) return res.status(404).json({ ok: false, error: 'User not found' });
-    res.json({ ok: true, user: rowToUser(rows[0]) });
+    res.json({ ok: true, user: rowToUser(rows[0], isLunaraFreePro(req)) });
   } catch (e) { res.status(500).json({ ok: false, error: e.message }); }
 });
 
@@ -118,13 +119,15 @@ router.get('/:userId/premium-status', validateUserId, ownerOnly, async (req, res
     ]);
     const spreadCredits = {};
     creditsRes.rows.forEach(r => { spreadCredits[r.spread_type] = r.credits; });
-    if (!rows.length) return res.json({ ok: true, isPremium: false, premiumExpiry: null, refBonus: 0, daysLeft: null, spellCredits: 0, spreadCredits });
+    if (!rows.length) return res.json({ ok: true, isPremium: isLunaraFreePro(req), freePro: isLunaraFreePro(req), premiumExpiry: null, refBonus: 0, daysLeft: null, spellCredits: 0, spreadCredits });
     const user   = rows[0];
-    const active = isPremiumActive(user) || isAdmin(req.params.userId);
+    const freePro = isLunaraFreePro(req);
+    const active = isPremiumActive(user) || isAdmin(req.params.userId) || freePro;
     const expiry = user.premium_expiry ? Number(user.premium_expiry) : null;
     res.json({
       ok:           true,
       isPremium:    active,
+      freePro,
       premiumExpiry: expiry,
       refBonus:     user.ref_bonus    || 0,
       spellCredits: user.spell_credits || 0,
@@ -177,7 +180,7 @@ router.patch('/:userId', validateUserId, ownerOnly, async (req, res) => {
       `UPDATE users SET ${sets.join(',')} WHERE user_id=$1 RETURNING *`, vals
     );
     if (!rows.length) return res.status(404).json({ ok: false, error: 'User not found' });
-    res.json({ ok: true, user: rowToUser(rows[0]) });
+    res.json({ ok: true, user: rowToUser(rows[0], isLunaraFreePro(req)) });
   } catch (e) {
     console.error('[users/patch] error:', e.message);
     res.status(500).json({ ok: false, error: 'db_error' });
@@ -189,7 +192,7 @@ router.get('/:userId', validateUserId, ownerOnly, async (req, res) => {
   try {
     const { rows } = await pool.query(`SELECT * FROM users WHERE user_id=$1`, [req.params.userId]);
     if (!rows.length) return res.status(404).json({ ok: false, error: 'User not found' });
-    res.json({ ok: true, user: rowToUser(rows[0]) });
+    res.json({ ok: true, user: rowToUser(rows[0], isLunaraFreePro(req)) });
   } catch (e) { res.status(500).json({ ok: false, error: e.message }); }
 });
 

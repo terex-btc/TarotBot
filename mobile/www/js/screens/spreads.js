@@ -85,6 +85,8 @@ async function startReading(spread, question) {
 
   const grid = layer.querySelector('#rd-grid');
   grid.classList.add('dealing');
+  // вібро-тік на кожну карту, що «падає» на стіл
+  for (let i = 0; i < spread.count; i++) setTimeout(() => haptic('select'), 120 * i + 80);
   const [res] = await Promise.all([
     api('POST', `/readings/${state.userId}`, { spreadType: spread.id, lang: L, fresh: true }),
     delay(1100),
@@ -108,7 +110,11 @@ async function startReading(spread, question) {
       haptic('medium');
       c.classList.add('flipped');
       slot.querySelector('.rd-name').textContent = cardName(card) + (card.isReversed ? ` · ${t('reversedShort')}` : '');
-      if (++revealed === reading.cards.length) showResult(layer, reading, question);
+      if (++revealed === reading.cards.length) {
+        setTimeout(() => haptic('heavy'), 250);
+        setTimeout(() => haptic('success'), 650);
+        showResult(layer, reading, question);
+      }
     };
   });
 }

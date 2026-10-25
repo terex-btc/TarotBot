@@ -6,6 +6,7 @@ export const state = {
   user:      null,   // { firstName, birthDate, ... } з сервера
   lang:      'en',
   isPremium: false,
+  freePro:   false,  // сервер у режимі «PRO для всіх» (LUNARA_FREE_PRO)
   premiumExpiry: null,
   cards:     null,   // повна колода (78) — кеш
   daily:     null,   // сьогоднішня карта дня
@@ -26,6 +27,7 @@ export async function refreshPremium() {
   if (ps.ok) {
     const was = state.isPremium;
     state.isPremium = !!ps.isPremium;
+    state.freePro = !!ps.freePro;
     state.premiumExpiry = ps.premiumExpiry || null;
     if (was !== state.isPremium) emit('premium');
   }

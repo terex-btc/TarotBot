@@ -15,8 +15,8 @@ const FEATURES = [
 
 let _open = false;
 
-export async function showPaywall({ source = 'unknown', onClose } = {}) {
-  if (state.isPremium || _open) { onClose?.(); return; }
+export async function showPaywall({ source = 'unknown', onClose, force = false } = {}) {
+  if ((state.isPremium && !force) || _open) { onClose?.(); return; }
   _open = true;
   track('paywall_view', source);
 

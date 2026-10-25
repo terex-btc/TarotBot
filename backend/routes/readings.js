@@ -4,7 +4,7 @@ const router  = express.Router();
 const { createReading, getUserReadings, getTodayReading, SPREAD_TYPES } = require('../services/readingService');
 const { loadUser, isPremiumActive } = require('./users');
 const { isAdmin } = require('../config/admins');
-const { validateUserId, ownerOnly } = require('../middleware/security');
+const { validateUserId, ownerOnly, isLunaraFreePro } = require('../middleware/security');
 const { pool } = require('../db');
 
 // Атомарно списуємо 1 кредит разового розкладу. Повертає true якщо списали.
@@ -47,7 +47,7 @@ router.post('/:userId', validateUserId, ownerOnly, async (req, res) => {
 
     // Перевірка преміум (адмін має необмежений доступ).
     // Без преміуму — пробуємо списати куплений разовий кредит на цей розклад.
-    if (spread.premium && !isPremiumActive(user) && !isAdmin(uid)) {
+    if (spread.premium && !isPremiumActive(user) && !isAdmin(uid) && !isLunaraFreePro(req)) {
       const usedCredit = await useSpreadCredit(uid, spreadType).catch(() => false);
       if (!usedCredit) {
         return res.status(403).json({ ok: false, error: 'premium_required' });

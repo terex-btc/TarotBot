@@ -92,10 +92,12 @@ export function haptic(kind = 'light') {
       if (kind === 'success') h.notification({ type: 'SUCCESS' });
       else if (kind === 'error') h.notification({ type: 'ERROR' });
       else if (kind === 'select') h.selectionChanged?.();
-      else h.impact({ style: kind === 'heavy' ? 'HEAVY' : kind === 'medium' ? 'MEDIUM' : 'LIGHT' });
+      else h.impact({ style: kind === 'heavy' || kind === 'rigid' ? 'HEAVY' : kind === 'medium' ? 'MEDIUM' : 'LIGHT' });
       return;
     }
-    navigator.vibrate?.(kind === 'success' ? [12, 40, 12] : 8);
+    // Android-браузер вміє vibrate; iOS Safari — ні (там вібрація лише в Telegram і в застосунку)
+    const pattern = { light: 8, select: 5, medium: 18, heavy: 32, rigid: 26, success: [14, 50, 24], error: [40, 40, 40] }[kind] ?? 10;
+    navigator.vibrate?.(pattern);
   } catch (_) {}
 }
 
