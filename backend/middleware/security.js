@@ -42,15 +42,20 @@ const limiter = new RateLimiter();
  * @param {number} windowMs — вікно в мілісекундах
  * @param {string} keyBy   — 'ip' | 'userId' | 'ip+userId'
  */
+let _limiterSeq = 0;
 function rateLimit(limit, windowMs, keyBy = 'ip') {
+  // Кожен ліміт має власний лічильник: інакше глобальний ліміт (120/хв) і ліміт
+  // реєстрації (10/хв) рахували б ті самі запити, і init падав би з 429 після
+  // будь-яких 10 запитів за хвилину
+  const scope = `L${++_limiterSeq}`;
   return (req, res, next) => {
     let key;
     const ip = req.ip || req.connection?.remoteAddress || 'unknown';
     const uid = req.params?.userId || req.body?.userId || 'anon';
 
-    if (keyBy === 'userId')    key = `uid:${uid}`;
-    else if (keyBy === 'ip+userId') key = `${ip}:${uid}`;
-    else                       key = `ip:${ip}`;
+    if (keyBy === 'userId')    key = `${scope}:uid:${uid}`;
+    else if (keyBy === 'ip+userId') key = `${scope}:${ip}:${uid}`;
+    else                       key = `${scope}:ip:${ip}`;
 
     if (!limiter.check(key, limit, windowMs)) {
       return res.status(429).json({
