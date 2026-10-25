@@ -40,6 +40,7 @@ export async function loadCards() {
 }
 
 export function cardSuit(card) {
-  const m = /\/(card|wands|cups|swords|pentacles)_/.exec(card?.image || '');
-  return !m || m[1] === 'card' ? 'major' : m[1];
+  const m = /\/(card|wands|cups|swords|pents|pentacles)_/.exec(card?.image || '');
+  if (!m || m[1] === 'card') return 'major';
+  return m[1] === 'pents' ? 'pentacles' : m[1];
 }

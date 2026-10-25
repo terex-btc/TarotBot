@@ -128,7 +128,8 @@ const LIFE_PATH_CARDS = {
 };
 
 // ── Основна функція вибору карт ────────────────────────────────────────────
-function selectCards(birthDate, targetDate, spreadType, count, isAdmin = false) {
+// salt — для «свіжого» розкладу (кожне питання — нова розкладка); без нього результат стабільний на добу
+function selectCards(birthDate, targetDate, spreadType, count, isAdmin = false, salt = '') {
   const lifePath = calcLifePath(birthDate);
   const zodiac = getZodiac(birthDate);
   const personalDay = calcPersonalDay(birthDate, targetDate);
@@ -137,7 +138,7 @@ function selectCards(birthDate, targetDate, spreadType, count, isAdmin = false) 
   const personalYear = calcPersonalYear(birthDate, new Date(targetDate).getFullYear());
 
   // Seed: унікальний для юзера + дату + тип розкладу
-  const seedStr = `${birthDate}|${targetDate}|${spreadType}`;
+  const seedStr = `${birthDate}|${targetDate}|${spreadType}${salt ? `|${salt}` : ''}`;
   const seed = hashSeed(seedStr);
   const rng = seededRandom(seed);
 

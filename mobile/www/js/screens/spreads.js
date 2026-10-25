@@ -86,7 +86,7 @@ async function startReading(spread, question) {
   const grid = layer.querySelector('#rd-grid');
   grid.classList.add('dealing');
   const [res] = await Promise.all([
-    api('POST', `/readings/${state.userId}`, { spreadType: spread.id, lang: L }),
+    api('POST', `/readings/${state.userId}`, { spreadType: spread.id, lang: L, fresh: true }),
     delay(1100),
   ]);
   grid.classList.remove('dealing');

@@ -54,13 +54,13 @@ const SPREAD_TYPES = {
   }
 };
 
-async function createReading(userId, birthDate, spreadType, targetDate, lang) {
+async function createReading(userId, birthDate, spreadType, targetDate, lang, { salt = '' } = {}) {
   const spread = SPREAD_TYPES[spreadType];
   if (!spread) throw new Error('Unknown spread type');
 
   const today  = targetDate || new Date().toISOString().split('T')[0];
   const adminMode = isAdmin(userId);
-  const { cardIds, reversed, meta } = algo.selectCards(birthDate, today, spreadType, spread.count, adminMode);
+  const { cardIds, reversed, meta } = algo.selectCards(birthDate, today, spreadType, spread.count, adminMode, salt);
   const cards  = cardIds.map((id, i) => ({ ...MAJOR_ARCANA[id], isReversed: reversed[i] }));
   const { text: interpretation, verdict } = algo.generateInterpretation(meta, spreadType, cards);
 

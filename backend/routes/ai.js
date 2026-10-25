@@ -100,6 +100,10 @@ router.post('/interpret', async (req, res) => {
     if (freeDaily && !(await allowFreeDaily(userId))) {
       return res.json({ ok: false, needPremium: true });
     }
+    // Анонімні акаунти застосунку створюються безкоштовно — без преміуму AI лише через freeDaily
+    if (!freeDaily && req.isAppUser && !(await isPremiumUser(userId))) {
+      return res.status(402).json({ ok: false, error: 'premium_required' });
+    }
 
     const l = normLang(lang);
     const en = l === 'en';

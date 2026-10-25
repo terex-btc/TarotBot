@@ -34,7 +34,9 @@ router.get('/:userId', validateUserId, ownerOnly, async (req, res) => {
 // POST /api/readings/:userId
 router.post('/:userId', validateUserId, ownerOnly, async (req, res) => {
   try {
-    const { spreadType, lang } = req.body;
+    const { spreadType, lang, fresh } = req.body;
+    // Застосунок (Lunara) просить нову розкладку на кожне питання; старий бот — ні
+    const freshDraw = fresh === true && spreadType !== 'daily';
     if (!spreadType) return res.status(400).json({ ok: false, error: 'spreadType required' });
 
     const spread = SPREAD_TYPES[spreadType];
@@ -57,12 +59,13 @@ router.post('/:userId', validateUserId, ownerOnly, async (req, res) => {
     }
 
     // Карта дня: кешуємо на добу (адмін не кешується)
-    if ((spreadType === 'daily' || spreadType === 'three_card') && !isAdmin(uid)) {
+    if ((spreadType === 'daily' || spreadType === 'three_card') && !isAdmin(uid) && !freshDraw) {
       const cached = await getTodayReading(uid, spreadType);
       if (cached) return res.json({ ok: true, reading: cached, cached: true });
     }
 
-    const reading = await createReading(uid, user.birthDate, spreadType, null, lang || user.lang || 'ru');
+    const reading = await createReading(uid, user.birthDate, spreadType, null, lang || user.lang || 'ru',
+      { salt: freshDraw ? `${Date.now()}` : '' });
     res.json({ ok: true, reading });
   } catch (e) {
     res.status(500).json({ ok: false, error: e.message });
