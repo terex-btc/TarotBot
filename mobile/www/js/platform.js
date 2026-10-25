@@ -33,14 +33,6 @@ export const storage = {
   },
 };
 
-// ── Мова пристрою ────────────────────────────────────────────────────────────
-export function deviceLang() {
-  const code = (tg?.initDataUnsafe?.user?.language_code || navigator.language || 'en').toLowerCase();
-  if (code.startsWith('uk')) return 'ua';
-  if (/^(ru|be|kk)/.test(code)) return 'ru';
-  return 'en';
-}
-
 // ── Telegram: ім'я та id з initData ──────────────────────────────────────────
 export const telegramUser = isTelegram ? tg.initDataUnsafe?.user || null : null;
 export const telegramInitData = isTelegram ? tg.initData : '';

@@ -1,5 +1,5 @@
 // ══ Онбординг: слайди → анкета → розрахунок → профіль → paywall ═════════════
-import { t, getLang } from '../i18n.js';
+import { t, getLang, setLang } from '../i18n.js';
 import { state, track } from '../state.js';
 import { api } from '../api.js';
 import { haptic, isNative, notifications, telegramUser, startParam } from '../platform.js';
@@ -29,6 +29,8 @@ export function runOnboarding({ onDone }) {
 
   function renderSlides() {
     stage.innerHTML = `<div class="slides">
+        <div class="seg mini onb-lang">${['en', 'ru', 'ua'].map(l =>
+          `<button class="${l === getLang() ? 'on' : ''}" data-l="${l}">${l.toUpperCase()}</button>`).join('')}</div>
         <div class="slides-track">${slides.map((s, i) => `
           <div class="slide${i === 0 ? ' active' : ''}" data-i="${i}">
             <div class="slide-scene">${s.scene()}</div>
@@ -52,6 +54,12 @@ export function runOnboarding({ onDone }) {
       stage.querySelectorAll('.dots i').forEach((d, n) => d.classList.toggle('on', n === idx));
       stage.querySelector('.legal-note').classList.toggle('show', idx === slides.length - 1);
     };
+    stage.querySelectorAll('.onb-lang button').forEach(b => b.onclick = () => {
+      if (b.dataset.l === getLang()) return;
+      haptic('select');
+      setLang(b.dataset.l);
+      renderSlides();
+    });
     stage.querySelector('#onb-next').onclick = () => {
       haptic('light');
       track('onb_slide', idx + 1);
@@ -66,6 +74,10 @@ export function runOnboarding({ onDone }) {
       const dx = e.clientX - sx; sx = null;
       if (Math.abs(dx) > 50) { haptic('select'); go(idx + (dx < 0 ? 1 : -1)); }
     });
+    // Повертаємось на поточний слайд (після зміни мови або «назад» з анкети) без анімації
+    track_.style.transition = 'none';
+    go(idx);
+    requestAnimationFrame(() => requestAnimationFrame(() => { track_.style.transition = ''; }));
   }
 
   // ── 2. Анкета ──────────────────────────────────────────────────────────────

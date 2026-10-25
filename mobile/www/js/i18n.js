@@ -1,12 +1,13 @@
 // ══ Переклади: EN (за замовчуванням) · RU · UA ══════════════════════════════
-import { storage, deviceLang } from './platform.js';
+import { storage } from './platform.js';
 
 let lang = 'en';
 const LOCALES = { en: 'en-US', ru: 'ru-RU', ua: 'uk-UA' };
 
 export function initLang() {
   const saved = storage.get('lunara_lang');
-  lang = D[saved] ? saved : deviceLang();
+  // За замовчуванням завжди англійська; RU/UA — лише якщо юзер сам обрав
+  lang = D[saved] ? saved : 'en';
   document.documentElement.lang = lang === 'ua' ? 'uk' : lang;
 }
 export const getLang = () => lang;
