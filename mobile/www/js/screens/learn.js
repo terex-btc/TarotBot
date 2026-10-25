@@ -2,11 +2,12 @@
 // Для тих, хто вчиться на власній фізичній колоді: витягнув карти вдома —
 // вніс їх сюди — отримав значення й AI-тлумачення.
 import { t, getLang } from '../i18n.js';
-import { state, track, loadCards, cardSuit, onStateChange } from '../state.js';
+import { state, track, loadCards, cardSuit, onStateChange, emit } from '../state.js';
 import { api } from '../api.js';
 import { haptic, storage } from '../platform.js';
 import { pushScreen, closeLayer, esc, spinner, typeText, toast } from '../ui.js';
 import { sparkle, icons } from '../art.js';
+import { play } from '../sound.js';
 import { LESSONS, DECK_SPREADS } from '../learn-content.js';
 import { cardName, cardKeywords, cardImg, openCardDetail } from './library.js';
 import { showPaywall } from './paywall.js';
@@ -75,8 +76,22 @@ function render() {
   });
 }
 
+// Наступний непройдений урок — для картки «Продовжити навчання» на головній
+export function nextLesson() {
+  const done = readSet(DONE_KEY);
+  const i = LESSONS.findIndex(l => !done.has(l.id));
+  return i < 0 ? null : { i, lesson: LESSONS[i], done: done.size, total: LESSONS.length };
+}
+export function continueLearning() {
+  const n = nextLesson();
+  if (!n) return false;
+  if (n.i >= FREE_LESSONS && !state.isPremium) { showPaywall({ source: 'lesson' }); return true; }
+  openLesson(n.i);
+  return true;
+}
+
 // ── Урок ─────────────────────────────────────────────────────────────────────
-function openLesson(i) {
+export function openLesson(i) {
   const L = getLang();
   const l = LESSONS[i];
   track('lesson_open', l.id);
@@ -101,7 +116,7 @@ function openLesson(i) {
     saveSet(DONE_KEY, done);
     haptic('success');
     track('lesson_done', l.id);
-    render();
+    emit('learn');      // перемалює цю вкладку і картку на головній
     closeLayer(layer, { silent: true });
     const next = i + 1;
     if (next < LESSONS.length) {
@@ -262,6 +277,7 @@ async function openFlashcards() {
     fc.onclick = () => {
       if (fc.classList.contains('flipped')) return;
       haptic('medium');
+      play('flip');
       fc.classList.add('flipped');
       box.querySelector('#fc-hint').classList.add('hidden');
       box.querySelector('#fc-actions').classList.remove('hidden');

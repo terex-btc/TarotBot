@@ -2,7 +2,7 @@
 import { t, getLang } from '../i18n.js';
 import { state, track, loadCards, cardSuit, onStateChange } from '../state.js';
 import { haptic } from '../platform.js';
-import { pushScreen, esc, spinner } from '../ui.js';
+import { pushScreen, esc } from '../ui.js';
 import { icons } from '../art.js';
 import { showPaywall } from './paywall.js';
 import { loadDetails, cardDetail, yesNo, tx } from '../reading.js';
@@ -17,13 +17,15 @@ export const cardImg = c => `<img src="${esc(c.image)}" alt="${esc(cardName(c))}
 const SUITS = ['all', 'major', 'wands', 'cups', 'swords', 'pentacles'];
 let root, filter = 'all', query = '';
 
+let langHooked = false;
 export function mountLibrary(el) {
   root = el;
   root.innerHTML = `<div class="scroll tab-scroll">
       <header class="tab-head"><h1 class="serif">${t('cardsTitle')}</h1><p>${t('cardsSub')}</p></header>
       <label class="search">${icons.search}<input id="lib-q" type="search" placeholder="${t('searchCards')}" autocomplete="off"></label>
       <div class="filter-rail">${SUITS.map(s => `<button class="filter${s === filter ? ' on' : ''}" data-s="${s}">${t('suit_' + s)}</button>`).join('')}</div>
-      <div class="lib-grid" id="lib-grid">${spinner()}</div>
+      <div class="lib-grid" id="lib-grid">${state.cards ? '' : Array.from({ length: 12 }, () =>
+        '<span class="lib-card skel-card"><span class="lib-img skel"></span><span class="skel skel-line short"></span></span>').join('')}</div>
     </div>`;
   root.querySelector('#lib-q').oninput = e => { query = e.target.value.trim().toLowerCase(); renderGrid(); };
   root.querySelectorAll('.filter').forEach(b => b.onclick = () => {
@@ -32,8 +34,8 @@ export function mountLibrary(el) {
     root.querySelectorAll('.filter').forEach(x => x.classList.toggle('on', x === b));
     renderGrid();
   });
-  loadCards().then(renderGrid);
-  onStateChange(w => { if (w === 'lang') mountLibrary(el); });
+  if (state.cards) renderGrid(); else loadCards().then(renderGrid);
+  if (!langHooked) { langHooked = true; onStateChange(w => { if (w === 'lang') mountLibrary(el); }); }
 }
 
 function renderGrid() {

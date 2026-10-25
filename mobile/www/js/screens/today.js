@@ -1,15 +1,19 @@
 // ══ Вкладка «Сьогодні»: плитки, карта дня, гороскоп, Місяць, число дня ══════
 import { t, getLang, locale } from '../i18n.js';
-import { state, track, onStateChange, emit } from '../state.js';
+import { state, track, onStateChange, emit, localDateStr, bumpStreak, currentStreak, msToMidnight } from '../state.js';
 import { api } from '../api.js';
 import { haptic, share } from '../platform.js';
 import { openSheet, closeLayer, esc, toast, spinner, typeText } from '../ui.js';
-import { cardBack, moonSvg, zodiacGlyph, eyeArt, sparkle, clouds, hills, starsField, icons } from '../art.js';
+import { cardBack, moonSvg, zodiacGlyph, eyeArt, sparkle, clouds, hills, starsField, constellation, icons } from '../art.js';
+import { play } from '../sound.js';
 import { zodiacOf, lifePath, personalYear, personalDay, moonAt, upcomingPhases, SIGNS } from '../astro.js';
 import { showPaywall } from './paywall.js';
 import { openCardDetail, cardName, cardKeywords, cardImg } from './library.js';
 import { openCompat, openMe } from './me.js';
 import { loadDetails, cardDetail, yesNo, tx } from '../reading.js';
+import { journalHtml, wireJournal } from '../journal.js';
+import { openSpread, spreadById } from './spreads.js';
+import { nextLesson, continueLearning } from './learn.js';
 
 let root;
 
@@ -18,10 +22,18 @@ export function mountToday(el, { goTab }) {
   // Карта дня вже витягнута сьогодні — показуємо її одразу
   try {
     const saved = JSON.parse(localStorage.getItem('lunara_daily') || 'null');
-    if (saved?.date === localDate() && saved.userId === state.userId) state.daily = saved.reading;
+    if (saved?.date === localDateStr() && saved.userId === state.userId) state.daily = saved.reading;
   } catch (_) {}
   render(goTab);
-  onStateChange(what => { if (['premium', 'user', 'lang', 'daily'].includes(what)) render(goTab); });
+  onStateChange(what => { if (['premium', 'user', 'lang', 'daily', 'learn', 'cardback'].includes(what)) render(goTab); });
+  // Опівночі карта дня стає «вчорашньою» — перемальовуємо, коли повертаються в застосунок
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden || !state.daily) return;
+    try {
+      const saved = JSON.parse(localStorage.getItem('lunara_daily') || 'null');
+      if (saved?.date !== localDateStr()) { state.daily = null; render(goTab); }
+    } catch (_) {}
+  });
 }
 
 function greeting() {
@@ -41,6 +53,21 @@ export function userAstro() {
   };
 }
 
+// Ідеї під інтереси з онбордингу. «Так/Ні» — завжди першою.
+const FOR_YOU = {
+  yes_no:  { emoji: '🎱', go: () => openSpread(spreadById('yes_no')) },
+  love:    { emoji: '💞', go: () => openSpread(spreadById('love'), t('fyLoveQ')) },
+  career:  { emoji: '💼', go: () => openSpread(spreadById('month'), t('fyCareerQ')) },
+  growth:  { emoji: '🌱', go: (goTab) => { if (!continueLearning()) goTab('learn'); } },
+  balance: { emoji: '🧘', go: () => openMoon() },
+  family:  { emoji: '🏡', go: () => openSpread(spreadById('three_card'), t('fyFamilyQ')) },
+  spirit:  { emoji: '🔮', go: (goTab) => goTab('oracle') },
+};
+function forYouKeys() {
+  const f = (state.focus || []).filter(k => FOR_YOU[k]);
+  return ['yes_no', ...(f.length ? f : ['love', 'career', 'growth'])].slice(0, 5);
+}
+
 function render(goTab) {
   const u = state.user;
   if (!u) return;
@@ -52,6 +79,8 @@ function render(goTab) {
   const tom = moonAt(new Date(now.getTime() + 86400000));
   const pd = personalDay(u.birthDate, now);
   const daily = state.daily?.cards?.[0];
+  const streak = currentStreak();
+  const nl = nextLesson();
 
   root.innerHTML = `<div class="scroll tab-scroll">
     <header class="home-head">
@@ -70,6 +99,7 @@ function render(goTab) {
       <button class="tile tile-daily${daily ? ' drawn' : ''}" id="t-daily">
         <span class="tile-title serif">${t('cardOfDay')}</span>
         ${sparkle('t-sp1')}${sparkle('t-sp2')}
+        ${streak > 1 ? `<span class="streak-pill" title="${t('streakDays', { n: streak })}">🔥 ${streak}</span>` : ''}
         <span class="tile-art daily-art">${daily
           ? `<span class="mini-card${daily.isReversed ? ' rev' : ''}">${cardImg(daily)}</span>`
           : `<span class="mini-back">${cardBack()}</span><span class="tap-hint">${t('tapToReveal')}</span>`}</span>
@@ -87,6 +117,7 @@ function render(goTab) {
 
       <button class="tile tile-horo" id="t-horo">
         <span class="tile-title serif">${t('horoscope')}</span>
+        <span class="tile-constel">${constellation()}</span>
         <span class="tile-art horo-art">${zodiacGlyph(z.key, { stroke: 5 })}</span>
         <span class="tile-foot">${z.name[L]}</span>
       </button>
@@ -97,6 +128,26 @@ function render(goTab) {
         <span class="tile-title serif bottom">${t('askOracle')}</span>
       </button>
     </div>
+
+    <h3 class="section-title">${t('forYou')}</h3>
+    <div class="fy-rail">${forYouKeys().map(k => `
+      <button class="fy-card fy-${k}" data-k="${k}">
+        <span class="fy-emoji">${FOR_YOU[k].emoji}</span>
+        <b class="serif">${t('fy_' + k)}</b>
+        <span>${t('fy_' + k + '_sub')}</span>
+      </button>`).join('')}
+    </div>
+
+    ${nl ? `<button class="continue-card" id="t-learn">
+      <span class="cc-emoji">${nl.lesson.emoji}</span>
+      <span class="cc-text">
+        <small>${nl.done ? t('continueLearning') : t('startLearning')}</small>
+        <b class="serif">${esc(nl.lesson.title[L])}</b>
+        <span class="cc-bar"><i style="width:${Math.round(nl.done / nl.total * 100)}%"></i></span>
+        <small>${t('lessonN', { n: nl.i + 1, total: nl.total })} · ${t('minutes', { n: nl.lesson.minutes })}</small>
+      </span>
+      ${icons.chevron}
+    </button>` : ''}
 
     <button class="moon-card" id="t-moon">
       ${starsField(24, 13)}
@@ -139,6 +190,12 @@ function render(goTab) {
   $('#t-oracle').onclick = () => { haptic('light'); goTab('oracle'); };
   $('#t-moon').onclick = () => { haptic('light'); openMoon(); };
   $('#t-compat').onclick = () => { haptic('light'); openCompat(); };
+  $('#t-learn')?.addEventListener('click', () => { haptic('light'); continueLearning(); });
+  root.querySelectorAll('.fy-card').forEach(b => b.onclick = () => {
+    haptic('light');
+    track('foryou_click', b.dataset.k);
+    FOR_YOU[b.dataset.k].go(goTab);
+  });
 }
 
 // ══ Карта дня ════════════════════════════════════════════════════════════════
@@ -147,9 +204,9 @@ export async function openDaily() {
   loadDetails();   // розширені значення карт — підвантажуємо заздалегідь
   const dateLabel = new Date().toLocaleDateString(locale(), { weekday: 'long', month: 'long', day: 'numeric' });
   const layer = openSheet(`<div class="daily">
-      <div class="sky">${clouds('day')}<div class="sun-glow"></div>${hills({ a: '#6aa98c', b: '#4d8a73' })}</div>
       <button class="icon-btn sheet-x" data-close aria-label="${t('close')}">${icons.close}</button>
       <div class="daily-scroll scroll">
+        <div class="sky">${clouds('day')}<div class="sun-glow"></div>${hills({ a: '#6aa98c', b: '#4d8a73' })}</div>
         <div class="ds-date">${esc(dateLabel)}</div>
         <div class="ds-stage">
           <div class="deck" id="ds-deck">
@@ -182,11 +239,16 @@ export async function openDaily() {
     if (instant) { cardEl.classList.add('flipped', 'instant'); deck.classList.add('dealt', 'instant'); }
     else requestAnimationFrame(() => cardEl.classList.add('flipped'));
     hint.remove();
+    const st = bumpStreak();
     const kws = cardKeywords(card);
     const d = cardDetail(card);
     const T = tx();
     const yn = yesNo(card);
     info.innerHTML = `
+      <div class="ds-next">
+        <span class="streak-pill">🔥 ${t('streakDays', { n: st.count })}</span>
+        <span class="ds-timer" id="ds-timer">${t('nextCardIn', { time: untilMidnight() })}</span>
+      </div>
       <h2 class="serif ds-name">${esc(cardName(card))}</h2>
       ${card.isReversed ? `<div class="rev-tag">${t('reversed')}</div>` : ''}
       <p class="ds-text">${esc(d ? (card.isReversed ? d.rev : d.up) : (card.description?.[L] || card.description?.en || ''))}</p>
@@ -201,10 +263,18 @@ export async function openDaily() {
         <button class="btn-ai" id="ds-ai-btn">${sparkle()}<span>${t('aiInsightBtn')}</span></button>
         <p class="ds-ai-note">${state.isPremium ? t('aiInsightNotePro') : t('aiInsightNoteFree')}</p>
       </div>
+      ${journalHtml(reading)}
       <div class="ds-actions">
         <button class="round-btn" id="ds-share" aria-label="${t('share')}">${icons.share}</button>
         <button class="btn-ghost" id="ds-more"><span>${t('fullMeaning')}</span>${icons.chevron}</button>
       </div>`;
+    wireJournal(info, reading, saveDaily);
+    // Таймер до нової карти — щохвилини, поки шторка відкрита
+    const timer = setInterval(() => {
+      const el = layer.querySelector('#ds-timer');
+      if (!el) { clearInterval(timer); return; }
+      el.textContent = t('nextCardIn', { time: untilMidnight() });
+    }, 30000);
     setTimeout(() => info.classList.add('show'), instant ? 0 : 650);
     info.querySelector('#ds-share').onclick = async () => {
       const ok = await share({ title: t('cardOfDay'), text: t('shareDaily', { card: cardName(card), app: 'Lunara' }) });
@@ -225,10 +295,11 @@ export async function openDaily() {
     cardEl.dataset.busy = '1';
     haptic('medium');
     deck.classList.add('shuffling');
+    play('shuffle');
     hint.textContent = t('drawing');
     const ticks = setInterval(() => haptic('select'), 160);
     const [res] = await Promise.all([
-      api('POST', `/readings/${state.userId}`, { spreadType: 'daily', lang: L }),
+      api('POST', `/readings/${state.userId}`, { spreadType: 'daily', lang: L, localDate: localDateStr() }),
       wait(1300),
     ]);
     clearInterval(ticks);
@@ -239,14 +310,16 @@ export async function openDaily() {
       return;
     }
     reading = state.daily = res.reading;
-    try { localStorage.setItem('lunara_daily', JSON.stringify({ date: localDate(), userId: state.userId, reading })); } catch (_) {}
+    saveDaily(reading);
     track('daily_open');
     deck.classList.add('dealt');          // решта колоди відходить, карта злітає
     cardEl.classList.add('flyout');
     haptic('heavy');
+    play('flip');
     await wait(520);
     deck.classList.add('burst-on');       // спалах + іскри
     haptic('rigid');
+    play('reveal');
     await loadDetails();
     reveal(false);
     await wait(650);
@@ -254,6 +327,15 @@ export async function openDaily() {
   };
   cardEl.onclick = draw;
   deck.onclick = e => { if (!e.target.closest('#ds-card')) draw(); };
+}
+
+function saveDaily(reading) {
+  try { localStorage.setItem('lunara_daily', JSON.stringify({ date: localDateStr(), userId: state.userId, reading })); } catch (_) {}
+}
+// «5 год 12 хв» до місцевої півночі
+function untilMidnight() {
+  const min = Math.max(1, Math.ceil(msToMidnight() / 60000));
+  return t('hhmm', { h: Math.floor(min / 60), m: min % 60 });
 }
 
 async function dailyAi(box, reading, card) {
@@ -297,7 +379,7 @@ export async function openHoroscope(signKey) {
   async function loadSign(key) {
     const L = getLang();
     const sign = SIGNS.find(s => s.key === key);
-    const date = localDate();
+    const date = localDateStr();
     body.innerHTML = `
       <div class="horo-hero">
         <div class="horo-glyph">${zodiacGlyph(key, { stroke: 4 })}</div>
@@ -305,7 +387,11 @@ export async function openHoroscope(signKey) {
         <h2 class="serif horo-sign">${sign.name[L]}</h2>
         <div class="horo-meta">${t('element_' + sign.element)} · ${t('planet_' + sign.ruler)}</div>
       </div>
-      <div id="horo-content">${spinner(t('horoLoading'))}</div>
+      <div id="horo-content" aria-busy="true">
+        <div class="skel skel-pill"></div>
+        <div class="skel skel-line"></div><div class="skel skel-line"></div><div class="skel skel-line short"></div>
+        <div class="skel skel-block"></div><div class="skel skel-block"></div>
+      </div>
       <div class="horo-others-title">${t('otherSigns')}</div>
       <div class="sign-rail">${SIGNS.slice().sort((a, b) => (a.key === own ? -1 : b.key === own ? 1 : 0)).map(s => `
         <button class="sign-pill${s.key === key ? ' on' : ''}" data-k="${s.key}">${zodiacGlyph(s.key, { stroke: 7 })}<span>${s.name[L]}</span></button>`).join('')}
@@ -330,11 +416,6 @@ export async function openHoroscope(signKey) {
         <div><span>${t('mood')}</span><b class="serif">${esc(h.mood)}</b></div>
       </div>`;
   }
-}
-
-function localDate() {
-  const d = new Date();
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 }
 
 // ══ Місячний календар ════════════════════════════════════════════════════════

@@ -47,6 +47,11 @@ const TX = {
       message: 'This is the message of the cards for you.', situation: 'This describes the situation as it is.',
       obstacle: 'This is what stands in the way.', advice: 'This is the cards’ advice.',
       you: 'This is your side of the story.', them: 'This is the other person’s side.', relationship: 'This is the relationship itself.',
+      foundation: 'This is the root of the situation — what lies beneath it.', recent: 'This is what has just happened and is fading.',
+      crown: 'This is your conscious goal — what you are aiming for.', near: 'This is what is coming in the next weeks.',
+      self: 'This is your inner attitude.', environment: 'This is the influence of people and circumstances around you.',
+      hopes: 'These are your hopes and fears — often two sides of one coin.', final: 'This is where everything leads.',
+      answer: 'This card answers your question.',
     },
     lbl: { meaning: 'Meaning', love: 'Love & relationships', work: 'Work & money', advice: 'Advice', yn: 'Yes or no', overall: 'The overall picture',
            story: 'How the cards connect', patterns: 'What stands out', forYou: 'What it means for you', key: 'Key advice', energy: 'Energy of the spread' },
@@ -81,6 +86,11 @@ const TX = {
       message: 'Это послание карт для тебя.', situation: 'Это ситуация такой, какая она есть.',
       obstacle: 'Это то, что мешает.', advice: 'Это совет карт.',
       you: 'Это твоя сторона истории.', them: 'Это сторона другого человека.', relationship: 'Это сами отношения.',
+      foundation: 'Это корень ситуации — то, что лежит в её основе.', recent: 'Это то, что недавно произошло и уходит.',
+      crown: 'Это твоя сознательная цель — к чему ты стремишься.', near: 'Это то, что придёт в ближайшие недели.',
+      self: 'Это твоё внутреннее отношение.', environment: 'Это влияние людей и обстоятельств вокруг тебя.',
+      hopes: 'Это твои надежды и страхи — часто две стороны одной медали.', final: 'Это то, к чему всё ведёт.',
+      answer: 'Эта карта отвечает на твой вопрос.',
     },
     lbl: { meaning: 'Значение', love: 'Любовь и отношения', work: 'Работа и деньги', advice: 'Совет', yn: 'Да или нет', overall: 'Общая картина',
            story: 'Как карты связаны', patterns: 'Что важно заметить', forYou: 'Что это значит для тебя', key: 'Главный совет', energy: 'Энергия расклада' },
@@ -115,6 +125,11 @@ const TX = {
       message: 'Це послання карт для тебе.', situation: 'Це ситуація така, яка вона є.',
       obstacle: 'Це те, що заважає.', advice: 'Це порада карт.',
       you: 'Це твій бік історії.', them: 'Це бік іншої людини.', relationship: 'Це самі стосунки.',
+      foundation: 'Це корінь ситуації — те, що лежить в її основі.', recent: 'Це те, що нещодавно сталося й відходить.',
+      crown: 'Це твоя свідома мета — до чого ти прагнеш.', near: 'Це те, що прийде найближчими тижнями.',
+      self: 'Це твоє внутрішнє ставлення.', environment: 'Це вплив людей і обставин довкола тебе.',
+      hopes: 'Це твої надії та страхи — часто два боки однієї медалі.', final: 'Це те, до чого все веде.',
+      answer: 'Ця карта відповідає на твоє питання.',
     },
     lbl: { meaning: 'Значення', love: 'Кохання й стосунки', work: 'Робота й гроші', advice: 'Порада', yn: 'Так чи ні', overall: 'Загальна картина',
            story: 'Як карти пов’язані', patterns: 'Що варто помітити', forYou: 'Що це означає для тебе', key: 'Головна порада', energy: 'Енергія розкладу' },
@@ -145,7 +160,8 @@ const POS_MAP = {
   connection: 'connection', potential: 'potential', 'general energy': 'energy', 'month challenge': 'challenge', challenge: 'challenge',
   opportunities: 'opportunities', outcome: 'outcome', 'year theme': 'theme', challenges: 'challenges', love: 'love', career: 'career',
   message: 'message', situation: 'situation', obstacle: 'obstacle', advice: 'advice', you: 'you', them: 'them', relationship: 'relationship',
-  'card of the day': 'day',
+  'card of the day': 'day', foundation: 'foundation', 'recent past': 'recent', crown: 'crown', 'near future': 'near',
+  self: 'self', environment: 'environment', 'hopes and fears': 'hopes', 'final outcome': 'final', answer: 'answer',
 };
 export function posType(p) {
   const en = String((p && typeof p === 'object' ? p.en : p) || '').toLowerCase().trim();
@@ -164,7 +180,7 @@ export function positionText(card, pos, { spreadId } = {}) {
   let extra = '', extraLabel = '';
   if (LOVE_POS.has(type) || spreadId === 'love') { extra = d.love; extraLabel = T.lbl.love; }
   else if (type === 'career' || type === 'energy' || type === 'opportunities') { extra = d.work; extraLabel = T.lbl.work; }
-  else if (type === 'advice' || type === 'outcome' || type === 'future' || type === 'message' || type === 'day') { extra = d.advice; extraLabel = T.lbl.advice; }
+  else if (['advice', 'outcome', 'future', 'message', 'day', 'final', 'near', 'answer'].includes(type)) { extra = d.advice; extraLabel = T.lbl.advice; }
   return { intro, main, extra, extraLabel };
 }
 
@@ -214,7 +230,7 @@ export function overallPicture(cards, positions, { name, keywords, spreadId } = 
   const advice = cardDetail(advCard)?.advice || '';
 
   // що це означає в коханні й роботі — за підсумковою картою (майбутнє / потенціал / підсумок / остання)
-  const outIdx = cards.findIndex((c, i) => ['future', 'outcome', 'potential', 'relationship'].includes(posType(positions?.[i])));
+  const outIdx = cards.findIndex((c, i) => ['future', 'outcome', 'potential', 'relationship', 'final'].includes(posType(positions?.[i])));
   const outCard = cards[outIdx >= 0 ? outIdx : cards.length - 1];
   const od = cardDetail(outCard);
   const forecast = [];

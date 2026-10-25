@@ -8,6 +8,9 @@ const express = require('express');
 const { MAJOR_ARCANA: CARDS } = require('../../backend/config/tarotCards');
 const { selectCards } = require('../../backend/services/algorithmService');
 const { appUserIdFromDevice, signAppToken } = require('../../backend/middleware/security');
+const { SPREAD_TYPES } = require('../../backend/services/readingService');
+const { fallbackHoroscope } = require('../../backend/services/horoscopeFallback');
+const { getMoonPhase } = require('../../backend/services/algorithmService');
 
 const PORT = process.env.PORT || 4173;
 const app = express();
@@ -18,18 +21,7 @@ const readings = new Map();
 const freeAiUsed = new Set();
 let premium = process.env.MOCK_PREMIUM === '1';
 
-const SPREADS = {
-  daily:      { name: { en: 'Card of the day', ru: 'Карта дня', ua: 'Карта дня' }, count: 1, premium: false,
-    positions: [{ en: 'Your day', ru: 'Ваш день', ua: 'Ваш день' }] },
-  three_card: { name: { en: 'Three cards', ru: 'Три карты', ua: 'Три карти' }, count: 3, premium: true,
-    positions: [{ en: 'Past', ru: 'Прошлое', ua: 'Минуле' }, { en: 'Present', ru: 'Настоящее', ua: 'Теперішнє' }, { en: 'Future', ru: 'Будущее', ua: 'Майбутнє' }] },
-  love:       { name: { en: '❤️ Love', ru: '❤️ Любовь', ua: '❤️ Кохання' }, count: 4, premium: true,
-    positions: [{ en: 'Your state', ru: 'Ваше состояние', ua: 'Ваш стан' }, { en: 'Partner', ru: 'Партнёр', ua: 'Партнер' }, { en: 'Connection', ru: 'Связь', ua: 'Зв’язок' }, { en: 'Potential', ru: 'Потенциал', ua: 'Потенціал' }] },
-  month:      { name: { en: '📅 Month', ru: '📅 Месяц', ua: '📅 Місяць' }, count: 4, premium: true,
-    positions: [{ en: 'General energy', ru: 'Общая энергия', ua: 'Загальна енергія' }, { en: 'Challenge', ru: 'Вызов', ua: 'Виклик' }, { en: 'Opportunities', ru: 'Возможности', ua: 'Можливості' }, { en: 'Outcome', ru: 'Итог', ua: 'Підсумок' }] },
-  year:       { name: { en: '🌟 Year', ru: '🌟 Год', ua: '🌟 Рік' }, count: 6, premium: true,
-    positions: ['Year theme', 'Challenges', 'Opportunities', 'Love', 'Career', 'Outcome'].map(en => ({ en, ru: en, ua: en })) },
-};
+const SPREADS = Object.fromEntries(Object.entries(SPREAD_TYPES).map(([k, v]) => [k, { name: v.name, count: v.count, premium: v.premium, positions: v.positions }]));
 
 const pub = u => u && ({ ...u, isPremium: premium, premiumExpiry: premium ? Date.now() + 7 * 86400000 : null });
 
@@ -69,15 +61,26 @@ app.post('/api/readings/:id', (req, res) => {
   if (!sp || !u) return res.status(400).json({ ok: false, error: 'bad_request' });
   if (sp.premium && !premium) return res.status(403).json({ ok: false, error: 'premium_required' });
   const today = new Date().toISOString().slice(0, 10);
+  if (req.body.spreadType === 'daily' && req.body.localDate) {
+    const prev = (readings.get(req.params.id) || []).find(r => r.spreadType === 'daily' && r.localDate === req.body.localDate);
+    if (prev) return res.json({ ok: true, reading: prev, cached: true });
+  }
   const { cardIds, reversed } = selectCards(u.birthDate, today, req.body.spreadType + Math.random(), sp.count);
   const reading = {
     id: String(Date.now()), spreadType: req.body.spreadType, spreadName: sp.name, positions: sp.positions,
     cards: cardIds.map((id, i) => ({ ...CARDS[id], isReversed: reversed[i] })), createdAt: new Date().toISOString(),
+    localDate: req.body.localDate || null, note: '', mood: '', outcome: '',
   };
   readings.set(req.params.id, [reading, ...(readings.get(req.params.id) || [])]);
   res.json({ ok: true, reading });
 });
-app.get('/api/readings/:id', (req, res) => res.json({ ok: true, readings: readings.get(req.params.id) || [] }));
+app.get('/api/readings/:id', (req, res) => res.json({ ok: true, readings: (readings.get(req.params.id) || []).slice(0, Number(req.query.limit) || 10) }));
+app.patch('/api/readings/:id/:rid', (req, res) => {
+  const r = (readings.get(req.params.id) || []).find(x => x.id === req.params.rid);
+  if (!r) return res.status(404).json({ ok: false, error: 'not_found' });
+  for (const k of ['note', 'mood', 'outcome']) if (req.body[k] !== undefined) r[k] = req.body[k];
+  res.json({ ok: true, reading: r });
+});
 
 const AI = {
   en: 'The energy around you is shifting toward clarity. This card asks you to trust what you already know deep down and take one small, brave step today. What you nurture now will grow quickly.\n\nMain advice: slow down long enough to hear your intuition — then act on it.',
@@ -97,14 +100,9 @@ app.post('/api/ai/chat', (req, res) => {
   setTimeout(() => res.json({ ok: true, reply: (AI[req.body.lang] || AI.en).split('\n')[0] }), 1100);
 });
 app.get('/api/app/horoscope/:sign', (req, res) => {
-  const en = {
-    overview: 'Today brings a gentle push forward. Conversations flow more easily than usual, and a small decision you’ve been postponing suddenly feels obvious. Trust that clarity — it won’t last forever.',
-    love: 'Say the warm thing you were thinking. It lands better than you expect.',
-    career: 'A fresh idea deserves a quick first draft, not a perfect plan.',
-    wellbeing: 'Step outside for twenty minutes of daylight — your mood will thank you.',
-    focus: 'Say yes to clarity', mood: 'Hopeful', luckyColor: 'Lavender', luckyNumber: 7,
-  };
-  setTimeout(() => res.json({ ok: true, sign: req.params.sign, horoscope: en }), 700);
+  const date = req.query.date || new Date().toISOString().slice(0, 10);
+  setTimeout(() => res.json({ ok: true, sign: req.params.sign,
+    horoscope: fallbackHoroscope(req.params.sign, date, req.query.lang || 'en', getMoonPhase(date).energy) }), 500);
 });
 app.post('/api/app/demo-unlock', (req, res) => { premium = true; res.json({ ok: true, premiumExpiry: Date.now() + 7 * 86400000 }); });
 app.post('/api/app/iap/sync', (req, res) => res.status(503).json({ ok: false, error: 'iap_not_configured' }));

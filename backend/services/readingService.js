@@ -40,6 +40,27 @@ const SPREAD_TYPES = {
       { ua: 'Підсумок', ru: 'Итог', en: 'Outcome' }
     ]
   },
+  yes_no: {
+    name: { ua: 'Так чи ні', ru: 'Да или нет', en: 'Yes or No' },
+    count: 1, premium: false,
+    positions: [{ ua: 'Відповідь', ru: 'Ответ', en: 'Answer' }]
+  },
+  celtic: {
+    name: { ua: 'Кельтський хрест', ru: 'Кельтский крест', en: 'Celtic Cross' },
+    count: 10, premium: true,
+    positions: [
+      { ua: 'Ситуація', ru: 'Ситуация', en: 'Situation' },
+      { ua: 'Виклик', ru: 'Вызов', en: 'Challenge' },
+      { ua: 'Корінь', ru: 'Корень', en: 'Foundation' },
+      { ua: 'Нещодавнє минуле', ru: 'Недавнее прошлое', en: 'Recent past' },
+      { ua: 'Мета', ru: 'Цель', en: 'Crown' },
+      { ua: 'Найближче майбутнє', ru: 'Ближайшее будущее', en: 'Near future' },
+      { ua: 'Ти', ru: 'Ты', en: 'Self' },
+      { ua: 'Оточення', ru: 'Окружение', en: 'Environment' },
+      { ua: 'Надії та страхи', ru: 'Надежды и страхи', en: 'Hopes and fears' },
+      { ua: 'Підсумок', ru: 'Итог', en: 'Final outcome' }
+    ]
+  },
   year: {
     name: { ua: '🌟 Рік', ru: '🌟 Год', en: '🌟 Year' },
     count: 6, premium: true,
@@ -54,13 +75,14 @@ const SPREAD_TYPES = {
   }
 };
 
-async function createReading(userId, birthDate, spreadType, targetDate, lang, { salt = '' } = {}) {
+async function createReading(userId, birthDate, spreadType, targetDate, lang, { salt = '', localDate = null } = {}) {
   const spread = SPREAD_TYPES[spreadType];
   if (!spread) throw new Error('Unknown spread type');
 
   const today  = targetDate || new Date().toISOString().split('T')[0];
   const adminMode = isAdmin(userId);
   const { cardIds, reversed, meta } = algo.selectCards(birthDate, today, spreadType, spread.count, adminMode, salt);
+  if (localDate) meta.localDate = localDate;   // «день» клієнта (Lunara) — для карти дня за місцевим часом
   const cards  = cardIds.map((id, i) => ({ ...MAJOR_ARCANA[id], isReversed: reversed[i] }));
   const { text: interpretation, verdict } = algo.generateInterpretation(meta, spreadType, cards);
 
@@ -115,8 +137,32 @@ function rowToReading(row) {
     cards:          row.cards,
     meta:           row.meta,
     interpretation: row.interpretation,
+    note:           row.note || '',
+    mood:           row.mood || '',
+    outcome:        row.outcome || '',
     createdAt:      row.created_at,
   };
 }
 
-module.exports = { createReading, getUserReadings, getTodayReading, SPREAD_TYPES };
+// Карта дня за місцевою датою клієнта (Lunara)
+async function getReadingByLocalDate(userId, spreadType, localDate) {
+  const { rows } = await pool.query(`
+    SELECT * FROM readings WHERE user_id=$1 AND spread_type=$2 AND meta->>'localDate' = $3
+    ORDER BY created_at DESC LIMIT 1
+  `, [userId, spreadType, localDate]);
+  return rows.length ? rowToReading(rows[0]) : null;
+}
+
+// Щоденник: нотатка / настрій / «чи справдилось» — тільки свій розклад
+async function updateReadingJournal(userId, readingId, { note, mood, outcome }) {
+  const { rows } = await pool.query(`
+    UPDATE readings SET
+      note    = COALESCE($3, note),
+      mood    = COALESCE($4, mood),
+      outcome = COALESCE($5, outcome)
+    WHERE id=$2 AND user_id=$1 RETURNING *
+  `, [userId, readingId, note, mood, outcome]);
+  return rows[0] ? rowToReading(rows[0]) : null;
+}
+
+module.exports = { createReading, getUserReadings, getTodayReading, getReadingByLocalDate, updateReadingJournal, SPREAD_TYPES };

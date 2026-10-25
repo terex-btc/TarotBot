@@ -108,6 +108,10 @@ const PG_SCHEMA = `
     PRIMARY KEY (user_id, push_type)
   );
   ALTER TABLE users ADD COLUMN IF NOT EXISTS source TEXT;
+  -- Щоденник розкладів (Lunara): нотатка, настрій, «чи справдилось»
+  ALTER TABLE readings ADD COLUMN IF NOT EXISTS note TEXT;
+  ALTER TABLE readings ADD COLUMN IF NOT EXISTS mood TEXT;
+  ALTER TABLE readings ADD COLUMN IF NOT EXISTS outcome TEXT;
   CREATE INDEX IF NOT EXISTS activity_log_event_idx ON activity_log(event_type, created_at DESC);
   -- Ідемпотентність платежів: charge_id від Telegram унікальний на кожну оплату.
   -- Partial unique — старі рядки з NULL не конфліктують між собою.

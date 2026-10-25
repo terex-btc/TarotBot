@@ -6,6 +6,7 @@ const express = require('express');
 const router  = express.Router();
 const { pool } = require('../db');
 const { getMoonPhase } = require('../services/algorithmService');
+const { fallbackHoroscope } = require('../services/horoscopeFallback');
 const {
   limits, verifyTelegramAuth, isAppUserId, appUserIdFromDevice, signAppToken,
 } = require('../middleware/security');
@@ -105,7 +106,9 @@ router.get('/horoscope/:sign', async (req, res) => {
 
   const key = `${date}|${sign}|${lang}`;
   if (_horoCache.has(key)) return res.json({ ok: true, sign, date, horoscope: _horoCache.get(key) });
-  if (!process.env.ANTHROPIC_API_KEY) return res.status(503).json({ ok: false, error: 'ai_not_configured' });
+  // Без AI — гороскоп із шаблонів (стабільний на день), щоб екран ніколи не був порожнім
+  const fallback = () => res.json({ ok: true, sign, date, horoscope: fallbackHoroscope(sign, date, lang, getMoonPhase(date).energy) });
+  if (!process.env.ANTHROPIC_API_KEY) return fallback();
 
   try {
     if (!_horoInFlight.has(key)) {
@@ -119,7 +122,7 @@ router.get('/horoscope/:sign', async (req, res) => {
     res.json({ ok: true, sign, date, horoscope: data });
   } catch (e) {
     console.error('[app/horoscope] error:', e.message);
-    res.status(502).json({ ok: false, error: 'ai_error' });
+    fallback();
   }
 });
 

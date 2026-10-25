@@ -5,7 +5,8 @@ import { api, resetSession } from '../api.js';
 import { haptic, isNative, notifications, purchases, openUrl, legalUrl, storage, platform } from '../platform.js';
 import { CONFIG } from '../config.js';
 import { pushScreen, openSheet, closeLayer, esc, toast } from '../ui.js';
-import { zodiacGlyph, moonSvg, icons, sparkle } from '../art.js';
+import { zodiacGlyph, moonSvg, icons, sparkle, cardBack, CARD_BACKS, currentBack } from '../art.js';
+import { soundOn, setSound, play } from '../sound.js';
 import { zodiacOf, lifePath, personalYear, compatibility } from '../astro.js';
 import { showPaywall, restorePurchases } from './paywall.js';
 import { openHistory } from './spreads.js';
@@ -74,14 +75,25 @@ function render() {
 
     <div class="menu">
       <button class="menu-item" id="me-compat">${icons.heart}<span>${t('compatTitle')}</span>${icons.chevron}</button>
-      <button class="menu-item" id="me-history">${icons.history}<span>${t('history')}</span>${icons.chevron}</button>
+      <button class="menu-item" id="me-history">${icons.history}<span>${t('journal')}<small>${t('journalMenuSub')}</small></span>${icons.chevron}</button>
     </div>
+
+    <h3 class="section-title">${t('cardBack')}${state.isPremium ? '' : ' <span class="sc-lock static">PRO</span>'}</h3>
+    <div class="back-picker" id="me-backs">${Object.keys(CARD_BACKS).map(k => {
+      const locked = k !== 'violet' && !state.isPremium;
+      return `<button class="bp-item${k === currentBack() ? ' on' : ''}${locked ? ' locked' : ''}" data-b="${k}" aria-label="${t('back_' + k)}">
+        <span class="bp-card">${cardBack({ glow: false, style: k })}</span>
+        <small>${locked ? icons.lock : ''}${t('back_' + k)}</small>
+      </button>`;
+    }).join('')}</div>
 
     <h3 class="section-title">${t('settings')}</h3>
     <div class="menu">
       <div class="menu-item static">${icons.globe}<span>${t('language')}</span>
         <div class="seg mini" id="me-lang">${['en', 'ru', 'ua'].map(l => `<button class="${l === L ? 'on' : ''}" data-l="${l}">${l === 'ua' ? 'UA' : l.toUpperCase()}</button>`).join('')}</div>
       </div>
+      <label class="menu-item static">${icons.sound}<span>${t('sounds')}<small>${t('soundsSub')}</small></span>
+        <input type="checkbox" class="toggle" id="me-sound" ${soundOn() ? 'checked' : ''}></label>
       ${notifications.supported ? `
       <label class="menu-item static">${icons.bell}<span>${t('dailyReminder')}<small>${fmtTime(CONFIG.REMINDER_HOUR, CONFIG.REMINDER_MINUTE)}</small></span>
         <input type="checkbox" class="toggle" id="me-remind" ${reminderOn ? 'checked' : ''}></label>` : ''}
@@ -119,6 +131,22 @@ function render() {
     setLang(b.dataset.l);
     api('POST', '/users/init', { userId: state.userId, lang: b.dataset.l });
     emit('lang');
+  });
+  $('#me-sound').addEventListener('change', e => {
+    setSound(e.target.checked);
+    haptic('select');
+    if (e.target.checked) play('reveal');
+  });
+  root.querySelectorAll('#me-backs .bp-item').forEach(b => b.onclick = () => {
+    const k = b.dataset.b;
+    if (k !== 'violet' && !state.isPremium) { showPaywall({ source: 'card_back' }); return; }
+    if (k === currentBack()) return;
+    haptic('select');
+    play('flip');
+    storage.set('lunara_back', k);
+    track('card_back', k);
+    root.querySelectorAll('#me-backs .bp-item').forEach(x => x.classList.toggle('on', x === b));
+    emit('cardback');
   });
   $('#me-remind')?.addEventListener('change', async e => {
     if (e.target.checked) {

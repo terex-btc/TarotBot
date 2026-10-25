@@ -288,6 +288,53 @@ en: {
   compatText_mixed: '{a} and {b} see the world differently — and that’s where the growth is. Your {ea} and {eb} natures need patience and clear communication to meet in the middle.',
   compatText_low: '{a} and {b} are very different, which can create friction — or powerful lessons. Respecting each other’s {ea} and {eb} needs is the key to making it work.',
   compatLocked: 'See the full report with PRO',
+  // ── Yes / No, Celtic Cross ──
+  freeTag: 'Free', drawCard: 'Draw a card',
+  spYnTitle: 'Yes or No', spYnDesc: 'One card, a clear answer to a simple question.',
+  spYnLong: 'Ask a question that can be answered with “yes” or “no”. Hold it in your mind while the deck is shuffled — one card will answer and explain why.',
+  spYnQ1: 'Should I take this chance?', spYnQ2: 'Will they reach out to me?', spYnQ3: 'Is this the right time to act?',
+  ynAskSub: 'Ask something that can be answered with yes or no.', ynPlaceholder: 'Will I…? Should I…?',
+  theAnswer: 'The answer', tapCard: 'Tap the card to reveal it', yourCard: 'Your card', newReading: 'New reading',
+  ynReason_y: '{card} is a bright, supportive card — the energy is on your side. Act with confidence.',
+  ynReason_m: '{card} is neither a clear yes nor a no: the outcome depends on your choices and timing. Look closer at the details.',
+  ynReason_n: '{card} advises caution right now. It’s better to wait, rethink or choose a different path.',
+  spCelticTitle: 'Celtic Cross', spCelticDesc: 'The legendary 10-card spread for the big questions.',
+  spCelticLong: 'The most famous and detailed tarot spread. Ten cards show the heart of the situation, what crosses it, its roots and recent past, your goal, the near future, yourself, your environment, hopes and fears — and the final outcome.',
+  spCelticQ1: 'What do I need to know about my situation?', spCelticQ2: 'Where is this path leading me?',
+  celticTapNote: 'Card 2 lies across card 1 — it is the challenge crossing your situation.',
+
+  // ── Journal ──
+  journal: 'Reading journal', journalMenuSub: 'Notes, moods and what came true',
+  journalHint: 'Every reading is saved here. Add notes and mark what came true — that’s how you learn to trust your intuition.',
+  journalTitle: 'Journal', journalMood: 'How do you feel about it?',
+  mood_great: 'Inspired', mood_good: 'Good', mood_calm: 'Calm', mood_anxious: 'Anxious', mood_sad: 'Sad',
+  journalPh: 'Your thoughts, feelings, what you want to remember…', journalSave: 'Save to journal', journalSaved: 'Saved to your journal',
+  outcomeQ: 'Did it come true?', outcome_yes: 'Yes', outcome_partly: 'Partly', outcome_no: 'No',
+
+  // ── For you, streak, learning ──
+  forYou: 'For you',
+  fy_yes_no: 'Yes or No', fy_yes_no_sub: 'A quick answer',
+  fy_love: 'Love', fy_love_sub: 'What do they feel?',
+  fy_career: 'Career', fy_career_sub: 'Your month at work',
+  fy_growth: 'Grow', fy_growth_sub: 'Next tarot lesson',
+  fy_balance: 'Balance', fy_balance_sub: 'Live by the Moon',
+  fy_family: 'Family', fy_family_sub: 'Harmony at home',
+  fy_spirit: 'Intuition', fy_spirit_sub: 'Ask the Oracle',
+  fyLoveQ: 'What does this person really feel for me?', fyCareerQ: 'What awaits me at work this month?', fyFamilyQ: 'How can I bring more harmony to my family?',
+  continueLearning: 'Continue learning', startLearning: 'Start learning tarot',
+  streakDays: ({ n }) => `${n}-day streak`,
+  nextCardIn: 'New card in {time}',
+  hhmm: ({ h, m }) => (h ? `${h} h ${m} min` : `${m} min`),
+
+  // ── Settings: card back, sounds ──
+  cardBack: 'Card back', back_violet: 'Violet', back_sun: 'Sun', back_emerald: 'Emerald', back_rose: 'Rose', back_midnight: 'Midnight',
+  sounds: 'Sounds', soundsSub: 'Shuffle and card flip',
+
+  // ── Oracle ──
+  clearChat: 'Clear chat', clearChatConfirm: 'The whole conversation with the Oracle will be deleted from this device.', chatCleared: 'Chat cleared',
+  oqf_love: 'What do I need to know about my love life?', oqf_career: 'How can I grow in my career this year?',
+  oqf_growth: 'What is my main lesson right now?', oqf_balance: 'How can I find inner calm?',
+  oqf_family: 'How can I improve relations with my family?', oqf_spirit: 'How can I strengthen my intuition?',
 },
 
 // ════════════════════════════════════════════════════════════════════════════
@@ -531,6 +578,53 @@ ru: {
   compatText_mixed: '{a} и {b} смотрят на мир по-разному — и в этом точка роста. Стихиям {ea} и {eb} нужны терпение и ясное общение, чтобы встретиться посередине.',
   compatText_low: '{a} и {b} очень разные: это может давать трение — или сильные уроки. Уважение к потребностям стихий {ea} и {eb} — ключ к союзу.',
   compatLocked: 'Полный отчёт — в PRO',
+  // ── Да / Нет, Кельтский крест ──
+  freeTag: 'Бесплатно', drawCard: 'Вытянуть карту',
+  spYnTitle: 'Да или Нет', spYnDesc: 'Одна карта — ясный ответ на простой вопрос.',
+  spYnLong: 'Задай вопрос, на который можно ответить «да» или «нет». Держи его в мыслях, пока тасуется колода, — одна карта ответит и объяснит почему.',
+  spYnQ1: 'Стоит ли мне рискнуть?', spYnQ2: 'Напишет ли он(а) мне?', spYnQ3: 'Сейчас подходящее время действовать?',
+  ynAskSub: 'Спроси то, на что можно ответить «да» или «нет».', ynPlaceholder: 'Будет ли…? Стоит ли…?',
+  theAnswer: 'Ответ', tapCard: 'Нажми на карту, чтобы открыть', yourCard: 'Твоя карта', newReading: 'Новый расклад',
+  ynReason_y: '{card} — светлая, поддерживающая карта: энергия на твоей стороне. Действуй уверенно.',
+  ynReason_m: '{card} — ни чёткое «да», ни «нет»: исход зависит от твоих решений и момента. Присмотрись к деталям.',
+  ynReason_n: '{card} советует осторожность. Сейчас лучше подождать, пересмотреть план или выбрать другой путь.',
+  spCelticTitle: 'Кельтский крест', spCelticDesc: 'Легендарный расклад на 10 карт для больших вопросов.',
+  spCelticLong: 'Самый известный и подробный расклад Таро. Десять карт показывают суть ситуации, что ей мешает, её корни и недавнее прошлое, твою цель, ближайшее будущее, тебя самого, окружение, надежды и страхи — и итог.',
+  spCelticQ1: 'Что мне важно знать о моей ситуации?', spCelticQ2: 'Куда ведёт меня этот путь?',
+  celticTapNote: 'Карта 2 лежит поперёк карты 1 — это вызов, который пересекает ситуацию.',
+
+  // ── Дневник ──
+  journal: 'Дневник раскладов', journalMenuSub: 'Заметки, настроение и что сбылось',
+  journalHint: 'Здесь хранятся все твои расклады. Добавляй заметки и отмечай, что сбылось, — так учишься доверять интуиции.',
+  journalTitle: 'Дневник', journalMood: 'Что ты чувствуешь?',
+  mood_great: 'Вдохновение', mood_good: 'Хорошо', mood_calm: 'Спокойно', mood_anxious: 'Тревожно', mood_sad: 'Грустно',
+  journalPh: 'Твои мысли, чувства, что хочешь запомнить…', journalSave: 'Сохранить в дневник', journalSaved: 'Сохранено в дневник',
+  outcomeQ: 'Сбылось?', outcome_yes: 'Да', outcome_partly: 'Частично', outcome_no: 'Нет',
+
+  // ── Для тебя, серия, обучение ──
+  forYou: 'Для тебя',
+  fy_yes_no: 'Да или Нет', fy_yes_no_sub: 'Быстрый ответ',
+  fy_love: 'Любовь', fy_love_sub: 'Что он(а) чувствует?',
+  fy_career: 'Карьера', fy_career_sub: 'Твой месяц в работе',
+  fy_growth: 'Рост', fy_growth_sub: 'Следующий урок',
+  fy_balance: 'Баланс', fy_balance_sub: 'Жить по Луне',
+  fy_family: 'Семья', fy_family_sub: 'Гармония дома',
+  fy_spirit: 'Интуиция', fy_spirit_sub: 'Спроси Оракула',
+  fyLoveQ: 'Что этот человек на самом деле чувствует ко мне?', fyCareerQ: 'Что ждёт меня в работе в этом месяце?', fyFamilyQ: 'Как принести больше гармонии в семью?',
+  continueLearning: 'Продолжить обучение', startLearning: 'Начни изучать Таро',
+  streakDays: ({ n }) => `${n} ${plural(n, 'день', 'дня', 'дней')} подряд`,
+  nextCardIn: 'Новая карта через {time}',
+  hhmm: ({ h, m }) => (h ? `${h} ч ${m} мин` : `${m} мин`),
+
+  // ── Настройки: рубашка, звуки ──
+  cardBack: 'Рубашка карт', back_violet: 'Фиалка', back_sun: 'Солнце', back_emerald: 'Изумруд', back_rose: 'Роза', back_midnight: 'Полночь',
+  sounds: 'Звуки', soundsSub: 'Тасовка и переворот карт',
+
+  // ── Оракул ──
+  clearChat: 'Очистить чат', clearChatConfirm: 'Вся переписка с Оракулом будет удалена с этого устройства.', chatCleared: 'Чат очищен',
+  oqf_love: 'Что мне важно знать о моей личной жизни?', oqf_career: 'Как мне вырасти в карьере в этом году?',
+  oqf_growth: 'Какой мой главный урок сейчас?', oqf_balance: 'Как обрести внутреннее спокойствие?',
+  oqf_family: 'Как улучшить отношения с близкими?', oqf_spirit: 'Как усилить мою интуицию?',
 },
 
 // ════════════════════════════════════════════════════════════════════════════
@@ -774,5 +868,52 @@ ua: {
   compatText_mixed: '{a} і {b} дивляться на світ по-різному — і в цьому точка росту. Стихіям {ea} і {eb} потрібні терпіння й ясне спілкування, щоб зустрітися посередині.',
   compatText_low: '{a} і {b} дуже різні: це може давати тертя — або сильні уроки. Повага до потреб стихій {ea} і {eb} — ключ до союзу.',
   compatLocked: 'Повний звіт — у PRO',
+  // ── Так / Ні, Кельтський хрест ──
+  freeTag: 'Безкоштовно', drawCard: 'Витягнути карту',
+  spYnTitle: 'Так чи Ні', spYnDesc: 'Одна карта — чітка відповідь на просте питання.',
+  spYnLong: 'Постав питання, на яке можна відповісти «так» чи «ні». Тримай його в думках, поки тасується колода, — одна карта відповість і пояснить чому.',
+  spYnQ1: 'Чи варто мені ризикнути?', spYnQ2: 'Чи напише він(вона) мені?', spYnQ3: 'Чи зараз слушний час діяти?',
+  ynAskSub: 'Запитай те, на що можна відповісти «так» чи «ні».', ynPlaceholder: 'Чи буде…? Чи варто…?',
+  theAnswer: 'Відповідь', tapCard: 'Торкнись карти, щоб відкрити', yourCard: 'Твоя карта', newReading: 'Новий розклад',
+  ynReason_y: '{card} — світла, підтримувальна карта: енергія на твоєму боці. Дій упевнено.',
+  ynReason_m: '{card} — ні чітке «так», ні «ні»: результат залежить від твоїх рішень і моменту. Придивись до деталей.',
+  ynReason_n: '{card} радить обережність. Зараз краще зачекати, переглянути план або обрати інший шлях.',
+  spCelticTitle: 'Кельтський хрест', spCelticDesc: 'Легендарний розклад на 10 карт для великих питань.',
+  spCelticLong: 'Найвідоміший і найдокладніший розклад Таро. Десять карт показують суть ситуації, що їй заважає, її коріння і нещодавнє минуле, твою мету, найближче майбутнє, тебе самого, оточення, надії та страхи — і підсумок.',
+  spCelticQ1: 'Що мені важливо знати про мою ситуацію?', spCelticQ2: 'Куди веде мене цей шлях?',
+  celticTapNote: 'Карта 2 лежить упоперек карти 1 — це виклик, що перетинає ситуацію.',
+
+  // ── Щоденник ──
+  journal: 'Щоденник розкладів', journalMenuSub: 'Нотатки, настрій і що справдилось',
+  journalHint: 'Тут зберігаються всі твої розклади. Додавай нотатки й відмічай, що справдилось, — так вчишся довіряти інтуїції.',
+  journalTitle: 'Щоденник', journalMood: 'Що ти відчуваєш?',
+  mood_great: 'Натхнення', mood_good: 'Добре', mood_calm: 'Спокійно', mood_anxious: 'Тривожно', mood_sad: 'Сумно',
+  journalPh: 'Твої думки, почуття, що хочеш запам’ятати…', journalSave: 'Зберегти в щоденник', journalSaved: 'Збережено в щоденник',
+  outcomeQ: 'Чи справдилось?', outcome_yes: 'Так', outcome_partly: 'Частково', outcome_no: 'Ні',
+
+  // ── Для тебе, серія, навчання ──
+  forYou: 'Для тебе',
+  fy_yes_no: 'Так чи Ні', fy_yes_no_sub: 'Швидка відповідь',
+  fy_love: 'Кохання', fy_love_sub: 'Що він(вона) відчуває?',
+  fy_career: 'Кар’єра', fy_career_sub: 'Твій місяць у роботі',
+  fy_growth: 'Ріст', fy_growth_sub: 'Наступний урок',
+  fy_balance: 'Баланс', fy_balance_sub: 'Жити за Місяцем',
+  fy_family: 'Родина', fy_family_sub: 'Гармонія вдома',
+  fy_spirit: 'Інтуїція', fy_spirit_sub: 'Запитай Оракула',
+  fyLoveQ: 'Що ця людина насправді відчуває до мене?', fyCareerQ: 'Що чекає на мене в роботі цього місяця?', fyFamilyQ: 'Як принести більше гармонії в родину?',
+  continueLearning: 'Продовжити навчання', startLearning: 'Почни вивчати Таро',
+  streakDays: ({ n }) => `${n} ${plural(n, 'день', 'дні', 'днів')} поспіль`,
+  nextCardIn: 'Нова карта через {time}',
+  hhmm: ({ h, m }) => (h ? `${h} год ${m} хв` : `${m} хв`),
+
+  // ── Налаштування: сорочка, звуки ──
+  cardBack: 'Сорочка карт', back_violet: 'Фіалка', back_sun: 'Сонце', back_emerald: 'Смарагд', back_rose: 'Троянда', back_midnight: 'Північ',
+  sounds: 'Звуки', soundsSub: 'Тасування і переворот карт',
+
+  // ── Оракул ──
+  clearChat: 'Очистити чат', clearChatConfirm: 'Усе листування з Оракулом буде видалено з цього пристрою.', chatCleared: 'Чат очищено',
+  oqf_love: 'Що мені важливо знати про моє особисте життя?', oqf_career: 'Як мені вирости в кар’єрі цього року?',
+  oqf_growth: 'Який мій головний урок зараз?', oqf_balance: 'Як знайти внутрішній спокій?',
+  oqf_family: 'Як покращити стосунки з рідними?', oqf_spirit: 'Як посилити мою інтуїцію?',
 },
 };

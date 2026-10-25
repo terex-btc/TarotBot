@@ -534,6 +534,8 @@ button.pro-pill { animation: pulse 2.6s ease-in-out infinite; }
 .sky .hills { height: 44%; bottom: 22%; }
 .sky::after { content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 64%; background: linear-gradient(180deg, transparent 0%, rgba(20, 14, 52, .55) 22%, rgba(13, 10, 31, .92) 42%, var(--bg) 62%); }
 .daily-scroll { position: relative; z-index: 2; flex: 1; padding: 30px 22px calc(var(--bot) + 30px); }
+.daily-scroll { background: var(--bg); }
+.daily-scroll > .sky { z-index: -1; height: 100%; bottom: auto; }  /* небо прокручується разом з текстом */
 .ds-date { text-align: center; font-size: 14px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; color: rgba(255, 255, 255, .92); margin-top: 22px;
   text-shadow: 0 1px 8px rgba(40, 30, 120, .4); }
 .ds-stage { display: flex; flex-direction: column; align-items: center; margin-top: 22px; }
@@ -993,6 +995,116 @@ button.pro-pill { animation: pulse 2.6s ease-in-out infinite; }
 .flash-actions .btn-primary { height: 48px; font-size: 16px; }
 .me-inner { padding-bottom: 20px; }
 .home-head .icon-btn.soft { width: 42px; height: 42px; }
+
+/* ══ Так / Ні ════════════════════════════════════════════════════════════ */
+.yn-hero { margin: 4px 0 18px; padding: 22px 18px 18px; border-radius: var(--r-lg); text-align: center; border: 1px solid currentColor; }
+.yn-hero small { display: block; font-size: 12px; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; opacity: .85; }
+.yn-hero b { display: block; font-size: 54px; line-height: 1.05; margin: 6px 0 10px; animation: ynPop .6s var(--spring) both; }
+.yn-hero > p { color: var(--text); font-size: 16px; line-height: 1.5; }
+.yn-hero .ov-advice { text-align: left; color: var(--text); }
+@keyframes ynPop { from { opacity: 0; transform: scale(.6); } }
+.free-tag { color: var(--green); font-weight: 900; }
+
+/* ══ Кельтський хрест ══════════════════════════════════════════════════ */
+.rd-grid.celtic { grid-template-columns: repeat(4, minmax(0, 74px)); gap: 12px 12px;
+  grid-template-areas: ". c5 . c10" "c4 c1 c6 c9" ". c3 . c8" ". . . c7"; }
+.rd-grid.celtic .rd-slot { position: relative; }
+.rd-grid.celtic .rd-slot:nth-child(2) { grid-area: c1 !important; z-index: 2; }
+.rd-grid.celtic .rd-slot:nth-child(2) .rd-card { transform: rotate(90deg) scale(.8); }
+.rd-grid.celtic .rd-slot:nth-child(n + 7) { margin-left: 8px; }
+.rd-num { position: absolute; top: -7px; left: -7px; z-index: 3; display: grid; place-items: center; width: 22px; height: 22px; border-radius: 50%;
+  background: var(--lav); color: #1a1240; font-size: 12px; font-weight: 900; box-shadow: 0 3px 8px rgba(0, 0, 0, .4); }
+.rd-grid.celtic .rd-slot:nth-child(2) .rd-num { top: auto; bottom: 22%; left: auto; right: -10px; background: var(--gold); }
+.celtic-note { font-size: 13px; margin: 14px 0 4px; }
+
+/* ══ Щоденник ══════════════════════════════════════════════════════════ */
+.journal { margin-top: 18px; padding: 16px; border-radius: var(--r-lg); background: rgba(255, 255, 255, .05); border: 1px solid var(--line); text-align: left; }
+.jr-q { font-weight: 700; font-size: 15px; margin: 2px 0 10px; }
+.jr-moods { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; margin-bottom: 12px; }
+.jr-mood { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 8px 2px; border-radius: 14px; border: 1px solid transparent; transition: all .2s var(--spring); }
+.jr-mood span { font-size: 26px; line-height: 1; filter: grayscale(.5); transition: transform .2s var(--spring), filter .2s; }
+.jr-mood small { font-size: 10.5px; font-weight: 700; color: var(--text3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+.jr-mood.on { background: rgba(200, 182, 255, .14); border-color: var(--line2); }
+.jr-mood.on span { filter: none; transform: scale(1.18); }
+.jr-mood.on small { color: var(--lav); }
+.journal .jr-note { min-height: 84px; font-size: 15px; }
+.journal .jr-outcome { display: flex; margin: 0 0 4px; }
+.journal .jr-outcome button { flex: 1; padding: 0 10px; }
+.jr-save { width: 100%; margin-top: 12px; justify-content: center; }
+.jr-hint { font-size: 14px; margin: 0 2px 14px; line-height: 1.45; }
+.oc-yes, .oc-partly, .oc-no { font-style: normal; font-weight: 800; }
+.oc-yes { color: var(--green); } .oc-partly { color: var(--gold); } .oc-no { color: #ff6b93; }
+.hist-text b { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* ══ Головна: серія, «Для тебе», навчання ══════════════════════════════ */
+.streak-pill { display: inline-flex; align-items: center; gap: 4px; height: 26px; padding: 0 10px; border-radius: 999px; white-space: nowrap;
+  background: rgba(255, 201, 77, .16); color: var(--gold); font-size: 13px; font-weight: 900; }
+.tile-daily .streak-pill { position: relative; z-index: 3; margin-top: 6px; background: #1d1450; color: #ffd36b; box-shadow: 0 6px 14px rgba(29, 20, 80, .35); }
+.daily-art .mini-back { width: 58%; bottom: -30%; }
+.daily-art .mini-card { width: 57%; bottom: -26%; }
+.tile-constel { position: absolute; top: 8%; left: 6%; right: 6%; z-index: 0; color: var(--lav2); opacity: .55; pointer-events: none; }
+.tile-constel svg { width: 100%; height: auto; animation: constelGlow 5s ease-in-out infinite; }
+@keyframes constelGlow { 50% { opacity: .45; } }
+.ds-next { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 8px 12px; margin-top: 22px; }
+.ds-timer { font-size: 13px; font-weight: 700; color: var(--text2); }
+.ds-next + .ds-name { margin-top: 14px; }
+
+.fy-rail { display: flex; gap: 10px; overflow-x: auto; margin: 0 -18px; padding: 0 18px 4px; scroll-snap-type: x mandatory; scrollbar-width: none; }
+.fy-rail::-webkit-scrollbar { display: none; }
+.fy-card { flex: none; width: 132px; min-height: 124px; display: flex; flex-direction: column; align-items: flex-start; gap: 4px; padding: 14px; border-radius: var(--r-md);
+  text-align: left; scroll-snap-align: start; background: linear-gradient(160deg, #2a2160, #1a1538); border: 1px solid var(--line); transition: transform .2s var(--spring); }
+.fy-card:active { transform: scale(.95); }
+.fy-emoji { font-size: 28px; line-height: 1; margin-bottom: 6px; }
+.fy-card b { font-size: 17px; line-height: 1.15; }
+.fy-card > span:last-child { font-size: 12.5px; color: var(--text2); line-height: 1.3; }
+.fy-yes_no { background: linear-gradient(160deg, #5a3cf0, #3420a8); border: 0; }
+.fy-love { background: linear-gradient(160deg, #6e2457, #2c1440); }
+.fy-career { background: linear-gradient(160deg, #6a4a12, #2a1d0c); }
+.fy-growth { background: linear-gradient(160deg, #1d5e4b, #102a26); }
+.fy-balance { background: linear-gradient(160deg, #233a7a, #131c3e); }
+.fy-family { background: linear-gradient(160deg, #6b3a20, #2b1810); }
+.fy-spirit { background: linear-gradient(160deg, #46268f, #1d1240); }
+
+.continue-card { display: flex; align-items: center; gap: 14px; width: 100%; margin-top: 14px; padding: 16px; border-radius: var(--r-lg); text-align: left;
+  background: linear-gradient(135deg, rgba(43, 212, 125, .14), rgba(107, 77, 255, .14)); border: 1px solid var(--line2); transition: transform .2s var(--spring); }
+.continue-card:active { transform: scale(.98); }
+.cc-emoji { display: grid; place-items: center; flex: none; width: 52px; height: 52px; border-radius: 16px; background: rgba(255, 255, 255, .08); font-size: 26px; }
+.cc-text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+.cc-text small { font-size: 12px; font-weight: 800; color: var(--text3); }
+.cc-text small:first-child { color: var(--green); text-transform: uppercase; letter-spacing: .08em; }
+.cc-text b { font-size: 17px; line-height: 1.2; }
+.cc-bar { display: block; height: 5px; border-radius: 5px; background: rgba(255, 255, 255, .1); overflow: hidden; margin: 2px 0; }
+.cc-bar i { display: block; height: 100%; min-width: 4%; border-radius: 5px; background: linear-gradient(90deg, var(--green), var(--lav2)); }
+.continue-card > .ico:last-child { width: 18px; height: 18px; color: var(--text3); flex: none; }
+
+/* ══ Профіль: сорочка карт ═════════════════════════════════════════════ */
+.section-title .sc-lock.static { display: inline-block; margin-left: 6px; vertical-align: 1px; font-size: 10px; letter-spacing: .04em; }
+.back-picker { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; }
+.bp-item { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.bp-card { display: block; width: 100%; aspect-ratio: 120 / 190; border-radius: 9px; overflow: hidden; outline: 2px solid transparent; outline-offset: 2px;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, .35); transition: transform .2s var(--spring), outline-color .2s; }
+.bp-card svg { width: 100%; height: 100%; display: block; }
+.bp-item.on .bp-card { outline-color: var(--gold); transform: translateY(-3px); }
+.bp-item small { display: inline-flex; align-items: center; gap: 3px; font-size: 11px; font-weight: 700; color: var(--text2); white-space: nowrap; }
+.bp-item small .ico { width: 11px; height: 11px; }
+.bp-item.on small { color: var(--gold); }
+.bp-item.locked .bp-card { opacity: .5; filter: saturate(.6); }
+
+/* ══ Оракул: очистка ═══════════════════════════════════════════════════ */
+.oh-who { flex: 1; min-width: 0; }
+
+/* ══ Скелетони завантаження ════════════════════════════════════════════ */
+.skel { display: block; border-radius: 12px; background: linear-gradient(90deg, rgba(255, 255, 255, .05) 25%, rgba(255, 255, 255, .12) 50%, rgba(255, 255, 255, .05) 75%);
+  background-size: 300% 100%; animation: shimmer 1.4s ease-in-out infinite; }
+@keyframes shimmer { from { background-position: 100% 0; } to { background-position: 0 0; } }
+.skel-row { height: 78px; border-radius: var(--r-md); }
+.skel-line { height: 14px; margin: 10px 0; border-radius: 7px; }
+.skel-line.short { width: 60%; }
+.skel-pill { height: 76px; margin: 22px 0 16px; border-radius: var(--r-md); }
+.skel-block { height: 92px; margin-top: 12px; border-radius: var(--r-md); }
+.skel-card { pointer-events: none; }
+.skel-card .skel-line { width: 70%; height: 10px; margin: 2px auto 0; }
+.lib-img.skel { box-shadow: none; }
 
 /* ── Accessibility ────────────────────────────────────────────────────── */
 @media (prefers-reduced-motion: reduce) {

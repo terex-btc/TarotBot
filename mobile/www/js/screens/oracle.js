@@ -3,7 +3,7 @@ import { t, getLang } from '../i18n.js';
 import { state, track, onStateChange } from '../state.js';
 import { api } from '../api.js';
 import { haptic, storage } from '../platform.js';
-import { esc, typeText } from '../ui.js';
+import { esc, typeText, openSheet, closeLayer, toast } from '../ui.js';
 import { sparkle, starsField, icons } from '../art.js';
 import { showPaywall } from './paywall.js';
 import { userAstro } from './today.js';
@@ -18,17 +18,24 @@ export function mountOracle(el) {
   onStateChange(w => { if (w === 'lang') render(); });
 }
 
+// Підказки: спершу під інтереси з онбордингу, далі — загальні
+function suggestions() {
+  const own = (state.focus || []).map(f => 'oqf_' + f).filter(k => t(k) !== k).slice(0, 2);
+  return [...own, 'oq1', 'oq2', 'oq3', 'oq4'].slice(0, 4);
+}
+
 function render() {
   const name = esc(state.user?.firstName || '');
   root.innerHTML = `<div class="oracle-screen">
       ${starsField(36, 31)}
       <header class="oracle-head">
         <div class="orb-avatar"><i></i></div>
-        <div><h1 class="serif">${t('oracleName')}</h1><p><span class="online"></span>${t('oracleStatus')}</p></div>
+        <div class="oh-who"><h1 class="serif">${t('oracleName')}</h1><p><span class="online"></span>${t('oracleStatus')}</p></div>
+        ${history.length ? `<button class="icon-btn soft" id="chat-clear" aria-label="${t('clearChat')}">${icons.trash}</button>` : ''}
       </header>
       <div class="chat scroll" id="chat">
         <div class="msg oracle intro">${t('oracleIntro', { name })}</div>
-        <div class="suggest" id="suggest">${['oq1', 'oq2', 'oq3', 'oq4'].map(k =>
+        <div class="suggest" id="suggest">${suggestions().map(k =>
           `<button class="chip btn-chip" data-q="${esc(t(k))}">${t(k)}</button>`).join('')}</div>
         ${history.map(m => bubble(m.role === 'user' ? 'user' : 'oracle', m.content)).join('')}
       </div>
@@ -50,6 +57,7 @@ function render() {
     haptic('select'); input.value = b.dataset.q; send();
   });
   if (history.length) root.querySelector('#suggest').classList.add('hide');
+  root.querySelector('#chat-clear')?.addEventListener('click', confirmClear);
   scrollDown();
 }
 
@@ -100,6 +108,23 @@ async function send() {
   }
   scrollDown();
   busy = false;
+}
+
+function confirmClear() {
+  haptic('light');
+  const layer = openSheet(`<div class="notice">
+      <div class="notice-icon danger">${icons.trash}</div>
+      <h3 class="serif">${t('clearChat')}</h3>
+      <p>${t('clearChatConfirm')}</p>
+      <button class="btn-danger" id="cc-yes">${t('clearChat')}</button>
+      <button class="btn-text" data-close>${t('cancel')}</button>
+    </div>`, { tall: false });
+  layer.querySelector('#cc-yes').onclick = () => {
+    haptic('medium');
+    closeLayer(layer);
+    clearOracleHistory();
+    toast(t('chatCleared'));
+  };
 }
 
 export function clearOracleHistory() {

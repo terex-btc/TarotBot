@@ -1,5 +1,5 @@
 // ══ UI-примітиви: шари (екрани, шторки), тости, хелпери ═════════════════════
-import { setBackButton, haptic } from './platform.js';
+import { setBackButton, haptic, isNative } from './platform.js';
 
 export const $  = (sel, root = document) => root.querySelector(sel);
 export const $$ = (sel, root = document) => Array.from(root.querySelectorAll(sel));
@@ -20,9 +20,30 @@ export const delay = ms => new Promise(r => setTimeout(r, ms));
 const stack = [];
 const layersRoot = () => document.getElementById('layers');
 
+// Системне «назад» у браузері / Android: кожен шар — запис в історії, popstate закриває верхній.
+// На нативі назад обробляє Capacitor App.backButton (platform.js).
+const useHistory = !isNative && typeof history !== 'undefined' && !!history.pushState;
+let popGuard = 0;   // скільки popstate-подій ми викликали самі (history.go) — їх ігноруємо
+let pendingBack = 0;
+// Кілька закриттів підряд → один history.go(-n), інакше браузер може «склеїти» кроки
+function scheduleBack(n = 1) {
+  if (!pendingBack) setTimeout(() => { const k = pendingBack; pendingBack = 0; popGuard++; history.go(-k); }, 0);
+  pendingBack += n;
+}
+if (useHistory) {
+  window.addEventListener('popstate', () => {
+    if (popGuard > 0) { popGuard--; return; }
+    const top = stack[stack.length - 1];
+    if (!top) return;
+    if (top.layer.dataset.noback) { history.pushState({ lunara: stack.length }, ''); return; }  // онбординг не закриваємо
+    closeLayer(top.layer, { fromPop: true });
+  });
+}
+
 function mount(layer, onClose) {
   layersRoot().appendChild(layer);
   stack.push({ layer, onClose });
+  if (useHistory) history.pushState({ lunara: stack.length }, '');
   layer.addEventListener('click', e => {
     const closer = e.target.closest('[data-close]');
     if (closer && layer.contains(closer)) { haptic('light'); closeLayer(layer); }
@@ -37,10 +58,12 @@ function syncBack() {
   setBackButton(top && !top.layer.dataset.noback ? () => closeLayer(top.layer) : null);
 }
 
-export function closeLayer(layer, { silent = false } = {}) {
+export function closeLayer(layer, { silent = false, fromPop = false } = {}) {
   const i = stack.findIndex(s => s.layer === layer);
   if (i === -1) return;
   const [{ onClose }] = stack.splice(i, 1);
+  // закрили кнопкою в UI — прибираємо й запис з історії браузера
+  if (useHistory && !fromPop) scheduleBack(1);
   layer.classList.remove('in');
   layer.classList.add('out');
   setTimeout(() => layer.remove(), 380);
@@ -54,7 +77,9 @@ export function closeTop() {
 }
 
 export function closeAllLayers() {
-  [...stack].reverse().forEach(s => closeLayer(s.layer, { silent: true }));
+  const n = stack.length;
+  [...stack].reverse().forEach(s => closeLayer(s.layer, { silent: true, fromPop: true }));
+  if (useHistory && n) scheduleBack(n);
 }
 
 // Екран, що виїжджає справа (деталі карти, розклад, налаштування)

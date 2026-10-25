@@ -32,6 +32,9 @@ const ALLOWED_EVENTS = new Set([
   'deck_read_open', // «Прочитати мою колоду»
   'deck_read_done', // отримав тлумачення своєї колоди
   'flash_open',     // картки-тренажер
+  'journal_save',   // зберіг нотатку до розкладу
+  'yesno_open',     // розклад «Так/Ні»
+  'card_back',      // змінив сорочку карт
 ]);
 
 // POST /api/analytics/event — { userId, event, meta? }

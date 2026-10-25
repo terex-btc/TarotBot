@@ -2,30 +2,68 @@
 let _uid = 0;
 const uid = p => `${p}${++_uid}`;
 
-// ── Сорочка карти: восьмипроменева зірка в колі + місяці + тонка рамка ──────
-export function cardBack({ glow = true } = {}) {
+// ── Сорочки карт (5 дизайнів, PRO-прикраса) ─────────────────────────────────
+// Обрана сорочка зберігається на пристрої; cardBack() без style малює поточну.
+export const CARD_BACKS = {
+  violet:   { g: ['#5b3df0', '#3d24b8', '#25156f'], line: '#d8ccff', accent: '#f2c75c', glow: '#ffe9a8', moon: '#efe5ff' },
+  sun:      { g: ['#e3a531', '#a8641a', '#4f2a08'], line: '#ffe6ad', accent: '#fff3c4', glow: '#fff1b8', moon: '#fff3d6' },
+  emerald:  { g: ['#1fae86', '#13755f', '#0a3a33'], line: '#c4f7e6', accent: '#e8fff6', glow: '#b8ffe6', moon: '#eafff7' },
+  rose:     { g: ['#ef6fa0', '#b93a72', '#561437'], line: '#ffd6e6', accent: '#ffe9f1', glow: '#ffc4dc', moon: '#fff0f6' },
+  midnight: { g: ['#2c3f96', '#18235e', '#070b24'], line: '#b4c8ff', accent: '#dfe8ff', glow: '#9fb8ff', moon: '#e6edff' },
+};
+export const currentBack = () => {
+  try { const v = localStorage.getItem('lunara_back'); return CARD_BACKS[v] ? v : 'violet'; } catch (_) { return 'violet'; }
+};
+
+function backEmblem(style, c) {
+  if (style === 'sun') return `<circle cx="60" cy="88" r="15" fill="${c.accent}"/>
+    ${Array.from({ length: 12 }, (_, i) => `<path d="M60 63 L62.5 70 L57.5 70Z" fill="${c.accent}" transform="rotate(${i * 30} 60 88)"/>`).join('')}
+    <circle cx="60" cy="88" r="21" fill="none" stroke="${c.accent}" stroke-opacity=".5"/>`;
+  if (style === 'emerald') return `<path d="M50 66 a24 24 0 1 0 26 38 a19 19 0 1 1 -26 -38Z" fill="${c.accent}"/>
+    <circle cx="74" cy="76" r="2" fill="${c.accent}"/><circle cx="80" cy="92" r="1.5" fill="${c.accent}"/>`;
+  if (style === 'rose') return `<path d="M60 108 C40 94 34 84 34 76 a12 12 0 0 1 26 -4 a12 12 0 0 1 26 4 c0 8 -6 18 -26 32Z" fill="${c.accent}"/>
+    <path d="M60 102 C47 92 42 85 42 79 a8 8 0 0 1 18 -3" fill="none" stroke="${c.g[1]}" stroke-width="1.4" opacity=".5"/>`;
+  if (style === 'midnight') return `<path d="M34 88 C46 70 74 70 86 88 C74 106 46 106 34 88Z" fill="${c.accent}"/>
+    <circle cx="60" cy="88" r="10" fill="${c.g[2]}"/><circle cx="63" cy="85" r="3" fill="${c.accent}"/>
+    <path d="M60 62 v-6 M44 67 l-4 -4 M76 67 l4 -4" stroke="${c.accent}" stroke-width="1.6" stroke-linecap="round"/>`;
+  // violet — восьмипроменева зірка
+  return `<path d="M60 64 L64.5 83.5 L84 88 L64.5 92.5 L60 112 L55.5 92.5 L36 88 L55.5 83.5Z" fill="#fff4cf"/>
+    <path d="M60 74 L62.4 85.6 L74 88 L62.4 90.4 L60 102 L57.6 90.4 L46 88 L57.6 85.6Z" fill="${c.accent}" transform="rotate(45 60 88)"/>`;
+}
+
+export function cardBack({ glow = true, style } = {}) {
+  const st = style || currentBack();
+  const c = CARD_BACKS[st] || CARD_BACKS.violet;
   const g = uid('cb'), s = uid('cs');
   return `<svg class="card-back-svg" viewBox="0 0 120 190" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
     <defs>
       <linearGradient id="${g}" x1="0" y1="0" x2="1" y2="1">
-        <stop offset="0" stop-color="#5b3df0"/><stop offset=".55" stop-color="#3d24b8"/><stop offset="1" stop-color="#25156f"/>
+        <stop offset="0" stop-color="${c.g[0]}"/><stop offset=".55" stop-color="${c.g[1]}"/><stop offset="1" stop-color="${c.g[2]}"/>
       </linearGradient>
       <radialGradient id="${s}" cx=".5" cy=".46" r=".5">
-        <stop offset="0" stop-color="#ffe9a8" stop-opacity=".55"/><stop offset="1" stop-color="#ffe9a8" stop-opacity="0"/>
+        <stop offset="0" stop-color="${c.glow}" stop-opacity=".55"/><stop offset="1" stop-color="${c.glow}" stop-opacity="0"/>
       </radialGradient>
     </defs>
     <rect width="120" height="190" rx="12" fill="url(#${g})"/>
-    <rect x="7" y="7" width="106" height="176" rx="8" fill="none" stroke="#d8ccff" stroke-opacity=".45" stroke-width="1"/>
-    <rect x="11" y="11" width="98" height="168" rx="6" fill="none" stroke="#d8ccff" stroke-opacity=".18" stroke-width=".8" stroke-dasharray="2 3"/>
+    <rect x="7" y="7" width="106" height="176" rx="8" fill="none" stroke="${c.line}" stroke-opacity=".45" stroke-width="1"/>
+    <rect x="11" y="11" width="98" height="168" rx="6" fill="none" stroke="${c.line}" stroke-opacity=".18" stroke-width=".8" stroke-dasharray="2 3"/>
     ${glow ? `<circle cx="60" cy="88" r="44" fill="url(#${s})"/>` : ''}
-    <circle cx="60" cy="88" r="27" fill="none" stroke="#f3e3ae" stroke-width="1.4"/>
-    <circle cx="60" cy="88" r="33" fill="none" stroke="#f3e3ae" stroke-opacity=".35" stroke-width=".8"/>
-    <path d="M60 64 L64.5 83.5 L84 88 L64.5 92.5 L60 112 L55.5 92.5 L36 88 L55.5 83.5Z" fill="#fff4cf"/>
-    <path d="M60 74 L62.4 85.6 L74 88 L62.4 90.4 L60 102 L57.6 90.4 L46 88 L57.6 85.6Z" fill="#f2c75c" transform="rotate(45 60 88)"/>
-    <path d="M52 30 a9 9 0 1 0 16 0 a7.2 7.2 0 1 1 -16 0Z" fill="#efe5ff"/>
-    <path d="M52 160 a9 9 0 1 1 16 0 a7.2 7.2 0 1 0 -16 0Z" fill="#efe5ff" opacity=".8"/>
+    <circle cx="60" cy="88" r="27" fill="none" stroke="${c.accent}" stroke-opacity=".9" stroke-width="1.4"/>
+    <circle cx="60" cy="88" r="33" fill="none" stroke="${c.accent}" stroke-opacity=".35" stroke-width=".8"/>
+    ${backEmblem(st, c)}
+    <path d="M52 30 a9 9 0 1 0 16 0 a7.2 7.2 0 1 1 -16 0Z" fill="${c.moon}"/>
+    <path d="M52 160 a9 9 0 1 1 16 0 a7.2 7.2 0 1 0 -16 0Z" fill="${c.moon}" opacity=".8"/>
     <circle cx="24" cy="40" r="1.4" fill="#fff"/><circle cx="98" cy="52" r="1.1" fill="#fff"/>
     <circle cx="30" cy="140" r="1.1" fill="#fff"/><circle cx="92" cy="150" r="1.5" fill="#fff"/>
+  </svg>`;
+}
+
+// Сузір'я — тло плитки гороскопу
+export function constellation() {
+  const pts = [[18, 30], [38, 18], [58, 34], [80, 22], [92, 48], [70, 62], [46, 56], [26, 70]];
+  return `<svg class="constellation" viewBox="0 0 110 90" aria-hidden="true">
+    <path d="M${pts.map(p => p.join(' ')).join(' L')}" fill="none" stroke="currentColor" stroke-width=".6" stroke-opacity=".35"/>
+    ${pts.map(([x, y], i) => `<circle cx="${x}" cy="${y}" r="${i % 3 === 0 ? 1.8 : 1.2}" fill="currentColor"/>`).join('')}
   </svg>`;
 }
 
@@ -161,6 +199,7 @@ export const icons = {
   heart: I('<path d="M12 20s-7.5-4.6-7.5-10.2A4.3 4.3 0 0 1 12 7.3a4.3 4.3 0 0 1 7.5 2.5C19.5 15.4 12 20 12 20Z" fill="currentColor"/>'),
   history: I('<path d="M4 12a8 8 0 1 0 2.4-5.7M4 4.5v4h4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 8v4.5l3 2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>'),
   globe: I('<circle cx="12" cy="12" r="8.6" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M3.6 12h16.8M12 3.4c2.6 2.4 3.8 5.3 3.8 8.6s-1.2 6.2-3.8 8.6c-2.6-2.4-3.8-5.3-3.8-8.6S9.4 5.8 12 3.4Z" fill="none" stroke="currentColor" stroke-width="1.5"/>'),
+  sound: I('<path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4Z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>'),
   bell: I('<path d="M6 16.5V11a6 6 0 0 1 12 0v5.5l1.5 1.8h-15Z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M10 20.5a2.2 2.2 0 0 0 4 0" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>'),
   doc: I('<path d="M7 3h7l4 4v14H7Z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M10 11h5M10 15h5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>'),
   mail: I('<rect x="3.5" y="5.5" width="17" height="13" rx="2.5" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M4.5 7l7.5 6 7.5-6" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/>'),
