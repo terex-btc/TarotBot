@@ -107,7 +107,30 @@ app.get('/api/app/horoscope/:sign', (req, res) => {
 app.post('/api/app/demo-unlock', (req, res) => { premium = true; res.json({ ok: true, premiumExpiry: Date.now() + 7 * 86400000 }); });
 app.post('/api/app/iap/sync', (req, res) => res.status(503).json({ ok: false, error: 'iap_not_configured' }));
 
-app.use('/app', express.static(path.join(__dirname, '../www'), { etag: false, maxAge: 0 }));
+// MOCK_WWW — віддати іншу копію застосунку (наприклад, стару версію для порівняння «було/стало»)
+app.use('/app', express.static(process.env.MOCK_WWW || path.join(__dirname, '../www'), { etag: false, maxAge: 0 }));
+
+// Тестовий профіль одним переходом: /mock/seed?name=Emma&birth=1994-01-05&focus=love,career&streak=3
+app.get('/mock/seed', (req, res) => {
+  const q = { name: req.query.name || 'Emma', birth: req.query.birth || '1994-01-05', focus: String(req.query.focus || 'love,career,growth').split(','), streak: Number(req.query.streak || 0) };
+  res.type('html').send(`<!doctype html><meta charset="utf-8"><body style="background:#0d0a1f"><script>
+  (async () => {
+    const q = ${JSON.stringify(q)};
+    const dev = 'seed-' + Math.random().toString(36).slice(2);
+    const h = { 'Content-Type': 'application/json', 'X-Client': 'lunara' };
+    const s = await (await fetch('/api/app/session', { method: 'POST', headers: h, body: JSON.stringify({ deviceId: dev }) })).json();
+    localStorage.clear();
+    localStorage.setItem('lunara_device', dev); localStorage.setItem('lunara_token', s.token); localStorage.setItem('lunara_lang', 'en');
+    localStorage.setItem('lunara_focus', JSON.stringify(q.focus));
+    if (q.streak) { const d = new Date(); d.setDate(d.getDate() - 1);
+      const ds = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+      localStorage.setItem('lunara_streak', JSON.stringify({ last: ds, count: q.streak, best: q.streak })); }
+    await fetch('/api/users/init', { method: 'POST', headers: { ...h, 'X-App-Auth': s.token }, body: JSON.stringify({ userId: s.userId, firstName: q.name, birthDate: q.birth, lang: 'en' }) });
+    location.replace('/app/');
+  })();
+  </script>`);
+});
+app.get('/mock/compare', (req, res) => res.sendFile(path.join(__dirname, 'compare.html')));
 app.use('/assets', express.static(path.join(__dirname, '../../frontend/assets')));
 app.get('/', (req, res) => res.redirect('/app/'));
 

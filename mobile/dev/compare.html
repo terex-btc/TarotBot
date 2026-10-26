@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Lunara — было / стало</title>
+<style>
+  body { margin: 0; padding: 20px 12px 40px; background: #08061a; color: #e9e6f2; font-family: -apple-system, system-ui, sans-serif; }
+  h1 { text-align: center; font-size: 18px; font-weight: 700; margin: 0 0 4px; }
+  p.sub { text-align: center; color: #a097cc; font-size: 13px; margin: 0 0 18px; }
+  .row { display: flex; flex-wrap: wrap; gap: 28px; justify-content: center; }
+  .col { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+  .tag { font-weight: 800; font-size: 14px; padding: 6px 14px; border-radius: 999px; }
+  .old .tag { background: #2a2350; color: #cec6ec; }
+  .new .tag { background: #2bd47d; color: #06220f; }
+  .phone { width: 375px; height: 812px; border-radius: 44px; overflow: hidden; border: 8px solid #1d1d22; box-shadow: 0 20px 50px rgba(0,0,0,.5); background: #0d0a1f; }
+  iframe { width: 375px; height: 812px; border: 0; display: block; }
+  ul { max-width: 780px; margin: 22px auto 0; color: #cec6ec; font-size: 14px; line-height: 1.6; }
+</style>
+</head>
+<body>
+  <h1>Главная: было → стало</h1>
+  <p class="sub">Оба экрана живые — можно листать и нажимать. Одинаковый тестовый профиль: Emma, Козерог, серия 3 дня.</p>
+  <div class="row">
+    <div class="col old"><span class="tag">Было · сейчас на сайте</span><div class="phone"><iframe src="http://localhost:4174/mock/seed?name=Emma&birth=1994-01-05&focus=love,career,growth,spirit&streak=3"></iframe></div></div>
+    <div class="col new"><span class="tag">Стало · новая версия</span><div class="phone"><iframe src="http://localhost:4173/mock/seed?name=Emma&birth=1994-01-05&focus=love,career,growth,spirit&streak=3"></iframe></div></div>
+  </div>
+</body>
+</html>

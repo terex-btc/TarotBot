@@ -35,7 +35,8 @@ app.use(helmet({
 app.use(cors({
   origin: true, // дозволяємо всі origin — Telegram WebApp може мати будь-який
   methods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'X-Tg-Auth'],
+  // X-App-Auth / X-Client — застосунок Lunara на iOS/Android (origin capacitor://localhost)
+  allowedHeaders: ['Content-Type', 'X-Tg-Auth', 'X-App-Auth', 'X-Client'],
   credentials: false,
 }));
 
