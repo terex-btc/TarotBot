@@ -11,6 +11,7 @@ import { zodiacOf, lifePath, personalYear, compatibility } from '../astro.js';
 import { showPaywall, restorePurchases } from './paywall.js';
 import { openHistory } from './spreads.js';
 import { fmtTime } from './onboarding.js';
+import { dateWheel } from '../datewheel.js';
 
 let root = null, layerEl = null, unsub = null;
 
@@ -170,12 +171,13 @@ function editProfile() {
       <label class="lbl">${t('nameLabel')}</label>
       <input class="field" id="ep-name" maxlength="30" value="${esc(u.firstName || '')}">
       <label class="lbl">${t('birthLabel')}</label>
-      <input class="field field-date" id="ep-birth" type="date" min="1920-01-01" max="${max.toISOString().slice(0, 10)}" value="${esc(u.birthDate)}">
+      <div id="ep-birth"></div>
       <button class="btn-primary" id="ep-save"><span>${t('save')}</span></button>
     </div>`, { tall: false });
+  const wheel = dateWheel(layer.querySelector('#ep-birth'), { value: u.birthDate, max: max.toISOString().slice(0, 10) });
   layer.querySelector('#ep-save').onclick = async () => {
     const firstName = layer.querySelector('#ep-name').value.trim();
-    const birthDate = layer.querySelector('#ep-birth').value;
+    const birthDate = wheel.value;
     if (firstName.length < 2 || !birthDate) { toast(t('fillAll')); return; }
     const res = await api('PATCH', `/users/${state.userId}`, { firstName, birthDate });
     if (!res.ok) { toast(t('errGeneric')); return; }
@@ -212,13 +214,12 @@ export function openCompat() {
       <label class="lbl">${t('partnerName')}</label>
       <input class="field" id="cp-name" maxlength="30" placeholder="${t('partnerNamePh')}">
       <label class="lbl">${t('partnerBirth')}</label>
-      <input class="field field-date" id="cp-birth" type="date" min="1920-01-01" max="${max.toISOString().slice(0, 10)}">
-      <button class="btn-primary" id="cp-go" disabled><span>${t('compatCalc')}</span>${icons.chevron}</button>
+      <div id="cp-birth"></div>
+      <button class="btn-primary" id="cp-go"><span>${t('compatCalc')}</span>${icons.chevron}</button>
       <div id="cp-result"></div>
     </div>`, { title: '' });
-  const birth = layer.querySelector('#cp-birth');
+  const birth = dateWheel(layer.querySelector('#cp-birth'), { max: max.toISOString().slice(0, 10), fallback: `${(state.user.birthDate || '').slice(0, 4) || max.getFullYear() - 10}-06-15` });
   const go = layer.querySelector('#cp-go');
-  birth.onchange = birth.oninput = () => { go.disabled = !birth.value; };
   go.onclick = () => {
     haptic('medium');
     const L = getLang();

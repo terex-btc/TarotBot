@@ -5,6 +5,7 @@ import { api } from '../api.js';
 import { haptic, isNative, notifications, telegramUser, startParam } from '../platform.js';
 import { CONFIG } from '../config.js';
 import { openFull, closeLayer, el, esc, delay, toast } from '../ui.js';
+import { dateWheel } from '../datewheel.js';
 import { cardBack, moonSvg, starsField, clouds, hills, mountains, pines, sparkle, zodiacGlyph, icons } from '../art.js';
 import { zodiacOf, lifePath, moonAt, upcomingPhases } from '../astro.js';
 import { showPaywall } from './paywall.js';
@@ -119,22 +120,21 @@ export function runOnboarding({ onDone }) {
       const { next } = stepFrame('birth', `
         <h2 class="serif step-title">${t('askBirth', { name: esc(data.name.trim()) })}</h2>
         <p class="step-sub">${t('askBirthSub')}</p>
-        <input class="field field-date" id="f-birth" type="date" min="1920-01-01" max="${max.toISOString().slice(0, 10)}" value="${data.birth}">
+        <div id="f-birth"></div>
         <div class="sign-preview" id="sign-preview"></div>
-        <p class="hint">${t('ageNote')}</p>`, { canNext: !!data.birth });
-      const inp = stage.querySelector('#f-birth');
+        <p class="hint">${t('ageNote')}</p>`, { canNext: true });
       const preview = stage.querySelector('#sign-preview');
-      const upd = () => {
-        data.birth = inp.value;
-        const valid = !!inp.value && inp.value <= inp.max && inp.value >= inp.min;
-        next.disabled = !valid;
-        if (valid) {
-          const z = zodiacOf(inp.value);
-          preview.innerHTML = `<span class="sp-glyph">${zodiacGlyph(z.key)}</span><span>${z.name[getLang()]}</span>`;
-          preview.classList.add('show');
-        } else preview.classList.remove('show');
+      // Знак зодіаку змінюється, щойно барабан зупинився
+      const upd = v => {
+        data.birth = v;
+        const z = zodiacOf(v);
+        preview.innerHTML = `<span class="sp-glyph">${zodiacGlyph(z.key)}</span><span>${z.name[getLang()]}</span>`;
+        preview.classList.add('show');
       };
-      inp.onchange = upd; inp.oninput = upd; upd();
+      const wheel = dateWheel(stage.querySelector('#f-birth'), {
+        value: data.birth, max: max.toISOString().slice(0, 10), fallback: `${max.getFullYear() - 7}-06-15`, onChange: upd,
+      });
+      upd(wheel.value);
       next.onclick = () => renderStep('focus');
     }
     if (step === 'focus') {

@@ -122,7 +122,7 @@ function enableDragToClose(layer) {
     scroller = e.target.closest('.scroll');
     const fromGrip = e.target.closest('.sheet-grip');
     if (!fromGrip && scroller && scroller.scrollTop > 0) return;
-    if (!fromGrip && e.target.closest('button, input, textarea, a')) return;
+    if (!fromGrip && e.target.closest('button, input, textarea, a, .date-wheel')) return;
     startY = e.clientY; dy = 0;
   });
   window.addEventListener('pointermove', e => {

@@ -146,6 +146,23 @@ img { display: block; max-width: 100%; }
 .field::placeholder { color: var(--text3); font-weight: 500; }
 .field.area { height: auto; padding: 16px 18px; resize: none; font-size: 16px; line-height: 1.4; }
 .field-date { -webkit-appearance: none; appearance: none; color-scheme: dark; }
+/* Барабан дати */
+.date-wheel { position: relative; display: flex; height: 220px; margin-top: 6px; padding: 0 6px; border-radius: var(--r-lg); overflow: hidden;
+  background: linear-gradient(180deg, rgba(255, 255, 255, .03), rgba(200, 182, 255, .07) 50%, rgba(255, 255, 255, .03)); border: 1px solid var(--line);
+  user-select: none; -webkit-user-select: none; }
+.dw-band { position: absolute; left: 8px; right: 8px; top: 50%; height: 44px; transform: translateY(-50%); border-radius: 14px; pointer-events: none;
+  background: rgba(200, 182, 255, .13); border: 1px solid var(--line2); box-shadow: 0 0 24px rgba(107, 77, 255, .25); }
+.dw-col { position: relative; flex: 1; min-width: 0; height: 100%; overflow-y: scroll; scroll-snap-type: y mandatory; overscroll-behavior: contain;
+  scrollbar-width: none; perspective: 520px; outline: none; touch-action: pan-y;
+  -webkit-mask-image: linear-gradient(180deg, transparent 0, #000 34%, #000 66%, transparent 100%); mask-image: linear-gradient(180deg, transparent 0, #000 34%, #000 66%, transparent 100%); }
+.dw-col::-webkit-scrollbar { display: none; }
+.dw-m { flex: 1.7; }
+.dw-sp { height: 88px; }
+.dw-item { height: 44px; display: flex; align-items: center; justify-content: center; scroll-snap-align: center; cursor: pointer; white-space: nowrap;
+  font-size: 19px; font-weight: 600; color: var(--text2); font-variant-numeric: tabular-nums; backface-visibility: hidden; }
+.dw-item.on { color: #fff; font-weight: 800; }
+.dw-item.off { color: var(--text3); text-decoration: line-through; text-decoration-color: rgba(255, 255, 255, .2); }
+.dw-col:focus-visible .dw-item.on { color: var(--gold); }
 .field-date::-webkit-date-and-time-value { text-align: left; }
 .lbl { display: block; font-size: 13px; font-weight: 700; color: var(--text2); margin: 16px 4px 8px; letter-spacing: .02em; }
 .section-title { font-size: 13px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; color: var(--text3); margin: 28px 4px 12px; }
