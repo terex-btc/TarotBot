@@ -18,7 +18,7 @@
 | Copyright | `2026 <твоё имя, как в Apple ID>` |
 | Privacy Policy URL | https://lunara-tarot.up.railway.app/app/legal/privacy.html |
 | Terms of Use (EULA) | https://lunara-tarot.up.railway.app/app/legal/terms.html — вставить в конец описания (уже есть ниже) |
-| Support URL | ⚠️ нужна страница поддержки — см. «Перед отправкой» |
+| Support URL | https://lunara-tarot.up.railway.app/app/legal/support.html |
 | Marketing URL | можно оставить пустым |
 
 ---
@@ -311,7 +311,8 @@ Contact Information: твоё имя, телефон и рабочая почт�
 ## 9. Перед отправкой на проверку — обязательно
 
 - [ ] **Почта поддержки.** `support@lunara.app` сейчас не работает (домена нет). Нужна рабочая почта (например, отдельный Gmail) — я заменю её в приложении и на страницах.
-- [ ] **Support URL.** Нужна страница поддержки (контакты + короткие ответы на вопросы). Могу сделать на сайте: `/app/legal/support.html`.
+- [x] **Support URL.** Страница поддержки готова: `/app/legal/support.html` (EN/RU/UA). Осталось вписать почту — она в одном месте страницы.
+- [ ] **Условия и политика конфиденциальности — сейчас шаблоны.** На страницах `terms.html` и `privacy.html` стоят пустые поля [DATE], [COMPANY NAME], [ADDRESS], [JURISDICTION] и пометка «Template». Нужны: имя продавца (как в Apple Developer), страна и почта — я заполню.
 - [ ] **Ключ Claude (ANTHROPIC_API_KEY) на Railway.** Без него Оракул и ИИ-толкования выдают ошибку — проверяющий Apple это увидит и отклонит приложение.
 - [ ] **Выключить бесплатный PRO** (`LUNARA_FREE_PRO`) хотя бы для iOS — иначе пейвол не показывается и проверяющий не сможет протестировать покупку.
 - [ ] **Проверить, свободно ли название** «Lunara» в App Store при создании приложения (если нет — запасные варианты выше).

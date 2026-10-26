@@ -8,3 +8,8 @@ h2 { font-size: 18px; margin: 28px 0 8px; color: #c8b6ff; }
 ul { padding-left: 20px; }
 li { margin: 6px 0; }
 a { color: #c8b6ff; }
+.contact { margin: 18px 0 8px; padding: 14px 16px; border-radius: 14px; background: rgba(200, 182, 255, .08); border: 1px solid rgba(200, 182, 255, .2); }
+.contact p { margin: 6px 0; }
+.mail { font-size: 18px; font-weight: 600; }
+.links { margin-top: 28px; color: #8178ad; }
+.lang { font-size: 24px; margin-top: 44px; padding-top: 20px; border-top: 1px solid rgba(200, 182, 255, .15); }
