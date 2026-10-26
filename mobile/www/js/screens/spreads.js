@@ -11,6 +11,7 @@ import { cardName, cardKeywords, cardImg, openCardDetail } from './library.js';
 import { userAstro } from './today.js';
 import { loadDetails, overallPicture, overallHtml, cardBlocksHtml, yesNo, cardDetail, tx } from '../reading.js';
 import { journalHtml, wireJournal, moodEmoji } from '../journal.js';
+import { readingSkyLines } from '../sky.js';
 
 const P = (en, ru, ua) => ({ en, ru, ua });
 export const SPREADS = [
@@ -169,13 +170,15 @@ function posLabel(p) {
 }
 
 // Великий результат «Так / Ні / Можливо»
-function yesNoHero(card) {
+function yesNoHero(card, date) {
   const T = tx();
   const yn = yesNo(card);
+  const sky = readingSkyLines(date ? new Date(date) : new Date());
   return `<div class="yn-hero yn-${yn}">
     <small>${t('theAnswer')}</small>
     <b class="serif">${T.yn[yn]}</b>
     <p>${esc(t('ynReason_' + yn, { card: cardName(card) }))}</p>
+    ${sky.map(l => `<p class="yn-sky">℞ ${esc(l)}</p>`).join('')}
   </div>`;
 }
 
@@ -186,9 +189,9 @@ async function showResult(layer, reading, question, spread) {
   await loadDetails();
   const helpers = { name: cardName, keywords: c => cardKeywords(c), img: cardImg };
   const isYn = reading.spreadType === 'yes_no';
-  const overall = reading.cards.length > 1 ? overallPicture(reading.cards, reading.positions, { ...helpers, spreadId: reading.spreadType }) : null;
+  const overall = reading.cards.length > 1 ? overallPicture(reading.cards, reading.positions, { ...helpers, spreadId: reading.spreadType, date: reading.createdAt }) : null;
   box.innerHTML = `
-    ${isYn ? yesNoHero(reading.cards[0]) : ''}
+    ${isYn ? yesNoHero(reading.cards[0], reading.createdAt) : ''}
     <h3 class="section-title">${t(reading.cards.length > 1 ? 'yourCards' : 'yourCard')}</h3>
     ${cardBlocksHtml(reading.cards, reading.positions, { spreadId: reading.spreadType, ...helpers })}
     ${overall ? overallHtml(overall) : ''}
@@ -250,9 +253,9 @@ async function openJournalEntry(r, onChange) {
   await loadDetails();
   const helpers = { name: cardName, keywords: c => cardKeywords(c), img: cardImg };
   const l2 = pushScreen(`
-    ${r.spreadType === 'yes_no' ? yesNoHero(r.cards[0]) : ''}
+    ${r.spreadType === 'yes_no' ? yesNoHero(r.cards[0], r.createdAt) : ''}
     ${cardBlocksHtml(r.cards, r.positions, { spreadId: r.spreadType, ...helpers })}
-    ${r.cards.length > 1 ? overallHtml(overallPicture(r.cards, r.positions, { ...helpers, spreadId: r.spreadType })) : ''}
+    ${r.cards.length > 1 ? overallHtml(overallPicture(r.cards, r.positions, { ...helpers, spreadId: r.spreadType, date: r.createdAt })) : ''}
     ${journalHtml(r, { withOutcome: true })}`,
     { title: esc(spreadTitle(r)) });
   l2.querySelectorAll('.rb-head').forEach(x => x.onclick = () => openCardDetail(r.cards[Number(x.dataset.i)]));

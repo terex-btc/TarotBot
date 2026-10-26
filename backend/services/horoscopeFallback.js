@@ -14,6 +14,7 @@ function seed(str) {
   return h >>> 0;
 }
 const pick = (arr, n) => arr[n % arr.length];
+const { skyNote } = require('../config/skyEvents');
 
 const B = {
   en: {
@@ -114,7 +115,7 @@ function fallbackHoroscope(sign, date, lang, moonEnergy) {
   const s = seed(`${date}|${sign}`);
   const dayNum = (String(date).replace(/\D/g, '').split('').reduce((a, b) => a + Number(b), 0) + seed(sign)) % 9;
   return {
-    overview: [pick(L.open[el], s), L.moon[moonEnergy] || '', L.day[dayNum]].filter(Boolean).join(' '),
+    overview: [pick(L.open[el], s), L.moon[moonEnergy] || '', skyNote(lang, date), L.day[dayNum]].filter(Boolean).join(' '),
     love: pick(L.love, s >>> 3),
     career: pick(L.career, s >>> 5),
     wellbeing: pick(L.well, s >>> 7),

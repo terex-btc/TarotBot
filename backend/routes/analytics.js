@@ -35,6 +35,8 @@ const ALLOWED_EVENTS = new Set([
   'journal_save',   // зберіг нотатку до розкладу
   'yesno_open',     // розклад «Так/Ні»
   'card_back',      // змінив сорочку карт
+  'foryou_click',   // натиснув картку «Для тебе»
+  'sky_open',       // відкрив «Космічну погоду»
 ]);
 
 // POST /api/analytics/event — { userId, event, meta? }

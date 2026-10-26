@@ -29,6 +29,7 @@ const SIGNS = {
   leo: 'Leo', virgo: 'Virgo', libra: 'Libra', scorpio: 'Scorpio',
   sagittarius: 'Sagittarius', capricorn: 'Capricorn', aquarius: 'Aquarius', pisces: 'Pisces',
 };
+const { skyPrompt } = require('../config/skyEvents');
 const LANG_NAMES = { en: 'natural American English (US spelling)', ru: 'Russian', ua: 'Ukrainian' };
 const MOON_EN = {
   new: 'New Moon', waxing: 'Waxing Crescent', first: 'First Quarter', gibbous: 'Waxing Gibbous',
@@ -82,6 +83,7 @@ async function generateHoroscope(sign, date, lang) {
       role: 'user',
       content:
         `Write the horoscope for ${SIGNS[sign]} for ${day}. Today's moon phase: ${moon}.\n` +
+        (skyPrompt(date) ? `Current sky: ${skyPrompt(date)}. Mention it naturally in the overview and where it matters.\n` : '') +
         `Write every field in ${LANG_NAMES[lang]}.\n` +
         'overview: 3–4 sentences about the overall energy of the day. love, career, wellbeing: 1–2 sentences each. ' +
         'focus: a short theme for the day, at most 5 words. mood: one or two words. luckyColor: one color. ' +

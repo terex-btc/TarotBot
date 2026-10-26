@@ -3,6 +3,7 @@
 import { getLang } from './i18n.js';
 import { cardSuit } from './state.js';
 import { esc } from './ui.js';
+import { readingSkyLines, sx } from './sky.js';
 
 let details = null, detailsLang = null;
 export async function loadDetails() {
@@ -185,7 +186,7 @@ export function positionText(card, pos, { spreadId } = {}) {
 }
 
 // ── «Загальна картина» з усіх карт ───────────────────────────────────────────
-export function overallPicture(cards, positions, { name, keywords, spreadId } = {}) {
+export function overallPicture(cards, positions, { name, keywords, spreadId, date } = {}) {
   const T = tx();
   const L = getLang();
   // енергія розкладу
@@ -239,7 +240,10 @@ export function overallPicture(cards, positions, { name, keywords, spreadId } = 
     if (spreadId !== 'love') forecast.push({ label: T.lbl.work, text: od.work, card: name(outCard) });
   }
 
-  return { verdict, energy: T.energy[verdict], story, patterns, yn, ynText: T.ynText[yn], advice, advCard, forecast };
+  // ретрогради й затемнення на момент розкладу
+  const sky = readingSkyLines(date ? new Date(date) : new Date(), { love: spreadId === 'love' });
+
+  return { verdict, energy: T.energy[verdict], story, patterns, sky, yn, ynText: T.ynText[yn], advice, advCard, forecast };
 }
 
 // HTML блоку «Загальна картина»
@@ -250,6 +254,7 @@ export function overallHtml(o) {
     <h4>${T.lbl.energy}</h4><p>${esc(o.energy)}</p>
     ${o.story ? `<h4>${T.lbl.story}</h4><p>${esc(o.story)}</p>` : ''}
     ${o.patterns.length ? `<h4>${T.lbl.patterns}</h4><ul>${o.patterns.map(p => `<li>${esc(p)}</li>`).join('')}</ul>` : ''}
+    ${o.sky?.length ? `<h4>${esc(sx().title)}</h4><ul class="ov-sky">${o.sky.map(p => `<li>${esc(p)}</li>`).join('')}</ul>` : ''}
     ${o.forecast?.length ? `<h4>${T.lbl.forYou}</h4><div class="ov-forecast">${o.forecast.map(f =>
       `<div class="asp"><span>${esc(f.label)}</span><p>${esc(f.text)}</p></div>`).join('')}</div>` : ''}
     <div class="ov-yn"><span>${T.lbl.yn}</span><b class="yn-${o.yn}">${T.yn[o.yn]}</b><small>${esc(o.ynText)}</small></div>

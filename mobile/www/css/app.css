@@ -1123,6 +1123,103 @@ button.pro-pill { animation: pulse 2.6s ease-in-out infinite; }
 .skel-card .skel-line { width: 70%; height: 10px; margin: 2px auto 0; }
 .lib-img.skel { box-shadow: none; }
 
+/* ══ Космічна погода ═══════════════════════════════════════════════════ */
+:root { --pl-mercury: #6fe3f0; --pl-venus: #ff9ccb; --pl-mars: #ff8a65; }
+.pg { display: inline-grid; place-items: center; flex: none; width: 24px; height: 24px; border-radius: 50%; font-style: normal; font-family: 'Apple Symbols', 'Segoe UI Symbol', var(--serif);
+  font-size: 15px; line-height: 1; color: #120c33; font-weight: 700; }
+.pg-mercury { background: var(--pl-mercury); box-shadow: 0 0 12px rgba(111, 227, 240, .55); }
+.pg-venus { background: var(--pl-venus); box-shadow: 0 0 12px rgba(255, 156, 203, .55); }
+.pg-mars { background: var(--pl-mars); box-shadow: 0 0 12px rgba(255, 138, 101, .55); }
+.pg-moon { background: transparent; width: 22px; height: 22px; }
+.pg-moon svg { width: 22px; height: 22px; }
+.pg-ecl { position: relative; background: #ffd36b; box-shadow: 0 0 14px rgba(255, 201, 77, .6); overflow: hidden; }
+.pg-ecl b { position: absolute; width: 20px; height: 20px; border-radius: 50%; left: 5px; top: 1px; background: #120c33; }
+.pg-ecl.ecl-lunar { background: #ffe9d6; } .pg-ecl.ecl-lunar b { background: #b5413a; opacity: .85; left: 3px; top: 2px; }
+
+/* Плашка під іменем */
+.sky-strip { display: flex; justify-content: center; margin: -8px 0 16px; }
+.sky-pill { position: relative; display: inline-flex; align-items: center; gap: 6px; max-width: 100%; height: 36px; padding: 0 12px 0 6px; border-radius: 999px;
+  background: rgba(255, 255, 255, .06); border: 1px solid var(--line2); font-size: 13px; font-weight: 800; color: var(--text); overflow: hidden;
+  transition: transform .2s var(--spring); }
+.sky-pill:active { transform: scale(.96); }
+.sky-pill > span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-left: 2px; }
+.sky-pill > .ico { width: 14px; height: 14px; color: var(--text3); flex: none; }
+.sky-pill .pg + .pg { margin-left: -12px; box-shadow: 0 0 0 2px var(--bg), 0 0 12px rgba(255, 156, 203, .5); }
+.sky-pill em { font-style: normal; font-family: var(--serif); color: var(--gold); font-size: 16px; margin-left: 2px; }
+.sky-pill.rx { background: linear-gradient(100deg, rgba(111, 227, 240, .14), rgba(255, 156, 203, .14)); border-color: rgba(255, 156, 203, .35); }
+.sky-pill.rx::after { content: ''; position: absolute; inset: 0; background: linear-gradient(100deg, transparent 30%, rgba(255, 255, 255, .22) 50%, transparent 70%);
+  transform: translateX(-100%); animation: skyShine 4.5s ease-in-out infinite 1s; pointer-events: none; }
+@keyframes skyShine { 0%, 55% { transform: translateX(-100%); } 85%, 100% { transform: translateX(100%); } }
+
+/* Шторка */
+.sky-layer .sheet { background: radial-gradient(120% 50% at 50% 0%, #2a1f86 0%, #150f45 45%, var(--bg) 100%); }
+.cosmic { position: relative; display: flex; flex-direction: column; height: 100%; }
+.sky-scroll { position: relative; flex: 1; padding: 30px 20px calc(var(--bot) + 30px); }
+.sky-hero { text-align: center; padding-top: 6px; }
+.sky-hero h2 { font-size: 34px; margin-top: 4px; }
+.sky-hero .mc-eyebrow { font-size: 13px; text-transform: capitalize; }
+.orbit-art { width: 100%; max-width: 300px; height: auto; margin: 0 auto 6px; display: block; overflow: visible; }
+.orbit { fill: none; stroke: rgba(200, 182, 255, .35); stroke-width: 1; stroke-dasharray: 3 4; }
+.op-dot { fill: rgba(236, 229, 255, .55); }
+.op-mercury.on .op-dot { fill: var(--pl-mercury); } .op-venus.on .op-dot { fill: var(--pl-venus); } .op-mars.on .op-dot { fill: var(--pl-mars); }
+.op-ring { fill: none; stroke-width: 1.5; transform-box: fill-box; transform-origin: center; animation: opPulse 2.4s ease-out infinite; }
+.op-mercury .op-ring { stroke: var(--pl-mercury); } .op-venus .op-ring { stroke: var(--pl-venus); animation-delay: .8s; } .op-mars .op-ring { stroke: var(--pl-mars); }
+@keyframes opPulse { from { opacity: .9; transform: scale(.6); } to { opacity: 0; transform: scale(1.6); } }
+.op-rx { fill: var(--gold); font-family: var(--serif); font-size: 13px; font-weight: 700; }
+.sky-calm { margin-top: 18px; padding: 16px; border-radius: var(--r-md); background: rgba(43, 212, 125, .08); border: 1px solid rgba(43, 212, 125, .25); color: var(--text2); text-align: center; }
+.sky-card { position: relative; margin-bottom: 14px; padding: 18px 16px 16px; border-radius: var(--r-lg); background: rgba(255, 255, 255, .05); border: 1px solid var(--line); overflow: hidden; }
+.sky-card::before { content: ''; position: absolute; left: 0; right: 0; top: 0; height: 3px; background: var(--pc, var(--gold)); }
+.sc-mercury { --pc: var(--pl-mercury); } .sc-venus { --pc: var(--pl-venus); } .sc-mars { --pc: var(--pl-mars); } .sc-ecl { --pc: var(--gold); }
+.skc-top { display: flex; align-items: center; gap: 12px; }
+.skc-top .pg { width: 40px; height: 40px; font-size: 24px; }
+.skc-top .pg-ecl b { width: 34px; height: 34px; left: 8px; top: 2px; }
+.skc-top > div { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.skc-top b { font-size: 21px; line-height: 1.15; }
+.skc-top small { color: var(--text2); font-size: 13px; margin-top: 2px; }
+.skc-rx { font-family: var(--serif); font-size: 26px; color: var(--pc); }
+.skc-when { font-size: 13px; font-weight: 800; color: var(--gold); white-space: nowrap; }
+.skc-bar { height: 6px; border-radius: 6px; background: rgba(255, 255, 255, .08); margin-top: 14px; overflow: hidden; }
+.skc-bar i { display: block; height: 100%; border-radius: 6px; background: var(--pc); box-shadow: 0 0 12px var(--pc); }
+.skc-left { font-size: 12.5px; font-weight: 800; color: var(--pc); margin-top: 6px; }
+.sky-card p { color: var(--text2); font-size: 15px; line-height: 1.55; margin-top: 10px; }
+.sky-card p.skc-rules { color: var(--text); font-weight: 600; }
+.sky-card .do-dont { margin-top: 14px; }
+.skc-love { margin-top: 12px; padding: 12px 14px; border-radius: var(--r-md); background: rgba(255, 156, 203, .08); border: 1px solid rgba(255, 156, 203, .2); }
+.skc-love span { font-size: 11.5px; text-transform: uppercase; letter-spacing: .08em; font-weight: 800; color: #ff9ccb; }
+.skc-love p { margin-top: 4px !important; }
+.sky-moon { display: flex; align-items: center; gap: 14px; width: 100%; margin-top: 4px; padding: 12px 14px; border-radius: var(--r-md); text-align: left;
+  background: rgba(255, 255, 255, .05); border: 1px solid var(--line); }
+.sky-moon > span { flex: 1; display: flex; flex-direction: column; }
+.sky-moon small { font-size: 12px; color: var(--text3); font-weight: 700; }
+.sky-moon b { font-size: 15px; }
+.sky-moon > .ico { width: 16px; height: 16px; color: var(--text3); }
+.sky-row .pg { width: 40px; height: 40px; font-size: 22px; }
+.sky-row .pg-ecl b { width: 34px; height: 34px; left: 8px; top: 2px; }
+.phase-row div { flex: 1; min-width: 0; }
+.phase-row em { font-style: normal; font-size: 12px; font-weight: 800; color: var(--text3); white-space: nowrap; }
+.sky-row.is-rx { border-color: rgba(255, 201, 77, .3); }
+.sky-row span { text-transform: none; }
+.sky-row span::first-letter { text-transform: uppercase; }
+
+/* Карта дня, гороскоп, календар, розклади */
+.ds-sky, .horo-sky, .moon-sky { display: flex; flex-direction: column; gap: 8px; width: 100%; margin-top: 14px; padding: 12px 14px; border-radius: var(--r-md); text-align: left;
+  background: linear-gradient(100deg, rgba(111, 227, 240, .08), rgba(255, 156, 203, .08)); border: 1px solid rgba(255, 156, 203, .25); }
+.dsk { display: flex; align-items: center; gap: 10px; }
+.dsk > span { display: flex; flex-direction: column; font-size: 13.5px; color: var(--text2); line-height: 1.35; }
+.dsk b { color: var(--text); font-size: 14px; }
+.horo-sky { margin: 0 0 14px; }
+.moon-sky { flex-direction: row; align-items: center; margin-top: 16px; }
+.moon-sky .pg + .pg { margin-left: -10px; }
+.moon-sky > span { flex: 1; display: flex; flex-direction: column; font-size: 12.5px; color: var(--text2); }
+.moon-sky b { color: var(--text); font-size: 15px; }
+.moon-sky > .ico { width: 16px; height: 16px; color: var(--text3); }
+.week-day { position: relative; }
+.wd-ev { font-style: normal; font-family: var(--serif); font-size: 12px; line-height: 1; margin-top: -2px; }
+.wd-ev.ev-mercury { color: var(--pl-mercury); } .wd-ev.ev-venus { color: var(--pl-venus); } .wd-ev.ev-mars { color: var(--pl-mars); } .wd-ev.ev-ecl { color: var(--gold); }
+.wd-ev + .wd-ev { margin-top: -6px; }
+.ov-sky li::marker { content: '℞  '; color: var(--gold); }
+.yn-sky { margin-top: 10px !important; font-size: 13.5px !important; color: var(--text2) !important; }
+
 /* ── Accessibility ────────────────────────────────────────────────────── */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }

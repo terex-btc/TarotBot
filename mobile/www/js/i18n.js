@@ -138,7 +138,7 @@ en: {
   otherSigns: 'Other signs', todayFocus: 'Today’s focus',
   areaLove: 'Love', areaCareer: 'Career', areaWellbeing: 'Well-being',
   luckyNumber: 'Lucky number', luckyColor: 'Lucky color', mood: 'Mood',
-  moonDo: 'Good for', moonAvoid: 'Better to avoid', upcomingPhases: 'Upcoming phases',
+  moonDo: 'Good for', moonAvoid: 'Better to avoid', upcomingPhases: 'Moon phases & sky events',
 
   phase_new: 'New Moon', phase_waxingCrescent: 'Waxing Crescent', phase_firstQuarter: 'First Quarter',
   phase_waxingGibbous: 'Waxing Gibbous', phase_full: 'Full Moon', phase_waningGibbous: 'Waning Gibbous',
@@ -432,7 +432,7 @@ ru: {
   otherSigns: 'Другие знаки', todayFocus: 'Фокус дня',
   areaLove: 'Любовь', areaCareer: 'Карьера', areaWellbeing: 'Самочувствие',
   luckyNumber: 'Число удачи', luckyColor: 'Цвет удачи', mood: 'Настроение',
-  moonDo: 'Благоприятно', moonAvoid: 'Лучше избегать', upcomingPhases: 'Ближайшие фазы',
+  moonDo: 'Благоприятно', moonAvoid: 'Лучше избегать', upcomingPhases: 'Фазы Луны и события неба',
 
   phase_new: 'Новолуние', phase_waxingCrescent: 'Растущий серп', phase_firstQuarter: 'Первая четверть',
   phase_waxingGibbous: 'Растущая Луна', phase_full: 'Полнолуние', phase_waningGibbous: 'Убывающая Луна',
@@ -722,7 +722,7 @@ ua: {
   otherSigns: 'Інші знаки', todayFocus: 'Фокус дня',
   areaLove: 'Кохання', areaCareer: 'Кар’єра', areaWellbeing: 'Самопочуття',
   luckyNumber: 'Число удачі', luckyColor: 'Колір удачі', mood: 'Настрій',
-  moonDo: 'Сприятливо', moonAvoid: 'Краще уникати', upcomingPhases: 'Найближчі фази',
+  moonDo: 'Сприятливо', moonAvoid: 'Краще уникати', upcomingPhases: 'Фази Місяця й події неба',
 
   phase_new: 'Молодик', phase_waxingCrescent: 'Зростаючий серп', phase_firstQuarter: 'Перша чверть',
   phase_waxingGibbous: 'Зростаючий Місяць', phase_full: 'Повня', phase_waningGibbous: 'Спадний Місяць',

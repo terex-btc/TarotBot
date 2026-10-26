@@ -14,6 +14,8 @@ import { loadDetails, cardDetail, yesNo, tx } from '../reading.js';
 import { journalHtml, wireJournal } from '../journal.js';
 import { openSpread, spreadById } from './spreads.js';
 import { nextLesson, continueLearning } from './learn.js';
+import { skyPillHtml, openSky, glyphBubble, skyEventRow } from './cosmic.js';
+import { activeRetros, sx, skyEventsBetween } from '../sky.js';
 
 let root;
 
@@ -94,6 +96,7 @@ function render(goTab) {
         : `<button class="pro-pill" id="h-pro">PRO</button>`}
       <button class="icon-btn soft" id="h-gear" aria-label="${t('settings')}">${icons.gear}</button>
     </header>
+    <div class="sky-strip">${skyPillHtml()}</div>
 
     <div class="tiles">
       <button class="tile tile-daily${daily ? ' drawn' : ''}" id="t-daily">
@@ -189,6 +192,7 @@ function render(goTab) {
   $('#t-horo').onclick = () => { haptic('light'); openHoroscope(z.key); };
   $('#t-oracle').onclick = () => { haptic('light'); goTab('oracle'); };
   $('#t-moon').onclick = () => { haptic('light'); openMoon(); };
+  $('#h-sky').onclick = () => { haptic('light'); openSky(); };
   $('#t-compat').onclick = () => { haptic('light'); openCompat(); };
   $('#t-learn')?.addEventListener('click', () => { haptic('light'); continueLearning(); });
   root.querySelectorAll('.fy-card').forEach(b => b.onclick = () => {
@@ -244,6 +248,8 @@ export async function openDaily() {
     const d = cardDetail(card);
     const T = tx();
     const yn = yesNo(card);
+    const S = sx();
+    const skyNow = activeRetros(reading.createdAt ? new Date(reading.createdAt) : new Date());
     info.innerHTML = `
       <div class="ds-next">
         <span class="streak-pill">🔥 ${t('streakDays', { n: st.count })}</span>
@@ -259,6 +265,8 @@ export async function openDaily() {
         <div class="asp asp-adv"><span>${t('adviceOfDay')}</span><p class="serif">${esc(d.advice)}</p></div>
         <div class="asp asp-yn"><span>${T.lbl.yn}</span><b class="yn-${yn}">${T.yn[yn]}</b></div>
       </div>` : ''}
+      ${skyNow.length ? `<button class="ds-sky" id="ds-sky">${skyNow.map(r => `<span class="dsk">${glyphBubble(r.planet)}
+        <span><b>${esc(S.rx(r.planet))}</b>${esc(S.p[r.planet].tip)}</span></span>`).join('')}</button>` : ''}
       <div class="ds-ai" id="ds-ai">
         <button class="btn-ai" id="ds-ai-btn">${sparkle()}<span>${t('aiInsightBtn')}</span></button>
         <p class="ds-ai-note">${state.isPremium ? t('aiInsightNotePro') : t('aiInsightNoteFree')}</p>
@@ -281,6 +289,7 @@ export async function openDaily() {
       if (ok === 'copied') toast(t('copied'));
     };
     info.querySelector('#ds-more').onclick = () => openCardDetail(card);
+    info.querySelector('#ds-sky')?.addEventListener('click', () => { haptic('light'); openSky(); });
     info.querySelector('#ds-ai-btn').onclick = () => dailyAi(info.querySelector('#ds-ai'), reading, card);
     // оновлюємо плитку на головній
     emit('daily');
@@ -402,8 +411,12 @@ export async function openHoroscope(signKey) {
     if (!box) return;
     if (!res.ok) { box.innerHTML = `<p class="muted center">${t('horoUnavailable')}</p>`; return; }
     const h = res.horoscope;
+    const S = sx();
+    const rx = activeRetros();
     box.innerHTML = `
       <div class="horo-focus"><span>${t('todayFocus')}</span><b class="serif">${esc(h.focus)}</b></div>
+      ${rx.length ? `<button class="horo-sky" id="horo-sky">${rx.map(r => `<span class="dsk">${glyphBubble(r.planet)}
+        <span><b>${esc(S.rx(r.planet))}</b>${esc(S.p[r.planet].tip)}</span></span>`).join('')}</button>` : ''}
       <p class="horo-overview">${esc(h.overview)}</p>
       <div class="horo-areas">
         <div class="area"><div class="area-head">${icons.heart}<b>${t('areaLove')}</b></div><p>${esc(h.love)}</p></div>
@@ -415,6 +428,7 @@ export async function openHoroscope(signKey) {
         <div><span>${t('luckyColor')}</span><b class="serif">${esc(h.luckyColor)}</b></div>
         <div><span>${t('mood')}</span><b class="serif">${esc(h.mood)}</b></div>
       </div>`;
+    box.querySelector('#horo-sky')?.addEventListener('click', () => { haptic('light'); openSky(); });
   }
 }
 
@@ -429,7 +443,19 @@ export function openMoon() {
   });
   const next = upcomingPhases(now, 4);
   const list = key => (t(key) || []).map(x => `<li>${esc(x)}</li>`).join('');
-  openSheet(`<div class="moon">
+  // Події неба: позначки на днях тижня + спільний список із фазами
+  const S = sx();
+  const rx = activeRetros(now);
+  const dayStart = d => new Date(d.getFullYear(), d.getMonth(), d.getDate());
+  const horizon = Math.max(now.getTime() + 8 * 86400000, (next[next.length - 1]?.date || now).getTime() + 86400000);
+  const events = skyEventsBetween(dayStart(now), horizon);
+  const marks = d => events.filter(e => dayStart(e.date).getTime() === dayStart(d).getTime())
+    .map(e => `<em class="wd-ev ${e.kind === 'eclipse' ? 'ev-ecl' : 'ev-' + e.planet}">${e.kind === 'eclipse' ? '◐' : '℞'}</em>`).join('');
+  const rows = [...next.map(p => ({ date: p.date, html: `
+          <div class="phase-row">${moonSvg(p.illum, p.waxing, { size: 40 })}
+            <div><b>${t('phase_' + p.phase)}</b><span>${esc(p.date.toLocaleDateString(locale(), { weekday: 'long', month: 'long', day: 'numeric' }))}</span></div>
+          </div>` })), ...events.map(e => ({ date: e.date, html: skyEventRow(e) }))].sort((a, b) => a.date - b.date);
+  const layer = openSheet(`<div class="moon">
       ${starsField(60, 23)}
       <button class="icon-btn sheet-x" data-close aria-label="${t('close')}">${icons.close}</button>
       <div class="moon-scroll scroll">
@@ -443,19 +469,18 @@ export function openMoon() {
           <div class="week-day${i === 0 ? ' on' : ''}">
             <span>${x.d.toLocaleDateString(locale(), { weekday: 'short' })}</span>
             ${moonSvg(x.illum, x.waxing, { size: 34 })}
-            <b>${x.d.getDate()}</b>
+            <b>${x.d.getDate()}</b>${marks(x.d)}
           </div>`).join('')}
         </div>
+        ${rx.length ? `<button class="moon-sky" id="moon-sky">${rx.map(r => glyphBubble(r.planet)).join('')}
+          <span><b>${esc(rx.length === 1 ? S.rx(rx[0].planet) : S.rxBoth(rx.map(r => r.planet)))}</b>${esc(S.openSky)}</span>${icons.chevron}</button>` : ''}
         <div class="do-dont">
           <div class="dd do"><h4>${t('moonDo')}</h4><ul>${list('phase_' + m.phase + '_do')}</ul></div>
           <div class="dd dont"><h4>${t('moonAvoid')}</h4><ul>${list('phase_' + m.phase + '_avoid')}</ul></div>
         </div>
         <h4 class="section-title">${t('upcomingPhases')}</h4>
-        <div class="phase-list">${next.map(p => `
-          <div class="phase-row">${moonSvg(p.illum, p.waxing, { size: 40 })}
-            <div><b>${t('phase_' + p.phase)}</b><span>${esc(p.date.toLocaleDateString(locale(), { weekday: 'long', month: 'long', day: 'numeric' }))}</span></div>
-          </div>`).join('')}
-        </div>
+        <div class="phase-list">${rows.map(r => r.html).join('')}</div>
       </div>
     </div>`, { cls: 'moon-layer' });
+  layer.querySelector('#moon-sky')?.addEventListener('click', () => { haptic('light'); closeLayer(layer, { silent: true }); openSky(); });
 }
