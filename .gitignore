@@ -7,3 +7,6 @@ backend/storage/*.json
 # Mobile app (Capacitor)
 mobile/node_modules/
 mobile/www/assets/
+
+# Lunara: готові скриншоти App Store (великі PNG) — тримаємо локально
+mobile/store/screenshots/

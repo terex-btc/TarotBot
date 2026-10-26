@@ -554,7 +554,7 @@ button.pro-pill { animation: pulse 2.6s ease-in-out infinite; }
 .sky::after { content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 64%; background: linear-gradient(180deg, transparent 0%, rgba(20, 14, 52, .55) 22%, rgba(13, 10, 31, .92) 42%, var(--bg) 62%); }
 .daily-scroll { position: relative; z-index: 2; flex: 1; padding: 30px 22px calc(var(--bot) + 30px); }
 .daily-scroll { background: var(--bg); }
-.daily-scroll > .sky { z-index: -1; height: 100%; bottom: auto; }  /* небо прокручується разом з текстом */
+.daily-scroll > .sky { z-index: -1; height: calc(100vh - var(--top) - 14px); bottom: auto; }  /* небо прокручується разом з текстом; явна висота — iOS рахує 100% від усього вмісту */
 .ds-date { text-align: center; font-size: 14px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; color: rgba(255, 255, 255, .92); margin-top: 22px;
   text-shadow: 0 1px 8px rgba(40, 30, 120, .4); }
 .ds-stage { display: flex; flex-direction: column; align-items: center; margin-top: 22px; }
@@ -1030,7 +1030,8 @@ button.pro-pill { animation: pulse 2.6s ease-in-out infinite; }
 .rd-grid.celtic { grid-template-columns: repeat(4, minmax(0, 74px)); gap: 12px 12px;
   grid-template-areas: ". c5 . c10" "c4 c1 c6 c9" ". c3 . c8" ". . . c7"; }
 .rd-grid.celtic .rd-slot { position: relative; }
-.rd-grid.celtic .rd-slot:nth-child(2) { grid-area: c1 !important; z-index: 2; }
+.rd-grid.celtic .rd-slot:nth-child(2) { grid-area: c1 !important; z-index: 2; pointer-events: none; }  /* рамка не перекриває карту 1 */
+.rd-grid.celtic .rd-slot:nth-child(2) .rd-card { pointer-events: auto; }
 .rd-grid.celtic .rd-slot:nth-child(2) .rd-card { transform: rotate(90deg) scale(.8); }
 .rd-grid.celtic .rd-slot:nth-child(n + 7) { margin-left: 8px; }
 .rd-num { position: absolute; top: -7px; left: -7px; z-index: 3; display: grid; place-items: center; width: 22px; height: 22px; border-radius: 50%;

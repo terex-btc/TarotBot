@@ -131,6 +131,7 @@ app.get('/mock/seed', (req, res) => {
   </script>`);
 });
 app.get('/mock/compare', (req, res) => res.sendFile(path.join(__dirname, 'compare.html')));
+app.get('/mock/concepts', (req, res) => res.sendFile(path.join(__dirname, 'design-concepts.html')));
 app.use('/assets', express.static(path.join(__dirname, '../../frontend/assets')));
 app.get('/', (req, res) => res.redirect('/app/'));
 
