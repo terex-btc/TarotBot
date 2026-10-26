@@ -37,6 +37,7 @@ const ALLOWED_EVENTS = new Set([
   'card_back',      // змінив сорочку карт
   'foryou_click',   // натиснув картку «Для тебе»
   'sky_open',       // відкрив «Космічну погоду»
+  'review_ask',     // показали системне вікно оцінки
 ]);
 
 // POST /api/analytics/event — { userId, event, meta? }

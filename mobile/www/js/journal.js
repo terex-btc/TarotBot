@@ -5,19 +5,20 @@ import { state, track } from './state.js';
 import { api } from './api.js';
 import { haptic } from './platform.js';
 import { esc, toast } from './ui.js';
+import { icons, moodIcon } from './art.js';
 
-export const MOODS = [['great', '😍'], ['good', '🙂'], ['calm', '😌'], ['anxious', '😟'], ['sad', '😢']];
-export const moodEmoji = m => (MOODS.find(x => x[0] === m) || [])[1] || '';
+export const MOODS = ['great', 'good', 'calm', 'anxious', 'sad'];
+export const moodBadge = m => (MOODS.includes(m) ? `<span class="mood-badge mood-${m}">${moodIcon(m)}</span>` : '');
 export const OUTCOMES = ['yes', 'partly', 'no'];
 
 // HTML блоку. withOutcome — показати «чи справдилось» (для старих розкладів)
 export function journalHtml(reading, { withOutcome = false } = {}) {
   if (!reading?.id) return '';
   return `<div class="journal" data-id="${esc(reading.id)}">
-    <div class="ai-box-head"><span>📓</span><span>${t('journalTitle')}</span></div>
+    <div class="ai-box-head">${icons.journal}<span>${t('journalTitle')}</span></div>
     <p class="jr-q">${t('journalMood')}</p>
-    <div class="jr-moods">${MOODS.map(([k, e]) => `<button class="jr-mood${reading.mood === k ? ' on' : ''}" data-m="${k}" aria-label="${t('mood_' + k)}">
-      <span>${e}</span><small>${t('mood_' + k)}</small></button>`).join('')}</div>
+    <div class="jr-moods">${MOODS.map(k => `<button class="jr-mood mood-${k}${reading.mood === k ? ' on' : ''}" data-m="${k}" aria-label="${t('mood_' + k)}">
+      <span>${moodIcon(k)}</span><small>${t('mood_' + k)}</small></button>`).join('')}</div>
     <textarea class="field area jr-note" rows="3" maxlength="2000" placeholder="${t('journalPh')}">${esc(reading.note || '')}</textarea>
     ${withOutcome ? `<p class="jr-q">${t('outcomeQ')}</p>
       <div class="seg jr-outcome">${OUTCOMES.map(o => `<button class="${reading.outcome === o ? 'on' : ''}" data-o="${o}">${t('outcome_' + o)}</button>`).join('')}</div>` : ''}

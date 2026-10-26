@@ -157,7 +157,29 @@ export const notifications = {
   async cancel() {
     try { await plugin('LocalNotifications')?.cancel({ notifications: [{ id: 1001 }] }); } catch (_) {}
   },
+  async granted() {
+    try { return (await plugin('LocalNotifications')?.checkPermissions())?.display === 'granted'; } catch (_) { return false; }
+  },
+  // Замінити всі заплановані сповіщення з id у [from, to] на новий список { id, title, body, at }
+  async replaceRange(from, to, list) {
+    const ln = plugin('LocalNotifications');
+    if (!ln) return false;
+    try {
+      const pending = (await ln.getPending())?.notifications || [];
+      const old = pending.filter(n => n.id >= from && n.id <= to).map(n => ({ id: n.id }));
+      if (old.length) await ln.cancel({ notifications: old });
+      if (list.length) await ln.schedule({ notifications: list.map(({ id, title, body, at }) => ({ id, title, body, schedule: { at, allowWhileIdle: true } })) });
+      return true;
+    } catch (_) { return false; }
+  },
 };
+
+// ── Оцінка в App Store: системне вікно (Apple сама вирішує, чи показати) ─────
+export async function requestReview() {
+  const r = plugin('InAppReview');
+  if (!r) return false;
+  try { await r.requestReview(); return true; } catch (_) { return false; }
+}
 
 // ── Покупки (App Store / Google Play через RevenueCat) ───────────────────────
 // Поза нативом покупок немає: у Telegram/браузері це прев'ю застосунку.

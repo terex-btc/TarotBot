@@ -16,6 +16,8 @@ import { openSpread, spreadById } from './spreads.js';
 import { nextLesson, continueLearning } from './learn.js';
 import { skyPillHtml, openSky, glyphBubble, skyEventRow } from './cosmic.js';
 import { activeRetros, sx, skyEventsBetween } from '../sky.js';
+import { readingDone, afterReadingClosed } from '../moments.js';
+import { rescheduleAlerts } from '../reminders.js';
 
 let root;
 
@@ -57,13 +59,13 @@ export function userAstro() {
 
 // Ідеї під інтереси з онбордингу. «Так/Ні» — завжди першою.
 const FOR_YOU = {
-  yes_no:  { emoji: '🎱', go: () => openSpread(spreadById('yes_no')) },
-  love:    { emoji: '💞', go: () => openSpread(spreadById('love'), t('fyLoveQ')) },
-  career:  { emoji: '💼', go: () => openSpread(spreadById('month'), t('fyCareerQ')) },
-  growth:  { emoji: '🌱', go: (goTab) => { if (!continueLearning()) goTab('learn'); } },
-  balance: { emoji: '🧘', go: () => openMoon() },
-  family:  { emoji: '🏡', go: () => openSpread(spreadById('three_card'), t('fyFamilyQ')) },
-  spirit:  { emoji: '🔮', go: (goTab) => goTab('oracle') },
+  yes_no:  { icon: 'yesno', go: () => openSpread(spreadById('yes_no')) },
+  love:    { icon: 'heart', go: () => openSpread(spreadById('love'), t('fyLoveQ')) },
+  career:  { icon: 'briefcase', go: () => openSpread(spreadById('month'), t('fyCareerQ')) },
+  growth:  { icon: 'sprout', go: (goTab) => { if (!continueLearning()) goTab('learn'); } },
+  balance: { icon: 'lotus', go: () => openMoon() },
+  family:  { icon: 'home', go: () => openSpread(spreadById('three_card'), t('fyFamilyQ')) },
+  spirit:  { icon: 'crystal', go: (goTab) => goTab('oracle') },
 };
 function forYouKeys() {
   const f = (state.focus || []).filter(k => FOR_YOU[k]);
@@ -79,7 +81,6 @@ function render(goTab) {
   const m = moonAt(now);
   const yest = moonAt(new Date(now.getTime() - 86400000));
   const tom = moonAt(new Date(now.getTime() + 86400000));
-  const pd = personalDay(u.birthDate, now);
   const daily = state.daily?.cards?.[0];
   const streak = currentStreak();
   const nl = nextLesson();
@@ -102,7 +103,7 @@ function render(goTab) {
       <button class="tile tile-daily${daily ? ' drawn' : ''}" id="t-daily">
         <span class="tile-title serif">${t('cardOfDay')}</span>
         ${sparkle('t-sp1')}${sparkle('t-sp2')}
-        ${streak > 1 ? `<span class="streak-pill" title="${t('streakDays', { n: streak })}">🔥 ${streak}</span>` : ''}
+        ${streak > 1 ? `<span class="streak-pill" title="${t('streakDays', { n: streak })}">${icons.flame}${streak}</span>` : ''}
         <span class="tile-art daily-art">${daily
           ? `<span class="mini-card${daily.isReversed ? ' rev' : ''}">${cardImg(daily)}</span>`
           : `<span class="mini-back">${cardBack()}</span><span class="tap-hint">${t('tapToReveal')}</span>`}</span>
@@ -135,14 +136,14 @@ function render(goTab) {
     <h3 class="section-title">${t('forYou')}</h3>
     <div class="fy-rail">${forYouKeys().map(k => `
       <button class="fy-card fy-${k}" data-k="${k}">
-        <span class="fy-emoji">${FOR_YOU[k].emoji}</span>
+        <span class="fy-ico">${icons[FOR_YOU[k].icon]}</span>
         <b class="serif">${t('fy_' + k)}</b>
         <span>${t('fy_' + k + '_sub')}</span>
       </button>`).join('')}
     </div>
 
     ${nl ? `<button class="continue-card" id="t-learn">
-      <span class="cc-emoji">${nl.lesson.emoji}</span>
+      <span class="cc-emoji">${icons[nl.lesson.icon] || icons.learn}</span>
       <span class="cc-text">
         <small>${nl.done ? t('continueLearning') : t('startLearning')}</small>
         <b class="serif">${esc(nl.lesson.title[L])}</b>
@@ -160,19 +161,12 @@ function render(goTab) {
       </div>
       <div class="mc-phase serif">${t('phase_' + m.phase)}</div>
       <div class="mc-moons">
-        <span class="mc-side">${moonSvg(yest.illum, yest.waxing, { size: 84 })}</span>
-        <span class="mc-main">${moonSvg(m.illum, m.waxing, { size: 132 })}</span>
-        <span class="mc-side">${moonSvg(tom.illum, tom.waxing, { size: 84 })}</span>
+        <span class="mc-side">${moonSvg(yest.illum, yest.waxing, { size: 62 })}</span>
+        <span class="mc-main">${moonSvg(m.illum, m.waxing, { size: 100 })}</span>
+        <span class="mc-side">${moonSvg(tom.illum, tom.waxing, { size: 62 })}</span>
       </div>
       <div class="mc-illum">${t('illumination', { pct: Math.round(m.illum * 100) })}</div>
     </button>
-
-    <div class="row-cards">
-      <div class="num-card">
-        <div class="num-big serif">${pd}</div>
-        <div><div class="num-label">${t('dayNumber')}</div><div class="num-text">${t('pd_' + pd)}</div></div>
-      </div>
-    </div>
 
     <button class="banner-compat" id="t-compat">
       <span class="bc-icon">${icons.heart}</span>
@@ -229,7 +223,8 @@ export async function openDaily() {
         </div>
         <div class="ds-info" id="ds-info"></div>
       </div>
-    </div>`, { cls: 'daily-layer' });
+    </div>`, { cls: 'daily-layer', onClose: () => { if (drewNow) afterReadingClosed(); } });
+  let drewNow = false;
 
   const cardEl = layer.querySelector('#ds-card');
   const deck = layer.querySelector('#ds-deck');
@@ -244,6 +239,7 @@ export async function openDaily() {
     else requestAnimationFrame(() => cardEl.classList.add('flipped'));
     hint.remove();
     const st = bumpStreak();
+    if (!instant) { drewNow = true; readingDone(); rescheduleAlerts(); }
     const kws = cardKeywords(card);
     const d = cardDetail(card);
     const T = tx();
@@ -252,7 +248,7 @@ export async function openDaily() {
     const skyNow = activeRetros(reading.createdAt ? new Date(reading.createdAt) : new Date());
     info.innerHTML = `
       <div class="ds-next">
-        <span class="streak-pill">🔥 ${t('streakDays', { n: st.count })}</span>
+        <span class="streak-pill">${icons.flame}${t('streakDays', { n: st.count })}</span>
         <span class="ds-timer" id="ds-timer">${t('nextCardIn', { time: untilMidnight() })}</span>
       </div>
       <h2 class="serif ds-name">${esc(cardName(card))}</h2>
@@ -413,6 +409,7 @@ export async function openHoroscope(signKey) {
     const h = res.horoscope;
     const S = sx();
     const rx = activeRetros();
+    const pd = personalDay(state.user.birthDate, new Date());
     box.innerHTML = `
       <div class="horo-focus"><span>${t('todayFocus')}</span><b class="serif">${esc(h.focus)}</b></div>
       ${rx.length ? `<button class="horo-sky" id="horo-sky">${rx.map(r => `<span class="dsk">${glyphBubble(r.planet)}
@@ -427,6 +424,10 @@ export async function openHoroscope(signKey) {
         <div><span>${t('luckyNumber')}</span><b class="serif">${esc(h.luckyNumber)}</b></div>
         <div><span>${t('luckyColor')}</span><b class="serif">${esc(h.luckyColor)}</b></div>
         <div><span>${t('mood')}</span><b class="serif">${esc(h.mood)}</b></div>
+      </div>
+      <div class="num-card horo-num">
+        <div class="num-big serif">${pd}</div>
+        <div><div class="num-label">${t('dayNumber')}</div><div class="num-text">${t('pd_' + pd)}</div></div>
       </div>`;
     box.querySelector('#horo-sky')?.addEventListener('click', () => { haptic('light'); openSky(); });
   }

@@ -114,7 +114,7 @@ en: {
 
   // ── Today ──
   greetMorning: 'Good morning', greetDay: 'Good afternoon', greetEvening: 'Good evening', greetNight: 'Hello, night owl',
-  cardOfDay: 'Card of the Day', tapToReveal: 'Tap to reveal', tarotReading: 'Tarot Reading',
+  cardOfDay: 'Card of the\u00A0Day', tapToReveal: 'Tap to reveal', tarotReading: 'Tarot Reading',
   horoscope: 'Horoscope', askOracle: 'Ask the Oracle',
   illumination: '{pct}% illuminated',
   dayNumber: 'Your personal day number',
@@ -220,7 +220,7 @@ en: {
   spMonthQ1: 'What will this month bring?', spMonthQ2: 'Where should I put my energy?',
   spYearTitle: 'Your Year Ahead', spYearDesc: 'A deep six-card reading for love, career and growth.',
   spYearQ1: 'What does this year hold for me?', spYearQ2: 'What is my biggest lesson this year?',
-  nCards: ({ n }) => `${n} cards`,
+  nCards: ({ n }) => `${n} ${n === 1 ? 'card' : 'cards'}`,
   askQuestionSub: 'Focus on your question while the cards are shuffled — or skip it.',
   questionPlaceholder: 'Type your question…',
   drawCards: 'Draw the cards', skipQuestion: 'Draw without a question',
@@ -329,6 +329,12 @@ en: {
   // ── Settings: card back, sounds ──
   cardBack: 'Card back', back_violet: 'Violet', back_sun: 'Sun', back_emerald: 'Emerald', back_rose: 'Rose', back_midnight: 'Midnight',
   sounds: 'Sounds', soundsSub: 'Shuffle and card flip',
+  skyAlerts: 'Moon & retrograde alerts', skyAlertsSub: 'Full Moons, eclipses, retrogrades',
+  pushRxTomorrow: '{title} starts tomorrow ℞', pushDirectBody: 'The retrograde is over — time to move forward again ✨',
+  pushEclipseTomorrow: '{title} tomorrow',
+  pushFullTitle: 'Full Moon tonight 🌕', pushFullBody: 'A night to release what no longer serves you. See what the cards say.',
+  pushNewTitle: 'New Moon today 🌑', pushNewBody: 'Set an intention for the month ahead — the cards can help.',
+  pushStreakTitle: ({ n }) => `Keep your ${n}-day streak 🔥`, pushStreakBody: 'Your card of the day is waiting.',
 
   // ── Oracle ──
   clearChat: 'Clear chat', clearChatConfirm: 'The whole conversation with the Oracle will be deleted from this device.', chatCleared: 'Chat cleared',
@@ -619,6 +625,12 @@ ru: {
   // ── Настройки: рубашка, звуки ──
   cardBack: 'Рубашка карт', back_violet: 'Фиалка', back_sun: 'Солнце', back_emerald: 'Изумруд', back_rose: 'Роза', back_midnight: 'Полночь',
   sounds: 'Звуки', soundsSub: 'Тасовка и переворот карт',
+  skyAlerts: 'Луна и ретрограды', skyAlertsSub: 'Полнолуния, затмения, ретрограды',
+  pushRxTomorrow: '{title} — уже завтра ℞', pushDirectBody: 'Ретроград позади — время снова двигаться вперёд ✨',
+  pushEclipseTomorrow: '{title} — завтра',
+  pushFullTitle: 'Сегодня полнолуние 🌕', pushFullBody: 'Ночь, чтобы отпустить то, что тебе больше не служит. Узнай, что скажут карты.',
+  pushNewTitle: 'Сегодня новолуние 🌑', pushNewBody: 'Загадай намерение на месяц — карты помогут.',
+  pushStreakTitle: ({ n }) => `Не прерывай серию: ${n} ${plural(n, 'день', 'дня', 'дней')} подряд 🔥`, pushStreakBody: 'Твоя карта дня ждёт.',
 
   // ── Оракул ──
   clearChat: 'Очистить чат', clearChatConfirm: 'Вся переписка с Оракулом будет удалена с этого устройства.', chatCleared: 'Чат очищен',
@@ -909,6 +921,12 @@ ua: {
   // ── Налаштування: сорочка, звуки ──
   cardBack: 'Сорочка карт', back_violet: 'Фіалка', back_sun: 'Сонце', back_emerald: 'Смарагд', back_rose: 'Троянда', back_midnight: 'Північ',
   sounds: 'Звуки', soundsSub: 'Тасування і переворот карт',
+  skyAlerts: 'Місяць і ретрогради', skyAlertsSub: 'Повні, затемнення, ретрогради',
+  pushRxTomorrow: '{title} — уже завтра ℞', pushDirectBody: 'Ретроград позаду — час знову рухатися вперед ✨',
+  pushEclipseTomorrow: '{title} — завтра',
+  pushFullTitle: 'Сьогодні повня 🌕', pushFullBody: 'Ніч, щоб відпустити те, що тобі більше не служить. Дізнайся, що скажуть карти.',
+  pushNewTitle: 'Сьогодні молодик 🌑', pushNewBody: 'Загадай намір на місяць — карти допоможуть.',
+  pushStreakTitle: ({ n }) => `Не переривай серію: ${n} ${plural(n, 'день', 'дні', 'днів')} поспіль 🔥`, pushStreakBody: 'Твоя карта дня чекає.',
 
   // ── Оракул ──
   clearChat: 'Очистити чат', clearChatConfirm: 'Усе листування з Оракулом буде видалено з цього пристрою.', chatCleared: 'Чат очищено',

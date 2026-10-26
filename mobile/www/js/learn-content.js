@@ -1,10 +1,10 @@
 // ══ Курс «Вчимося Таро» — для тих, хто працює з власною фізичною колодою ═══
-// Кожен урок: emoji, хвилини, заголовок, секції (h — підзаголовок, p — текст), практика.
+// Кожен урок: іконка (ключ з art.js icons), хвилини, заголовок, секції (h — підзаголовок, p — текст), практика.
 // cards — id карт для ілюстрації (зображення з колоди).
 
 export const LESSONS = [
   {
-    id: 'what', emoji: '🔮', minutes: 4, cards: [0, 21],
+    id: 'what', icon: 'crystal', minutes: 4, cards: [0, 21],
     title: { en: 'What tarot is (and isn’t)', ru: 'Что такое Таро (и чем оно не является)', ua: 'Що таке Таро (і чим воно не є)' },
     sections: [
       { h: { en: 'A mirror, not a verdict', ru: 'Зеркало, а не приговор', ua: 'Дзеркало, а не вирок' },
@@ -25,7 +25,7 @@ export const LESSONS = [
                 ua: 'Візьми колоду й переглянь усі 78 карт, нічого не читаючи. Познач три образи, які чіпляють тебе найбільше.' },
   },
   {
-    id: 'deck', emoji: '🃏', minutes: 6, cards: [1, 22, 36, 50, 64],
+    id: 'deck', icon: 'cards', minutes: 6, cards: [1, 22, 36, 50, 64],
     title: { en: 'Your deck: Major & Minor Arcana', ru: 'Колода: Старшие и Младшие арканы', ua: 'Колода: Старші та Молодші аркани' },
     sections: [
       { h: { en: '22 Major Arcana — the big themes', ru: '22 Старших аркана — большие темы', ua: '22 Старші аркани — великі теми' },
@@ -50,7 +50,7 @@ export const LESSONS = [
                 ua: 'Розклади колоду на п’ять стосів: Старші, Жезли, Кубки, Мечі, Пентаклі. Впорядкуй кожну масть від Туза до Короля.' },
   },
   {
-    id: 'connect', emoji: '🤲', minutes: 4, cards: [17],
+    id: 'connect', icon: 'eye', minutes: 4, cards: [17],
     title: { en: 'Getting to know your cards', ru: 'Знакомство с картами', ua: 'Знайомство з картами' },
     sections: [
       { h: { en: 'Look before you read', ru: 'Сначала смотри, потом читай', ua: 'Спершу дивись, потім читай' },
@@ -71,7 +71,7 @@ export const LESSONS = [
                 ua: 'Візьми одну карту лицем догори й напиши п’ять слів про її зображення — і лише потім відкрий значення у вкладці «Карти».' },
   },
   {
-    id: 'questions', emoji: '❓', minutes: 3, cards: [2],
+    id: 'questions', icon: 'yesno', minutes: 3, cards: [2],
     title: { en: 'Asking good questions', ru: 'Как задавать хорошие вопросы', ua: 'Як ставити добрі питання' },
     sections: [
       { h: { en: 'Open questions get better answers', ru: 'Открытые вопросы — лучшие ответы', ua: 'Відкриті питання — кращі відповіді' },
@@ -88,7 +88,7 @@ export const LESSONS = [
                 ua: 'Перепиши три свої питання «так/ні» у відкриті питання з «як» або «що».' },
   },
   {
-    id: 'daily', emoji: '☀️', minutes: 3, cards: [19],
+    id: 'daily', icon: 'today', minutes: 3, cards: [19],
     title: { en: 'Your first habit: one card a day', ru: 'Первая привычка: одна карта в день', ua: 'Перша звичка: одна карта на день' },
     sections: [
       { h: { en: 'The 5-minute ritual', ru: 'Ритуал на 5 минут', ua: 'Ритуал на 5 хвилин' },
@@ -105,7 +105,7 @@ export const LESSONS = [
                 ua: 'Витягни карту зі своєї колоди й введи її в «Прочитати мою колоду», щоб порівняти враження зі значенням.' },
   },
   {
-    id: 'three', emoji: '🔺', minutes: 5, cards: [6, 7, 10],
+    id: 'three', icon: 'spreads', minutes: 5, cards: [6, 7, 10],
     title: { en: 'Three-card spreads', ru: 'Расклады на три карты', ua: 'Розклади на три карти' },
     sections: [
       { h: { en: 'Classic layouts', ru: 'Классические схемы', ua: 'Класичні схеми' },
@@ -122,7 +122,7 @@ export const LESSONS = [
                 ua: 'Зроби розклад «Ситуація · Перешкода · Порада» своєю колодою й напиши одне речення, що поєднує всі три карти.' },
   },
   {
-    id: 'reversed', emoji: '🔄', minutes: 3, cards: [16],
+    id: 'reversed', icon: 'swap', minutes: 3, cards: [16],
     title: { en: 'Reversed cards', ru: 'Перевёрнутые карты', ua: 'Перевернуті карти' },
     sections: [
       { h: { en: 'Blocked, inner or delayed energy', ru: 'Заблокированная, внутренняя или отложенная энергия', ua: 'Заблокована, внутрішня або відкладена енергія' },
@@ -139,7 +139,7 @@ export const LESSONS = [
                 ua: 'Навмисно переверни три карти й опиши, як їхня енергія відчувається заблокованою чи спрямованою всередину.' },
   },
   {
-    id: 'patterns', emoji: '🧩', minutes: 5, cards: [10, 20],
+    id: 'patterns', icon: 'grid', minutes: 5, cards: [10, 20],
     title: { en: 'Reading patterns like a pro', ru: 'Читаем закономерности как профи', ua: 'Читаємо закономірності як профі' },
     sections: [
       { h: { en: 'Look at the whole spread first', ru: 'Сначала — весь расклад', ua: 'Спершу — весь розклад' },

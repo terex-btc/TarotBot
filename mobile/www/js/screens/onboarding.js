@@ -6,11 +6,13 @@ import { haptic, isNative, notifications, telegramUser, startParam } from '../pl
 import { CONFIG } from '../config.js';
 import { openFull, closeLayer, el, esc, delay, toast } from '../ui.js';
 import { dateWheel } from '../datewheel.js';
+import { rescheduleAlerts } from '../reminders.js';
 import { cardBack, moonSvg, starsField, clouds, hills, mountains, pines, sparkle, zodiacGlyph, icons } from '../art.js';
 import { zodiacOf, lifePath, moonAt, upcomingPhases } from '../astro.js';
 import { showPaywall } from './paywall.js';
 
 const FOCUS = ['love', 'career', 'growth', 'balance', 'family', 'spirit'];
+const FOCUS_ICON = { love: 'heart', career: 'briefcase', growth: 'sprout', balance: 'lotus', family: 'home', spirit: 'crystal' };
 
 export function runOnboarding({ onDone }) {
   const data = { name: telegramUser?.first_name || '', birth: '', focus: [] };
@@ -143,7 +145,7 @@ export function runOnboarding({ onDone }) {
         <p class="step-sub">${t('askFocusSub')}</p>
         <div class="focus-grid">${FOCUS.map(f => `
           <button class="focus-chip${data.focus.includes(f) ? ' on' : ''}" data-f="${f}">
-            <span class="fc-emoji">${t('focusEmoji_' + f)}</span><span>${t('focus_' + f)}</span></button>`).join('')}
+            <span class="fc-emoji">${icons[FOCUS_ICON[f]]}</span><span>${t('focus_' + f)}</span></button>`).join('')}
         </div>`, { canNext: data.focus.length > 0 });
       stage.querySelectorAll('.focus-chip').forEach(b => b.onclick = () => {
         haptic('select');
@@ -240,6 +242,7 @@ export function runOnboarding({ onDone }) {
         });
         localStorage.setItem('lunara_reminder', '1');
         track('notif_allow');
+        rescheduleAlerts();   // Місяць і ретрогради — разом із нагадуванням
       }
       finish();
     };

@@ -59,7 +59,7 @@ function render() {
       const locked = i >= FREE_LESSONS && !state.isPremium;
       return `<button class="lesson-row${done.has(l.id) ? ' done' : ''}" data-i="${i}">
         <span class="lr-num">${done.has(l.id) ? icons.check : `<span>${i + 1}</span>`}</span>
-        <span class="lr-text"><b>${esc(l.title[L])}</b><small>${l.emoji} ${t('minutes', { n: l.minutes })}</small></span>
+        <span class="lr-text"><b>${esc(l.title[L])}</b><small>${icons.clock}${t('minutes', { n: l.minutes })}</small></span>
         ${locked ? '<span class="sc-lock static">PRO</span>' : icons.chevron}
       </button>`;
     }).join('')}</div>
@@ -102,7 +102,7 @@ export function openLesson(i) {
     strip?.querySelectorAll('.ls-card').forEach(b => b.onclick = () => openCardDetail(cards[Number(b.dataset.id)], { fromLibrary: true }));
   });
   const layer = pushScreen(`<article class="lesson">
-      <div class="ls-hero"><span class="ls-emoji">${l.emoji}</span>
+      <div class="ls-hero"><span class="ls-emoji">${icons[l.icon] || icons.learn}</span>
         <small>${t('lessonN', { n: i + 1, total: LESSONS.length })} · ${t('minutes', { n: l.minutes })}</small>
         <h1 class="serif">${esc(l.title[L])}</h1></div>
       <div class="ls-cards" id="ls-cards"></div>

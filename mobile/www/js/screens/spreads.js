@@ -10,8 +10,9 @@ import { showPaywall } from './paywall.js';
 import { cardName, cardKeywords, cardImg, openCardDetail } from './library.js';
 import { userAstro } from './today.js';
 import { loadDetails, overallPicture, overallHtml, cardBlocksHtml, yesNo, cardDetail, tx } from '../reading.js';
-import { journalHtml, wireJournal, moodEmoji } from '../journal.js';
+import { journalHtml, wireJournal, moodBadge } from '../journal.js';
 import { readingSkyLines } from '../sky.js';
+import { readingDone, afterReadingClosed } from '../moments.js';
 
 const P = (en, ru, ua) => ({ en, ru, ua });
 export const SPREADS = [
@@ -63,7 +64,7 @@ function render() {
           <span class="sc-text">
             <span class="sc-title serif">${t(s.title)}</span>
             <span class="sc-desc">${t(s.desc)}</span>
-            <span class="sc-pos">${s.count > 4 ? t('nCards', { n: s.count }) : s.positions.map(p => esc(p[getLang()] || p.en)).join(' · ')}</span>
+            ${s.count > 1 && s.count <= 4 ? `<span class="sc-pos">${s.positions.map(p => esc(p[getLang()] || p.en)).join(' · ')}</span>` : ''}
             <span class="sc-meta">${s.free ? `<b class="free-tag">${t('freeTag')}</b> · ` : ''}${t('nCards', { n: s.count })} · ${sparkle()} AI</span>
           </span>
           ${state.isPremium || s.free ? '' : `<span class="sc-lock">PRO</span>`}
@@ -114,7 +115,7 @@ async function startReading(spread, question) {
       </div>
       ${celtic ? `<p class="muted center celtic-note">${t('celticTapNote')}</p>` : ''}
       <div class="rd-result" id="rd-result"></div>
-    </div>`, { title: t(spread.title), cls: 'reading-layer' });
+    </div>`, { title: t(spread.title), cls: 'reading-layer', onClose: () => { if (layer?.dataset.done) afterReadingClosed(); } });
 
   const grid = layer.querySelector('#rd-grid');
   grid.classList.add('dealing');
@@ -184,6 +185,8 @@ function yesNoHero(card, date) {
 
 async function showResult(layer, reading, question, spread) {
   const L = getLang();
+  layer.dataset.done = '1';
+  readingDone();
   layer.querySelector('#rd-hint').textContent = t('readingReady');
   const box = layer.querySelector('#rd-result');
   await loadDetails();
@@ -239,7 +242,7 @@ export async function openHistory() {
     box.innerHTML = `<p class="muted jr-hint">${t('journalHint')}</p><div class="hist-list">${items.map((r, i) => `
       <button class="hist-item" data-i="${i}">
         <span class="hist-thumbs">${r.cards.slice(0, 4).map(c => `<span class="${c.isReversed ? 'rev' : ''}">${cardImg(c)}</span>`).join('')}</span>
-        <span class="hist-text"><b>${r.mood ? `${moodEmoji(r.mood)} ` : ''}${esc(spreadTitle(r))}</b>
+        <span class="hist-text"><b>${moodBadge(r.mood)}${esc(spreadTitle(r))}</b>
           <small>${esc(new Date(r.createdAt).toLocaleDateString(locale(), { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }))}
             ${r.outcome ? ` · <em class="oc-${r.outcome}">${t('outcome_' + r.outcome)}</em>` : ''}</small>
           <span>${esc(r.note ? r.note : r.cards.map(cardName).join(' · '))}</span></span>

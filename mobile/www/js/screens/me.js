@@ -7,6 +7,7 @@ import { CONFIG } from '../config.js';
 import { pushScreen, openSheet, closeLayer, esc, toast } from '../ui.js';
 import { zodiacGlyph, moonSvg, icons, sparkle, cardBack, CARD_BACKS, currentBack } from '../art.js';
 import { soundOn, setSound, play } from '../sound.js';
+import { skyAlertsOn, setSkyAlerts, rescheduleAlerts } from '../reminders.js';
 import { zodiacOf, lifePath, personalYear, compatibility } from '../astro.js';
 import { showPaywall, restorePurchases } from './paywall.js';
 import { openHistory } from './spreads.js';
@@ -96,6 +97,9 @@ function render() {
       <label class="menu-item static">${icons.sound}<span>${t('sounds')}<small>${t('soundsSub')}</small></span>
         <input type="checkbox" class="toggle" id="me-sound" ${soundOn() ? 'checked' : ''}></label>
       ${notifications.supported ? `
+      <label class="menu-item static">${icons.lotus}<span>${t('skyAlerts')}<small>${t('skyAlertsSub')}</small></span>
+        <input type="checkbox" class="toggle" id="me-sky" ${skyAlertsOn() ? 'checked' : ''}></label>` : ''}
+      ${notifications.supported ? `
       <label class="menu-item static">${icons.bell}<span>${t('dailyReminder')}<small>${fmtTime(CONFIG.REMINDER_HOUR, CONFIG.REMINDER_MINUTE)}</small></span>
         <input type="checkbox" class="toggle" id="me-remind" ${reminderOn ? 'checked' : ''}></label>` : ''}
       <button class="menu-item" id="me-restore">${icons.restore}<span>${t('restore')}</span>${icons.chevron}</button>
@@ -130,8 +134,17 @@ function render() {
     if (b.dataset.l === getLang()) return;
     haptic('select');
     setLang(b.dataset.l);
+    rescheduleAlerts();
     api('POST', '/users/init', { userId: state.userId, lang: b.dataset.l });
     emit('lang');
+  });
+  $('#me-sky')?.addEventListener('change', async e => {
+    if (e.target.checked && !(await notifications.granted()) && !(await notifications.request())) {
+      e.target.checked = false; toast(t('notifDenied')); return;
+    }
+    haptic('select');
+    setSkyAlerts(e.target.checked);
+    rescheduleAlerts();
   });
   $('#me-sound').addEventListener('change', e => {
     setSound(e.target.checked);

@@ -3,6 +3,7 @@ import { initShell, purchases, haptic, isTelegram, startParam, platform } from '
 import { ensureSession, api } from './api.js';
 import { state, refreshPremium, track, onStateChange } from './state.js';
 import { initLang, t } from './i18n.js';
+import { rescheduleAlerts } from './reminders.js';
 import { icons } from './art.js';
 import { closeAllLayers, toast } from './ui.js';
 import { runOnboarding } from './screens/onboarding.js';
@@ -89,6 +90,7 @@ async function boot() {
     state.freePro = !!res.user.freePro;
     state.premiumExpiry = res.user.premiumExpiry || null;
     refreshPremium();
+    rescheduleAlerts();
     await minDelay;
     showMain();
   } else if (res.ok || res._status === 404) {
