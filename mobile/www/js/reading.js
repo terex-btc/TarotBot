@@ -56,22 +56,22 @@ const TX = {
     lbl: { meaning: 'Meaning', love: 'Love & relationships', work: 'Work & money', advice: 'Advice', yn: 'Yes or no', overall: 'The overall picture',
            story: 'How the cards connect', patterns: 'What stands out', forYou: 'What it means for you', key: 'Key advice', energy: 'Energy of the spread' },
     yn: { y: 'Yes', m: 'Maybe', n: 'No' },
-    ynText: { y: 'The cards lean towards “yes”.', m: 'The answer isn’t fixed yet — it depends on your next steps.', n: 'The cards lean towards “no” for now.' },
+    ynText: { y: 'The cards lean toward “yes.”', m: 'The answer isn’t set yet — it depends on your next steps.', n: 'For now, the cards lean toward “no.”' },
     energy: {
       positive: 'This is a supportive spread. Most cards carry light, constructive energy: circumstances are on your side, and effort now is likely to pay off. Stay open and keep moving.',
-      neutral: 'This spread is balanced: there are opportunities and there are tests. The outcome depends largely on your choices — the cards show the road, but you hold the steering wheel.',
+      neutral: 'This spread is balanced: there are opportunities and there are tests. The outcome depends largely on your choices — the cards show the road, but you’re in the driver’s seat.',
       caution: 'This spread asks for care and honesty. Several cards point to tension, blocks or something that needs to end. It isn’t a bad omen — it’s a signal to slow down, look at what hurts and choose consciously.',
     },
-    majors: n => n >= 2 ? `${n} Major Arcana cards — this is a significant moment with long-term consequences, not a passing episode.` : n === 1 ? 'One Major Arcana card shows the deeper lesson behind everyday events.' : 'Only Minor Arcana — the situation is in your hands and can change quickly.',
+    majors: n => n >= 2 ? `${n} Major Arcana cards — this is a significant moment with long-term consequences, not a passing episode.` : n === 1 ? 'One Major Arcana card shows the deeper lesson behind everyday events.' : 'Only Minor Arcana cards — the situation is in your hands and can change quickly.',
     suit: { wands: 'Wands dominate: the theme is energy, ambition and action. Your initiative decides a lot.',
-            cups: 'Cups dominate: emotions and relationships are at the centre. Listen to your feelings.',
+            cups: 'Cups dominate: emotions and relationships are at the center. Listen to your feelings.',
             swords: 'Swords dominate: thoughts, decisions and conversations matter most. Clarity and honesty are key.',
             pentacles: 'Pentacles dominate: money, work, body and home are the focus. Practical steps work best.' },
     reversed: n => `${n} reversed cards — some energy is blocked or turned inward; part of the work is internal.`,
     courts: 'Several court cards: other people play an important role — or different sides of your personality are speaking.',
     storyStart: (pos, name, kw) => `${pos}: ${name} brings ${kw}.`,
     storyNext: (pos, name, kw) => `${pos}: ${name} adds ${kw}.`,
-    storyEnd: (pos, name, kw) => `And ${pos.toLowerCase()} — ${name}: ${kw}.`,
+    storyEnd: (pos, name, kw) => `${pos}: ${name} points to ${kw}.`,
   },
   ru: {
     pos: {
@@ -160,7 +160,7 @@ const POS_MAP = {
   connection: 'connection', potential: 'potential', 'general energy': 'energy', 'month challenge': 'challenge', challenge: 'challenge',
   opportunities: 'opportunities', outcome: 'outcome', 'year theme': 'theme', challenges: 'challenges', love: 'love', career: 'career',
   message: 'message', situation: 'situation', obstacle: 'obstacle', advice: 'advice', you: 'you', them: 'them', relationship: 'relationship',
-  'card of the day': 'day', foundation: 'foundation', 'recent past': 'recent', crown: 'crown', 'near future': 'near',
+  'card of the day': 'day', 'your feelings': 'state', 'overall energy': 'energy', 'main challenge': 'challenge', 'theme of the year': 'theme', foundation: 'foundation', 'recent past': 'recent', crown: 'crown', 'near future': 'near',
   self: 'self', environment: 'environment', 'hopes and fears': 'hopes', 'final outcome': 'final', answer: 'answer',
 };
 export function posType(p) {

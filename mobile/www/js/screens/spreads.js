@@ -19,11 +19,11 @@ export const SPREADS = [
   { id: 'three_card', count: 3, title: 'sp3Title', desc: 'sp3Desc', long: 'sp3Long', q: ['sp3Q1', 'sp3Q2', 'sp3Q3'],
     positions: [P('Past', 'Прошлое', 'Минуле'), P('Present', 'Настоящее', 'Теперішнє'), P('Future', 'Будущее', 'Майбутнє')] },
   { id: 'love', count: 4, title: 'spLoveTitle', desc: 'spLoveDesc', long: 'spLoveLong', q: ['spLoveQ1', 'spLoveQ2', 'spLoveQ3'],
-    positions: [P('Your state', 'Ваше состояние', 'Ваш стан'), P('Partner', 'Партнёр', 'Партнер'), P('Connection', 'Связь', 'Зв’язок'), P('Potential', 'Потенциал', 'Потенціал')] },
+    positions: [P('Your feelings', 'Ваше состояние', 'Ваш стан'), P('Partner', 'Партнёр', 'Партнер'), P('Connection', 'Связь', 'Зв’язок'), P('Potential', 'Потенциал', 'Потенціал')] },
   { id: 'month', count: 4, title: 'spMonthTitle', desc: 'spMonthDesc', long: 'spMonthLong', q: ['spMonthQ1', 'spMonthQ2'],
-    positions: [P('General energy', 'Общая энергия', 'Загальна енергія'), P('Challenge', 'Вызов месяца', 'Виклик місяця'), P('Opportunities', 'Возможности', 'Можливості'), P('Outcome', 'Итог', 'Підсумок')] },
+    positions: [P('Overall energy', 'Общая энергия', 'Загальна енергія'), P('Main challenge', 'Вызов месяца', 'Виклик місяця'), P('Opportunities', 'Возможности', 'Можливості'), P('Outcome', 'Итог', 'Підсумок')] },
   { id: 'year', count: 6, title: 'spYearTitle', desc: 'spYearDesc', long: 'spYearLong', q: ['spYearQ1', 'spYearQ2'],
-    positions: [P('Year theme', 'Тема года', 'Тема року'), P('Challenges', 'Вызовы', 'Виклики'), P('Opportunities', 'Возможности', 'Можливості'),
+    positions: [P('Theme of the year', 'Тема года', 'Тема року'), P('Challenges', 'Вызовы', 'Виклики'), P('Opportunities', 'Возможности', 'Можливості'),
       P('Love', 'Любовь', 'Кохання'), P('Career', 'Карьера', 'Кар’єра'), P('Outcome', 'Результат', 'Результат')] },
   { id: 'celtic', count: 10, title: 'spCelticTitle', desc: 'spCelticDesc', long: 'spCelticLong', q: ['spCelticQ1', 'spCelticQ2'],
     positions: [P('Situation', 'Ситуация', 'Ситуація'), P('Challenge', 'Вызов', 'Виклик'), P('Foundation', 'Корень', 'Корінь'),
@@ -156,6 +156,13 @@ async function startReading(spread, question) {
   });
 }
 
+// Назва розкладу в щоденнику — як на екрані розкладів (сервер шле назви старого бота з емодзі)
+function spreadTitle(r) {
+  if (r.spreadType === 'daily') return t('cardOfDay');
+  const sp = spreadById(r.spreadType);
+  return sp ? t(sp.title) : posLabel(r.spreadName);
+}
+
 function posLabel(p) {
   if (!p) return '';
   return typeof p === 'object' ? (p[getLang()] || p.en || p.ru) : p;
@@ -229,7 +236,7 @@ export async function openHistory() {
     box.innerHTML = `<p class="muted jr-hint">${t('journalHint')}</p><div class="hist-list">${items.map((r, i) => `
       <button class="hist-item" data-i="${i}">
         <span class="hist-thumbs">${r.cards.slice(0, 4).map(c => `<span class="${c.isReversed ? 'rev' : ''}">${cardImg(c)}</span>`).join('')}</span>
-        <span class="hist-text"><b>${r.mood ? `${moodEmoji(r.mood)} ` : ''}${esc(posLabel(r.spreadName))}</b>
+        <span class="hist-text"><b>${r.mood ? `${moodEmoji(r.mood)} ` : ''}${esc(spreadTitle(r))}</b>
           <small>${esc(new Date(r.createdAt).toLocaleDateString(locale(), { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }))}
             ${r.outcome ? ` · <em class="oc-${r.outcome}">${t('outcome_' + r.outcome)}</em>` : ''}</small>
           <span>${esc(r.note ? r.note : r.cards.map(cardName).join(' · '))}</span></span>
@@ -247,7 +254,7 @@ async function openJournalEntry(r, onChange) {
     ${cardBlocksHtml(r.cards, r.positions, { spreadId: r.spreadType, ...helpers })}
     ${r.cards.length > 1 ? overallHtml(overallPicture(r.cards, r.positions, { ...helpers, spreadId: r.spreadType })) : ''}
     ${journalHtml(r, { withOutcome: true })}`,
-    { title: esc(posLabel(r.spreadName)) });
+    { title: esc(spreadTitle(r)) });
   l2.querySelectorAll('.rb-head').forEach(x => x.onclick = () => openCardDetail(r.cards[Number(x.dataset.i)]));
   wireJournal(l2, r, onChange);
 }

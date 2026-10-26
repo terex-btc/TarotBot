@@ -30,7 +30,7 @@ const MAJOR_ARCANA = [
     upright: {
       ua: 'Сила волі, майстерність, концентрація, маніфестація',
       ru: 'Сила воли, мастерство, концентрация, манифестация',
-      en: 'Will power, skill, concentration, manifestation'
+      en: 'Willpower, skill, concentration, manifestation'
     },
     reversed: {
       ua: 'Маніпуляція, слабка воля, невикористаний потенціал',
@@ -55,7 +55,7 @@ const MAJOR_ARCANA = [
     reversed: {
       ua: 'Секрети, відірваність від інтуїції, замовчування',
       ru: 'Секреты, оторванность от интуиции, замалчивание',
-      en: 'Secrets, withdrawal of intuition, silence'
+      en: 'Secrets, ignored intuition, silence'
     },
     description: {
       ua: 'Верховна Жриця — охоронець таємниць і підсвідомого. Вона закликає прислухатися до внутрішнього голосу.',
@@ -170,7 +170,7 @@ const MAJOR_ARCANA = [
     upright: {
       ua: 'Сила, мужність, терпіння, внутрішня сила',
       ru: 'Сила, мужество, терпение, внутренняя сила',
-      en: 'Strength, courage, patience, inner strength'
+      en: 'Courage, patience, compassion, inner strength'
     },
     reversed: {
       ua: 'Слабкість, невпевненість, страх',
@@ -190,7 +190,7 @@ const MAJOR_ARCANA = [
     upright: {
       ua: 'Усамітнення, душевний пошук, внутрішнє керівництво',
       ru: 'Уединение, душевный поиск, внутреннее руководство',
-      en: 'Solitude, soul searching, inner guidance'
+      en: 'Solitude, soul-searching, inner guidance'
     },
     reversed: {
       ua: 'Ізоляція, самотність, паранойя',
@@ -415,7 +415,7 @@ const MAJOR_ARCANA = [
     reversed: {
       ua: 'Самосумнів, відмова від покликання, самокритика',
       ru: 'Самосомнение, отказ от призвания, самокритика',
-      en: 'Self-doubt, refusal of calling, self-criticism'
+      en: 'Self-doubt, ignoring the call, self-criticism'
     },
     description: {
       ua: 'Суд закликає прислухатися до вищого покликання і зробити важливий вибір.',
@@ -435,7 +435,7 @@ const MAJOR_ARCANA = [
     reversed: {
       ua: 'Незавершеність, незамкнені кола, стагнація',
       ru: 'Незавершённость, незамкнутые круги, стагнация',
-      en: 'Incompleteness, unclosed circles, stagnation'
+      en: 'Incompleteness, loose ends, stagnation'
     },
     description: {
       ua: 'Світ — карта завершення та тріумфу. Ви досягли мети! Починається новий цикл.',
@@ -597,7 +597,7 @@ const MAJOR_ARCANA = [
   {
     id: 43, name: 'Eight of Cups', nameUa: 'Вісімка Кубків', nameRu: 'Восьмёрка Кубков',
     emoji: '🍷', image: '/assets/cards/cups_08.jpg',
-    upright: { ua: 'Відхід, пошук сенсу, залишення позаду', ru: 'Уход, поиск смысла, оставление позади', en: 'Walking away, seeking meaning, leaving behind' },
+    upright: { ua: 'Відхід, пошук сенсу, залишення позаду', ru: 'Уход, поиск смысла, оставление позади', en: 'Walking away, seeking meaning, letting go' },
     reversed: { ua: 'Страх змін, застій, повернення', ru: 'Страх перемен, застой, возвращение', en: 'Fear of change, stagnation, returning' },
     description: { ua: 'Вісімка Кубків — ви залишаєте те, що вже не наповнює. Попереду — глибший сенс.', ru: 'Восьмёрка Кубков — вы оставляете то, что больше не наполняет. Впереди — более глубокий смысл.', en: 'The Eight of Cups leaves behind what no longer fulfills, seeking deeper meaning ahead.' }
   },
@@ -626,7 +626,7 @@ const MAJOR_ARCANA = [
     id: 47, name: 'Knight of Cups', nameUa: 'Лицар Кубків', nameRu: 'Рыцарь Кубков',
     emoji: '🍷', image: '/assets/cards/cups_12.jpg',
     upright: { ua: 'Романтика, шарм, ідеалізм, поклик серця', ru: 'Романтика, шарм, идеализм, зов сердца', en: 'Romance, charm, idealism, following the heart' },
-    reversed: { ua: 'Примхливість, нереалістичність, розчарування', ru: 'Капризность, нереалистичность, разочарование', en: 'Moodiness, unrealistic, disappointment' },
+    reversed: { ua: 'Примхливість, нереалістичність, розчарування', ru: 'Капризность, нереалистичность, разочарование', en: 'Moodiness, unrealistic expectations, disappointment' },
     description: { ua: 'Лицар Кубків — романтик, що йде за серцем. Приходить з пропозицією чи освідченням.', ru: 'Рыцарь Кубков — романтик, идущий за сердцем. Приходит с предложением или признанием.', en: 'The Knight of Cups is a romantic who follows the heart, arriving with an offer or confession.' }
   },
   {
@@ -676,7 +676,7 @@ const MAJOR_ARCANA = [
   {
     id: 54, name: 'Five of Swords', nameUa: 'П\u2019ятірка Мечів', nameRu: 'Пятёрка Мечей',
     emoji: '⚔️', image: '/assets/cards/swords_05.jpg',
-    upright: { ua: 'Конфлікт, поразка, перемога будь-якою ціною', ru: 'Конфликт, поражение, победа любой ценой', en: 'Conflict, defeat, winning at all costs' },
+    upright: { ua: 'Конфлікт, поразка, перемога будь-якою ціною', ru: 'Конфликт, поражение, победа любой ценой', en: 'Conflict, defeat, winning at any cost' },
     reversed: { ua: 'Примирення, каяття, кінець конфлікту', ru: 'Примирение, раскаяние, конец конфликта', en: 'Reconciliation, remorse, ending conflict' },
     description: { ua: 'П\u2019ятірка Мечів — перемога з гірким присмаком. Зважте, чи варта мета зруйнованих стосунків.', ru: 'Пятёрка Мечей — победа с горьким привкусом. Взвесьте, стоит ли цель разрушенных отношений.', en: 'The Five of Swords is a hollow victory. Weigh whether the win is worth the damaged ties.' }
   },
@@ -719,7 +719,7 @@ const MAJOR_ARCANA = [
     id: 60, name: 'Page of Swords', nameUa: 'Паж Мечів', nameRu: 'Паж Мечей',
     emoji: '⚔️', image: '/assets/cards/swords_11.jpg',
     upright: { ua: 'Допитливість, нові ідеї, пильність, енергія розуму', ru: 'Любопытство, новые идеи, бдительность, энергия ума', en: 'Curiosity, new ideas, vigilance, mental energy' },
-    reversed: { ua: 'Поспішні судження, плітки, обман', ru: 'Поспешные суждения, сплетни, обман', en: 'Hasty judgement, gossip, deception' },
+    reversed: { ua: 'Поспішні судження, плітки, обман', ru: 'Поспешные суждения, сплетни, обман', en: 'Hasty judgment, gossip, deception' },
     description: { ua: 'Паж Мечів — гострий розум і спрага знань. Приходить звістка чи нова ідея, що вимагає уваги.', ru: 'Паж Мечей — острый ум и жажда знаний. Приходит весть или новая идея, требующая внимания.', en: 'The Page of Swords is a sharp mind hungry for truth, bringing news or an idea that demands attention.' }
   },
   {
@@ -770,7 +770,7 @@ const MAJOR_ARCANA = [
     id: 67, name: 'Four of Pentacles', nameUa: 'Четвірка Пентаклів', nameRu: 'Четвёрка Пентаклей',
     emoji: '🪙', image: '/assets/cards/pents_04.jpg',
     upright: { ua: 'Безпека, контроль, заощадження, утримання', ru: 'Безопасность, контроль, сбережения, удержание', en: 'Security, control, saving, holding on' },
-    reversed: { ua: 'Жадібність, скнарість або навпаки — щедрість', ru: 'Жадность, скупость или наоборот — щедрость', en: 'Greed, miserliness, or conversely letting go' },
+    reversed: { ua: 'Жадібність, скнарість або навпаки — щедрість', ru: 'Жадность, скупость или наоборот — щедрость', en: 'Greed, stinginess, letting go' },
     description: { ua: 'Четвірка Пентаклів — прагнення стабільності. Та надмірний контроль може стати в\u2019язницею.', ru: 'Четвёрка Пентаклей — стремление к стабильности. Но чрезмерный контроль может стать тюрьмой.', en: 'The Four of Pentacles seeks stability, but clinging too tightly can become a cage.' }
   },
   {
@@ -826,14 +826,14 @@ const MAJOR_ARCANA = [
     id: 75, name: 'Knight of Pentacles', nameUa: 'Лицар Пентаклів', nameRu: 'Рыцарь Пентаклей',
     emoji: '🪙', image: '/assets/cards/pents_12.jpg',
     upright: { ua: 'Працьовитість, надійність, методичність, рутина', ru: 'Трудолюбие, надёжность, методичность, рутина', en: 'Hard work, reliability, routine, methodical effort' },
-    reversed: { ua: 'Застій, лінь, надмірна обережність', ru: 'Застой, лень, чрезмерная осторожность', en: 'Stagnation, laziness, over-caution' },
+    reversed: { ua: 'Застій, лінь, надмірна обережність', ru: 'Застой, лень, чрезмерная осторожность', en: 'Stagnation, laziness, excessive caution' },
     description: { ua: 'Лицар Пентаклів — повільний, але впевнений рух до мети. Надійність і терпіння — його сила.', ru: 'Рыцарь Пентаклей — медленное, но уверенное движение к цели. Надёжность и терпение — его сила.', en: 'The Knight of Pentacles moves slowly but surely toward goals. Reliability and patience are his strength.' }
   },
   {
     id: 76, name: 'Queen of Pentacles', nameUa: 'Королева Пентаклів', nameRu: 'Королева Пентаклей',
     emoji: '🪙', image: '/assets/cards/pents_13.jpg',
     upright: { ua: 'Турбота, практичність, достаток, затишок', ru: 'Забота, практичность, достаток, уют', en: 'Nurturing, practicality, abundance, comfort' },
-    reversed: { ua: 'Самозневага, дисбаланс роботи й дому, тривога', ru: 'Самопренебрежение, дисбаланс работы и дома, тревога', en: 'Self-neglect, work-home imbalance, worry' },
+    reversed: { ua: 'Самозневага, дисбаланс роботи й дому, тривога', ru: 'Самопренебрежение, дисбаланс работы и дома, тревога', en: 'Self-neglect, work-life imbalance, worry' },
     description: { ua: 'Королева Пентаклів — тепла господиня достатку. Вона дбає про близьких і створює затишок.', ru: 'Королева Пентаклей — тёплая хозяйка достатка. Она заботится о близких и создаёт уют.', en: 'The Queen of Pentacles is a warm provider who nurtures loved ones and creates comfort.' }
   },
   {

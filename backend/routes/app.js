@@ -29,7 +29,7 @@ const SIGNS = {
   leo: 'Leo', virgo: 'Virgo', libra: 'Libra', scorpio: 'Scorpio',
   sagittarius: 'Sagittarius', capricorn: 'Capricorn', aquarius: 'Aquarius', pisces: 'Pisces',
 };
-const LANG_NAMES = { en: 'English', ru: 'Russian', ua: 'Ukrainian' };
+const LANG_NAMES = { en: 'natural American English (US spelling)', ru: 'Russian', ua: 'Ukrainian' };
 const MOON_EN = {
   new: 'New Moon', waxing: 'Waxing Crescent', first: 'First Quarter', gibbous: 'Waxing Gibbous',
   full: 'Full Moon', waning: 'Waning Gibbous', last: 'Last Quarter', dark: 'Waning Crescent',

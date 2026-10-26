@@ -24,7 +24,7 @@ const SPREAD_TYPES = {
     name: { ua: '❤️ Кохання', ru: '❤️ Любовь', en: '❤️ Love' },
     count: 4, premium: true,
     positions: [
-      { ua: 'Ваш стан', ru: 'Ваше состояние', en: 'Your state' },
+      { ua: 'Ваш стан', ru: 'Ваше состояние', en: 'Your feelings' },
       { ua: 'Партнер', ru: 'Партнёр', en: 'Partner' },
       { ua: "Зв'язок", ru: 'Связь', en: 'Connection' },
       { ua: 'Потенціал', ru: 'Потенциал', en: 'Potential' }
@@ -34,8 +34,8 @@ const SPREAD_TYPES = {
     name: { ua: '📅 Місяць', ru: '📅 Месяц', en: '📅 Month' },
     count: 4, premium: true,
     positions: [
-      { ua: 'Загальна енергія', ru: 'Общая энергия', en: 'General energy' },
-      { ua: 'Виклик місяця', ru: 'Вызов месяца', en: 'Month challenge' },
+      { ua: 'Загальна енергія', ru: 'Общая энергия', en: 'Overall energy' },
+      { ua: 'Виклик місяця', ru: 'Вызов месяца', en: 'Main challenge' },
       { ua: 'Можливості', ru: 'Возможности', en: 'Opportunities' },
       { ua: 'Підсумок', ru: 'Итог', en: 'Outcome' }
     ]
@@ -65,7 +65,7 @@ const SPREAD_TYPES = {
     name: { ua: '🌟 Рік', ru: '🌟 Год', en: '🌟 Year' },
     count: 6, premium: true,
     positions: [
-      { ua: 'Тема року', ru: 'Тема года', en: 'Year theme' },
+      { ua: 'Тема року', ru: 'Тема года', en: 'Theme of the year' },
       { ua: 'Виклики', ru: 'Вызовы', en: 'Challenges' },
       { ua: 'Можливості', ru: 'Возможности', en: 'Opportunities' },
       { ua: 'Кохання', ru: 'Любовь', en: 'Love' },
