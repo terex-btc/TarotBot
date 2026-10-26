@@ -194,6 +194,7 @@ img { display: block; max-width: 100%; }
   transform: translateY(105%); transition: transform .48s var(--ease); max-height: calc(100% - var(--top) - 20px);
   display: flex; flex-direction: column; box-shadow: 0 -20px 60px rgba(0, 0, 0, .5); border-top: 1px solid var(--line); }
 .sheet.tall { height: calc(100% - var(--top) - 14px); }
+.sheet.scroll { overflow-y: auto; overflow-x: hidden; }   /* коротка шторка гортається, якщо не влазить в екран */
 .sheet-layer.in .sheet { transform: none; }
 .sheet-layer.out .sheet { transform: translateY(105%); }
 .sheet-grip { position: absolute; top: 0; left: 0; right: 0; height: 26px; display: grid; place-items: center; z-index: 5; touch-action: none; }
@@ -597,7 +598,9 @@ button.pro-pill { animation: pulse 2.6s ease-in-out infinite; }
 .card-frame img { width: 100%; height: 100%; object-fit: cover; border-radius: 8px; }
 .card-frame.rev img { transform: rotate(180deg); }
 .ds-hint { margin-top: 18px; font-weight: 800; color: #fff; text-shadow: 0 1px 10px rgba(40, 30, 120, .5); animation: breathe 2s ease-in-out infinite; }
-.ds-info { text-align: center; opacity: 0; transform: translateY(20px); transition: all .7s var(--ease); }
+.ds-info { text-align: center; opacity: 0; transform: translateY(20px); transition: all .7s var(--ease);
+  margin: 0 -22px; padding: 2px 22px 0;   /* свій темний фон: текст не лягає на світле небо на будь-якому екрані */
+  background: linear-gradient(180deg, rgba(13, 10, 31, 0) 0, var(--bg) 22px); }
 .ds-info.show { opacity: 1; transform: none; }
 .ds-name { font-size: 40px; line-height: 1.08; margin-top: 26px; text-shadow: 0 2px 20px rgba(0, 0, 0, .3); }
 .rev-tag { display: inline-block; margin-top: 10px; padding: 4px 12px; border-radius: 999px; background: rgba(239, 31, 90, .2); color: #ff8fb3; font-weight: 800; font-size: 14px; }

@@ -99,7 +99,7 @@ export function pushScreen(html, { title = '', onClose, cls = '', right = '' } =
 export function openSheet(html, { onClose, cls = '', tall = true } = {}) {
   const layer = el(`<section class="layer sheet-layer ${cls}">
     <div class="sheet-backdrop" data-close></div>
-    <div class="sheet ${tall ? 'tall' : ''}">
+    <div class="sheet ${tall ? 'tall' : 'scroll'}">
       <div class="sheet-grip"><span></span></div>
       ${html}
     </div>
