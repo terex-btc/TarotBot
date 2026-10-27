@@ -59,7 +59,7 @@ npm run ios:open     # відкрити в Xcode → вибрати симуля
 
 - [ ] Заповнити `www/legal/terms.html` і `privacy.html` (назва компанії, адреса, дата) і дати юристу.
 - [ ] Перевірити, що назва «Lunara» вільна в App Store, або змінити `APP_NAME` / `appName`.
-- [ ] Свій e-mail підтримки в `config.js` → `SUPPORT_EMAIL`.
+- [x] Свій e-mail підтримки в `config.js` → `SUPPORT_EMAIL` (tarotsupports@gmail.com).
 - [ ] Іконка: зараз векторна заглушка `resources/icon.svg` — краще замовити фінальну.
 - [ ] App Privacy в App Store Connect: Name, Date of birth (не для трекінгу), User Content, Purchases, Identifiers (device ID), Usage Data.
 - [ ] Age rating: 17+ (гадання/астрологія, AI-чат). У застосунку вже є 18+ на даті народження.

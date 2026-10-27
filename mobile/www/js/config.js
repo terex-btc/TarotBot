@@ -22,7 +22,7 @@ export const CONFIG = {
   ],
   DEFAULT_PLAN: 'weekly',
 
-  SUPPORT_EMAIL: 'support@lunara.app',
+  SUPPORT_EMAIL: 'tarotsupports@gmail.com',
   LEGAL_PATH: '/app/legal',
 
   // Щоденне нагадування про карту дня (локальне сповіщення на пристрої)
