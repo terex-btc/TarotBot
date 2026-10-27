@@ -12,7 +12,7 @@ import { openCardDetail, cardName, cardKeywords, cardImg } from './library.js';
 import { openCompat, openMe } from './me.js';
 import { loadDetails, cardDetail, yesNo, tx } from '../reading.js';
 import { journalHtml, wireJournal } from '../journal.js';
-import { openSpread, spreadById } from './spreads.js';
+import { openSpread, spreadById, spreadTileHtml, wireSpreadTiles } from './spreads.js';
 import { nextLesson, continueLearning } from './learn.js';
 import { skyPillHtml, openSky, glyphBubble, skyEventRow } from './cosmic.js';
 import { activeRetros, sx, skyEventsBetween } from '../sky.js';
@@ -61,12 +61,15 @@ export function userAstro() {
 const FOR_YOU = {
   yes_no:  { icon: 'yesno', go: () => openSpread(spreadById('yes_no')) },
   love:    { icon: 'heart', go: () => openSpread(spreadById('love'), t('fyLoveQ')) },
-  career:  { icon: 'briefcase', go: () => openSpread(spreadById('month'), t('fyCareerQ')) },
+  career:  { icon: 'briefcase', go: () => openSpread(spreadById('career_path') || spreadById('month'), t('fyCareerQ')) },
   growth:  { icon: 'sprout', go: (goTab) => { if (!continueLearning()) goTab('learn'); } },
   balance: { icon: 'lotus', go: () => openMoon() },
-  family:  { icon: 'home', go: () => openSpread(spreadById('three_card'), t('fyFamilyQ')) },
+  family:  { icon: 'home', go: () => openSpread(spreadById('family') || spreadById('three_card'), t('fyFamilyQ')) },
   spirit:  { icon: 'crystal', go: (goTab) => goTab('oracle') },
 };
+// Популярні розклади на головній — для всіх, незалежно від інтересів з онбордингу
+const POPULAR = ['love_true', 'money_flow', 'love_return', 'career_path', 'new_moon', 'week'];
+
 function forYouKeys() {
   const f = (state.focus || []).filter(k => FOR_YOU[k]);
   return ['yes_no', ...(f.length ? f : ['love', 'career', 'growth'])].slice(0, 5);
@@ -142,6 +145,9 @@ function render(goTab) {
       </button>`).join('')}
     </div>
 
+    <div class="sec-row"><h3 class="section-title">${t('popularSpreads')}</h3><button class="sec-link" id="t-allsp">${t('seeAll')}${icons.chevron}</button></div>
+    <div class="fy-rail sp-rail">${POPULAR.map(spreadById).filter(Boolean).map(spreadTileHtml).join('')}</div>
+
     ${nl ? `<button class="continue-card" id="t-learn">
       <span class="cc-emoji">${icons[nl.lesson.icon] || icons.learn}</span>
       <span class="cc-text">
@@ -183,6 +189,8 @@ function render(goTab) {
   $('#h-pro')?.addEventListener('click', () => showPaywall({ source: 'home_pro' }));
   $('#t-daily').onclick = () => { haptic('light'); openDaily(); };
   $('#t-spread').onclick = () => { haptic('light'); goTab('spreads'); };
+  $('#t-allsp').onclick = () => { haptic('light'); goTab('spreads'); };
+  wireSpreadTiles(root.querySelector('.sp-rail'));
   $('#t-horo').onclick = () => { haptic('light'); openHoroscope(z.key); };
   $('#t-oracle').onclick = () => { haptic('light'); goTab('oracle'); };
   $('#t-moon').onclick = () => { haptic('light'); openMoon(); };

@@ -1244,3 +1244,59 @@ button.pro-pill { animation: pulse 2.6s ease-in-out infinite; }
 @media (min-width: 560px) {
   #app { max-width: 480px; margin: 0 auto; border-left: 1px solid var(--line); border-right: 1px solid var(--line); }
 }
+
+/* ══ Каталог розкладів: категорії, плитки зі схемою, закладки ═══════════════ */
+.cat-love { --cc: 255, 128, 178; } .cat-money { --cc: 255, 201, 77; } .cat-future { --cc: 140, 170, 255; }
+.cat-choice { --cc: 190, 160, 255; } .cat-self { --cc: 110, 220, 170; } .cat-moon { --cc: 222, 216, 255; }
+.cat-destiny { --cc: 205, 140, 255; } .cat-family { --cc: 255, 170, 120; } .cat-travel { --cc: 110, 200, 255; }
+.sp-cats { display: flex; gap: 8px; overflow-x: auto; margin: 0 -18px 18px; padding: 2px 18px 4px; scrollbar-width: none; }
+.sp-cats::-webkit-scrollbar { display: none; }
+.sp-chip { flex: none; display: inline-flex; align-items: center; gap: 7px; height: 40px; padding: 0 15px; border-radius: 999px; background: rgba(255, 255, 255, .06);
+  border: 1px solid var(--line2); color: var(--text2); font-size: 14.5px; font-weight: 800; transition: background .2s, color .2s; }
+.sp-chip .ico { width: 17px; height: 17px; color: rgb(var(--cc, 200, 182, 255)); }
+.sp-chip.on { background: var(--lav); border-color: transparent; color: #1a1240; }
+.sp-chip.on .ico { color: #1a1240; }
+.sp-body .spread-card { margin-bottom: 4px; }
+.sp-sec { margin-top: 26px; }
+.sp-sec-h { display: flex; align-items: center; gap: 11px; margin: 0 2px 12px; font-family: var(--serif); font-size: 22px; font-weight: 600; }
+.sp-sec-ico { display: grid; place-items: center; width: 34px; height: 34px; border-radius: 11px; background: rgba(var(--cc), .16); color: rgb(var(--cc)); }
+.sp-sec-ico .ico { width: 19px; height: 19px; }
+.sp-sec-h small { margin-left: auto; font-family: var(--sans); font-size: 13.5px; font-weight: 800; color: var(--text3); }
+.sp-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.sp-tile { position: relative; display: flex; flex-direction: column; align-items: center; gap: 7px; padding: 16px 12px 14px; border-radius: var(--r-lg); text-align: center; cursor: pointer;
+  background: linear-gradient(165deg, rgba(var(--cc), .16), rgba(255, 255, 255, .03) 72%); border: 1px solid rgba(var(--cc), .24);
+  transition: transform .2s var(--ease); -webkit-tap-highlight-color: transparent; }
+.sp-tile:active { transform: scale(.97); }
+.sp-tile > b { display: flex; align-items: center; justify-content: center; min-height: 2.4em; font-size: 16.5px; line-height: 1.2; font-weight: 600; }
+.sp-tile > small { font-size: 13px; font-weight: 700; color: var(--text3); }
+.sp-tile > small .free-tag { font-style: normal; }
+.sp-tile .sc-lock { top: 10px; right: 10px; padding: 2px 6px; font-size: 10.5px; }
+.sp-fav { position: absolute; right: 4px; bottom: 4px; display: grid; place-items: center; width: 38px; height: 38px; color: var(--text3); }
+.sp-fav .ico { width: 19px; height: 19px; }
+.sp-fav.on { color: var(--gold); }
+.sp-shape { --r: 1; --h: min(30px, calc((84px - (var(--r) - 1) * 4px) / var(--r))); display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 4px; height: 84px; }
+.sp-shape > span { display: flex; gap: 4px; }
+.sp-shape i { width: calc(var(--h) * .64); height: var(--h); border-radius: 4px; border: 1px solid rgba(var(--cc), .55);
+  background: linear-gradient(160deg, rgba(var(--cc), .55), rgba(var(--cc), .14)); box-shadow: 0 3px 8px rgba(0, 0, 0, .25); }
+.sp-shape.celtic { display: grid; grid-template-columns: repeat(4, 12px); grid-auto-rows: 18px; gap: 3px 5px; align-content: center; justify-content: center;
+  grid-template-areas: ". c5 . c10" "c4 c1 c6 c9" ". c3 . c8" ". . . c7"; }
+.sp-shape.celtic i { width: 12px; height: 18px; border-radius: 3px; }
+.sp-shape.celtic i:nth-child(2) { grid-area: c1 !important; transform: rotate(90deg) scale(.85); }
+.sp-empty { display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 46px 20px; text-align: center; color: var(--text2); }
+.sp-empty .ico { width: 36px; height: 36px; color: var(--gold); }
+.sec-row { display: flex; align-items: center; justify-content: space-between; }
+.sec-row .section-title { margin-right: 0; }
+.sec-link { display: inline-flex; align-items: center; gap: 2px; margin-top: 16px; padding: 6px 2px 6px 8px; font-size: 14px; font-weight: 800; color: var(--lav2); }
+.sec-link .ico { width: 16px; height: 16px; }
+.sp-rail .sp-tile { flex: none; width: 150px; scroll-snap-align: start; }
+
+/* Тематичний розклад на столі — рядами */
+.rd-grid.rows { --w: min(96px, calc((100vw - 52px - (var(--cols) - 1) * 10px) / var(--cols))); display: flex; flex-direction: column; align-items: center; gap: 14px; }
+.rd-line { display: flex; justify-content: center; gap: 10px; }
+.rd-grid.rows .rd-slot { position: relative; width: var(--w); }
+.rd-grid.rows .rd-name { font-size: 12px; min-height: 15px; }
+.rd-legend { margin: 18px auto 4px; max-width: 360px; padding: 0 4px 0 26px; text-align: left; color: var(--text2); font-size: 14px; line-height: 1.45; }
+.rd-legend li { padding: 2px 0; }
+.rd-legend li::marker { color: var(--lav2); font-weight: 900; }
+.sp-body .sc-meta { flex-wrap: wrap; row-gap: 2px; }
+.sp-body .sc-meta > span { display: inline-flex; align-items: center; gap: 5px; white-space: nowrap; }

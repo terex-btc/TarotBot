@@ -222,6 +222,11 @@ export const icons = {
   eye: I('<path d="M2.5 12C5 7.5 8.3 5.5 12 5.5s7 2 9.5 6.5c-2.5 4.5-5.8 6.5-9.5 6.5S5 16.5 2.5 12Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="12" r="3" fill="currentColor"/>'),
   grid: I('<rect x="4" y="4" width="7" height="7" rx="1.8" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><rect x="13" y="4" width="7" height="7" rx="1.8" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><rect x="4" y="13" width="7" height="7" rx="1.8" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M16.5 13.2c.3 1.6 1.2 2.5 2.8 2.8-1.6.3-2.5 1.2-2.8 2.8-.3-1.6-1.2-2.5-2.8-2.8 1.6-.3 2.5-1.2 2.8-2.8Z" fill="currentColor"/>'),
   swap: I('<path d="M7 4.5L4 7.5l3 3M4 7.5h12.5M17 13.5l3 3-3 3M20 16.5H7.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>'),
+  coin: I('<circle cx="12" cy="12" r="8.6" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="12" cy="12" r="5.4" fill="none" stroke="currentColor" stroke-width="1.4" opacity=".6"/><path d="M12 8.6l1 2.2 2.4.2-1.8 1.6.6 2.4-2.2-1.3-2.2 1.3.6-2.4-1.8-1.6 2.4-.2Z" fill="currentColor"/>'),
+  crescent: I('<path d="M19.5 14.6A8 8 0 1 1 9.4 4.5a6.4 6.4 0 0 0 10.1 10.1Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M17 4.5l.5 1.3 1.3.5-1.3.5-.5 1.3-.5-1.3-1.3-.5 1.3-.5Z" fill="currentColor"/>'),
+  plane: I('<path d="M10.5 13.5L4 11.2l1.4-1.4 7.4.6 3.7-3.7c.8-.8 2.2-.8 3 0 .8.8.8 2.2 0 3l-3.7 3.7.6 7.4-1.4 1.4-2.3-6.5-2.9 2.9.2 2.2-1.2 1.2-1.3-3.2-3.2-1.3 1.2-1.2 2.2.2Z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>'),
+  bookmark: I('<path d="M7 4.5h10a1 1 0 0 1 1 1v14.2l-6-3.7-6 3.7V5.5a1 1 0 0 1 1-1Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>'),
+  bookmarkOn: I('<path d="M7 4.5h10a1 1 0 0 1 1 1v14.2l-6-3.7-6 3.7V5.5a1 1 0 0 1 1-1Z" fill="currentColor" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>'),
 };
 
 // Обличчя для настрою в щоденнику — лінійні, як решта іконок

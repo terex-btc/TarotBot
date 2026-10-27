@@ -75,6 +75,12 @@ const SPREAD_TYPES = {
   }
 };
 
+// Тематичні розклади застосунку — той самий файл читає фронтенд (mobile/www/js/catalog.js)
+const SPREAD_CATALOG = require('../../mobile/www/data/spreads.json');
+for (const s of SPREAD_CATALOG.spreads) {
+  SPREAD_TYPES[s.id] = { name: s.name, count: s.positions.length, premium: !s.free, positions: s.positions };
+}
+
 async function createReading(userId, birthDate, spreadType, targetDate, lang, { salt = '', localDate = null } = {}) {
   const spread = SPREAD_TYPES[spreadType];
   if (!spread) throw new Error('Unknown spread type');

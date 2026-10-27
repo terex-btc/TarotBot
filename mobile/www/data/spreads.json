@@ -1,0 +1,355 @@
+{
+  "categories": [
+    { "id": "love", "icon": "heart", "en": "Love", "ru": "Любовь", "ua": "Кохання" },
+    { "id": "money", "icon": "coin", "en": "Money & Career", "ru": "Деньги и карьера", "ua": "Гроші й кар’єра" },
+    { "id": "future", "icon": "clock", "en": "The Future", "ru": "Будущее", "ua": "Майбутнє" },
+    { "id": "choice", "icon": "swap", "en": "Choices & Problems", "ru": "Выбор и проблемы", "ua": "Вибір і проблеми" },
+    { "id": "self", "icon": "sprout", "en": "Self & Growth", "ru": "Личность и рост", "ua": "Особистість і ріст" },
+    { "id": "moon", "icon": "crescent", "en": "Moon Rituals", "ru": "Лунные ритуалы", "ua": "Місячні ритуали" },
+    { "id": "destiny", "icon": "crystal", "en": "Karma & Destiny", "ru": "Карма и судьба", "ua": "Карма й доля" },
+    { "id": "family", "icon": "home", "en": "Family & Home", "ru": "Семья и дом", "ua": "Родина й дім" },
+    { "id": "travel", "icon": "plane", "en": "Travel & Moves", "ru": "Поездки и переезд", "ua": "Подорожі й переїзд" }
+  ],
+  "spreads": [
+    {
+      "id": "love_return", "cat": "love", "rows": [3, 2],
+      "name": { "en": "Will They Come Back?", "ru": "Вернётся ли любимый человек?", "ua": "Чи повернеться кохана людина?" },
+      "desc": { "en": "What really happened and whether your paths will cross again.", "ru": "Что на самом деле произошло и встретятся ли ваши пути снова.", "ua": "Що насправді сталося і чи перетнуться ваші шляхи знову." },
+      "q": { "en": ["Will my ex come back to me?", "Is there still a chance for us?"], "ru": ["Вернётся ли ко мне этот человек?", "Есть ли у нас ещё шанс?"], "ua": ["Чи повернеться до мене ця людина?", "Чи є в нас ще шанс?"] },
+      "positions": [
+        { "en": "Why you drifted apart", "ru": "Почему вы отдалились", "ua": "Чому ви віддалилися", "t": "past" },
+        { "en": "Their feelings now", "ru": "Чувства второго человека сейчас", "ua": "Почуття іншої людини зараз", "t": "partner" },
+        { "en": "What holds them back", "ru": "Что мешает сделать шаг", "ua": "Що заважає зробити крок", "t": "obstacle" },
+        { "en": "What draws them back to you", "ru": "Что тянет к вам", "ua": "Що тягне до вас", "t": "connection" },
+        { "en": "Most likely outcome", "ru": "Вероятный итог", "ua": "Ймовірний підсумок", "t": "outcome" }
+      ]
+    },
+    {
+      "id": "love_silence", "cat": "love", "rows": [2, 2],
+      "name": { "en": "Why the Silence?", "ru": "Почему нет ответа?", "ua": "Чому немає відповіді?" },
+      "desc": { "en": "They went quiet. See what is behind it and what comes next.", "ru": "Человек пропал. Узнай, что за этим стоит и что будет дальше.", "ua": "Людина зникла. Дізнайся, що за цим стоїть і що буде далі." },
+      "q": { "en": ["Why did they stop texting me?", "Will they reach out again?"], "ru": ["Почему мне перестали писать?", "Напишет ли мне этот человек?"], "ua": ["Чому мені перестали писати?", "Чи напише мені ця людина?"] },
+      "positions": [
+        { "en": "What they feel", "ru": "Что чувствует человек", "ua": "Що відчуває людина", "t": "partner" },
+        { "en": "What is on their mind", "ru": "Что у человека на уме", "ua": "Що в людини на думці" },
+        { "en": "The real reason for the silence", "ru": "Настоящая причина молчания", "ua": "Справжня причина мовчання", "t": "obstacle" },
+        { "en": "What happens next", "ru": "Что будет дальше", "ua": "Що буде далі", "t": "future" }
+      ]
+    },
+    {
+      "id": "love_true", "cat": "love", "rows": [1, 2, 1],
+      "name": { "en": "Do They Really Love Me?", "ru": "Любит ли меня этот человек?", "ua": "Чи кохає мене ця людина?" },
+      "desc": { "en": "Heart, mind and intentions: the honest truth about their feelings.", "ru": "Сердце, мысли и намерения — честно о чувствах второго человека.", "ua": "Серце, думки й наміри — чесно про почуття іншої людини." },
+      "q": { "en": ["Are their feelings for me real?", "What do they want from me?"], "ru": ["Искренни ли чувства ко мне?", "Чего этот человек от меня хочет?"], "ua": ["Чи щирі почуття до мене?", "Чого ця людина від мене хоче?"] },
+      "positions": [
+        { "en": "Their heart", "ru": "Сердце: истинные чувства", "ua": "Серце: справжні почуття", "t": "partner" },
+        { "en": "Their thoughts about you", "ru": "Мысли о вас", "ua": "Думки про вас" },
+        { "en": "What they want from you", "ru": "Чего человек хочет от вас", "ua": "Чого людина хоче від вас" },
+        { "en": "Where this is going", "ru": "К чему всё идёт", "ua": "До чого все йде", "t": "potential" }
+      ]
+    },
+    {
+      "id": "love_new", "cat": "love", "rows": [2, 1, 2],
+      "name": { "en": "When Will I Meet Someone?", "ru": "Когда я встречу любовь?", "ua": "Коли я зустріну кохання?" },
+      "desc": { "en": "What blocks new love, where to look and who is on the way.", "ru": "Что мешает новой любви, где её искать и кто уже на пути.", "ua": "Що заважає новому коханню, де його шукати і хто вже в дорозі." },
+      "q": { "en": ["When will I meet my person?", "What is blocking love in my life?"], "ru": ["Когда я встречу своего человека?", "Что мешает любви в моей жизни?"], "ua": ["Коли я зустріну свою людину?", "Що заважає коханню в моєму житті?"] },
+      "positions": [
+        { "en": "What blocks love now", "ru": "Что сейчас мешает любви", "ua": "Що зараз заважає коханню", "t": "obstacle" },
+        { "en": "What to let go of", "ru": "Что отпустить", "ua": "Що відпустити" },
+        { "en": "You, ready for love", "ru": "Вы, готовые к любви", "ua": "Ви, готові до кохання", "t": "self" },
+        { "en": "Where to look", "ru": "Где искать", "ua": "Де шукати", "t": "advice" },
+        { "en": "Who is on the way", "ru": "Кто уже на пути", "ua": "Хто вже в дорозі", "t": "future" }
+      ]
+    },
+    {
+      "id": "love_choice", "cat": "love", "rows": [1, 2, 2, 1],
+      "name": { "en": "Choosing Between Two", "ru": "Выбор между двумя", "ua": "Вибір між двома" },
+      "desc": { "en": "Two people, one heart. Compare what each brings and where each road leads.", "ru": "Два человека — одно сердце. Сравни, что даёт каждый и куда ведёт каждый путь.", "ua": "Двоє людей — одне серце. Порівняй, що дає кожен і куди веде кожен шлях." },
+      "q": { "en": ["Who is right for me?", "Should I choose my ex or someone new?"], "ru": ["Кто из двоих мне подходит?", "Выбрать прошлые отношения или новые?"], "ua": ["Хто з двох мені підходить?", "Обрати минулі стосунки чи нові?"] },
+      "positions": [
+        { "en": "You right now", "ru": "Вы сейчас", "ua": "Ви зараз", "t": "self" },
+        { "en": "Person A: what they bring", "ru": "Человек А: что даёт", "ua": "Людина А: що дає" },
+        { "en": "Person B: what they bring", "ru": "Человек Б: что даёт", "ua": "Людина Б: що дає" },
+        { "en": "Your future with A", "ru": "Будущее с А", "ua": "Майбутнє з А" },
+        { "en": "Your future with B", "ru": "Будущее с Б", "ua": "Майбутнє з Б" },
+        { "en": "Advice", "ru": "Совет", "ua": "Порада", "t": "advice" }
+      ]
+    },
+    {
+      "id": "love_soul", "cat": "love", "rows": [2, 2, 2],
+      "name": { "en": "Soulmate Connection", "ru": "Связь душ", "ua": "Зв’язок душ" },
+      "desc": { "en": "Is this your soulmate? Discover why you met and what this bond is here to teach.", "ru": "Это родственная душа? Узнай, зачем вы встретились и чему учит эта связь.", "ua": "Це споріднена душа? Дізнайся, навіщо ви зустрілися і чого вчить цей зв’язок." },
+      "q": { "en": ["Is this person my soulmate?", "Why did we meet?"], "ru": ["Это моя родственная душа?", "Зачем мы встретились?"], "ua": ["Це моя споріднена душа?", "Навіщо ми зустрілися?"] },
+      "positions": [
+        { "en": "Your soul", "ru": "Ваша душа", "ua": "Ваша душа", "t": "you" },
+        { "en": "Their soul", "ru": "Душа второго человека", "ua": "Душа іншої людини", "t": "them" },
+        { "en": "What brought you together", "ru": "Что вас свело", "ua": "Що вас звело", "t": "connection" },
+        { "en": "The lesson of this bond", "ru": "Урок этой связи", "ua": "Урок цього зв’язку" },
+        { "en": "The gift of this bond", "ru": "Дар этой связи", "ua": "Дар цього зв’язку" },
+        { "en": "Where it leads", "ru": "Куда ведёт эта связь", "ua": "Куди веде цей зв’язок", "t": "potential" }
+      ]
+    },
+    {
+      "id": "love_peace", "cat": "love", "rows": [2, 1, 2],
+      "name": { "en": "After the Fight", "ru": "После ссоры", "ua": "Після сварки" },
+      "desc": { "en": "Understand both sides, find the real cause and the way to make peace.", "ru": "Пойми обе стороны, найди настоящую причину и путь к примирению.", "ua": "Зрозумій обидві сторони, знайди справжню причину і шлях до примирення." },
+      "q": { "en": ["How do we make peace?", "Why do we keep fighting?"], "ru": ["Как нам помириться?", "Почему мы постоянно ссоримся?"], "ua": ["Як нам помиритися?", "Чому ми постійно сваримося?"] },
+      "positions": [
+        { "en": "Your side", "ru": "Ваша сторона", "ua": "Ваша сторона", "t": "you" },
+        { "en": "Their side", "ru": "Сторона партнёра", "ua": "Сторона партнера", "t": "them" },
+        { "en": "The real cause", "ru": "Настоящая причина", "ua": "Справжня причина", "t": "foundation" },
+        { "en": "What will heal it", "ru": "Что исцелит", "ua": "Що зцілить", "t": "advice" },
+        { "en": "Outcome", "ru": "Итог", "ua": "Підсумок", "t": "outcome" }
+      ]
+    },
+    {
+      "id": "money_flow", "cat": "money", "rows": [1, 3, 1],
+      "name": { "en": "Money Flow", "ru": "Денежный поток", "ua": "Грошовий потік" },
+      "desc": { "en": "Where your money comes from, where it leaks and how to grow it.", "ru": "Откуда приходят деньги, куда утекают и как их приумножить.", "ua": "Звідки приходять гроші, куди витікають і як їх примножити." },
+      "q": { "en": ["How can I attract more money?", "Why do I never have enough?"], "ru": ["Как привлечь больше денег?", "Почему мне всегда не хватает денег?"], "ua": ["Як залучити більше грошей?", "Чому мені завжди бракує грошей?"] },
+      "positions": [
+        { "en": "Your money energy", "ru": "Ваша денежная энергия", "ua": "Ваша грошова енергія", "t": "money" },
+        { "en": "What brings money", "ru": "Что приносит деньги", "ua": "Що приносить гроші", "t": "money" },
+        { "en": "Where it leaks", "ru": "Куда утекают деньги", "ua": "Куди витікають гроші", "t": "obstacle" },
+        { "en": "Hidden opportunity", "ru": "Скрытая возможность", "ua": "Прихована можливість", "t": "opportunities" },
+        { "en": "Advice", "ru": "Совет", "ua": "Порада", "t": "advice" }
+      ]
+    },
+    {
+      "id": "money_star", "cat": "money", "rows": [1, 2, 2],
+      "name": { "en": "Abundance Star", "ru": "Звезда изобилия", "ua": "Зірка достатку" },
+      "desc": { "en": "Find your lucky streak: talents that pay, blocks to clear and an unexpected chance.", "ru": "Найди свою удачу: таланты, которые приносят доход, блоки и неожиданный шанс.", "ua": "Знайди свою удачу: таланти, що приносять дохід, блоки й несподіваний шанс." },
+      "q": { "en": ["Where is my luck with money?", "What will bring me abundance this year?"], "ru": ["Где моя денежная удача?", "Что принесёт мне изобилие в этом году?"], "ua": ["Де моя грошова удача?", "Що принесе мені достаток цього року?"] },
+      "positions": [
+        { "en": "Where your luck is", "ru": "Где ваша удача", "ua": "Де ваша удача", "t": "opportunities" },
+        { "en": "A talent that pays", "ru": "Талант, который приносит доход", "ua": "Талант, що приносить дохід", "t": "money" },
+        { "en": "A block to release", "ru": "Блок, который пора снять", "ua": "Блок, який час зняти", "t": "obstacle" },
+        { "en": "An unexpected chance", "ru": "Неожиданный шанс", "ua": "Несподіваний шанс", "t": "opportunities" },
+        { "en": "Result", "ru": "Результат", "ua": "Результат", "t": "outcome" }
+      ]
+    },
+    {
+      "id": "career_path", "cat": "money", "rows": [3, 3],
+      "name": { "en": "Career Crossroads", "ru": "Карьерный перекрёсток", "ua": "Кар’єрне роздоріжжя" },
+      "desc": { "en": "Where you are, what you truly want and the next step to get there.", "ru": "Где вы сейчас, чего хотите на самом деле и какой шаг сделать дальше.", "ua": "Де ви зараз, чого прагнете насправді і який крок зробити далі." },
+      "q": { "en": ["How can I grow in my career?", "Am I on the right path at work?"], "ru": ["Как мне вырасти в карьере?", "Правильный ли у меня путь в работе?"], "ua": ["Як мені вирости в кар’єрі?", "Чи правильний у мене шлях у роботі?"] },
+      "positions": [
+        { "en": "Where you are now", "ru": "Где вы сейчас", "ua": "Де ви зараз", "t": "situation" },
+        { "en": "What you truly want", "ru": "Чего вы хотите на самом деле", "ua": "Чого ви хочете насправді", "t": "crown" },
+        { "en": "Your strengths", "ru": "Ваши сильные стороны", "ua": "Ваші сильні сторони", "t": "money" },
+        { "en": "What stands in the way", "ru": "Что мешает", "ua": "Що заважає", "t": "obstacle" },
+        { "en": "Your next step", "ru": "Следующий шаг", "ua": "Наступний крок", "t": "advice" },
+        { "en": "Outcome", "ru": "Итог", "ua": "Підсумок", "t": "outcome" }
+      ]
+    },
+    {
+      "id": "job_change", "cat": "money", "rows": [3, 3],
+      "name": { "en": "Stay or Go?", "ru": "Остаться или уйти?", "ua": "Залишитися чи піти?" },
+      "desc": { "en": "Thinking about a new job? Weigh the job you have against the one you want.", "ru": "Думаете о новой работе? Сравните нынешнее место с тем, о котором мечтаете.", "ua": "Думаєте про нову роботу? Порівняйте теперішнє місце з тим, про яке мрієте." },
+      "q": { "en": ["Should I quit my job?", "Is it time for a new job?"], "ru": ["Стоит ли мне уволиться?", "Пора ли менять работу?"], "ua": ["Чи варто мені звільнитися?", "Чи час міняти роботу?"] },
+      "positions": [
+        { "en": "If you stay: the upside", "ru": "Если остаться: плюсы", "ua": "Якщо залишитися: плюси", "t": "money" },
+        { "en": "If you stay: the downside", "ru": "Если остаться: минусы", "ua": "Якщо залишитися: мінуси", "t": "obstacle" },
+        { "en": "If you stay: six months on", "ru": "Если остаться: через полгода", "ua": "Якщо залишитися: за пів року", "t": "future" },
+        { "en": "If you go: the upside", "ru": "Если уйти: плюсы", "ua": "Якщо піти: плюси", "t": "money" },
+        { "en": "If you go: the downside", "ru": "Если уйти: минусы", "ua": "Якщо піти: мінуси", "t": "obstacle" },
+        { "en": "If you go: six months on", "ru": "Если уйти: через полгода", "ua": "Якщо піти: за пів року", "t": "future" }
+      ]
+    },
+    {
+      "id": "business", "cat": "money", "rows": [2, 1, 2],
+      "name": { "en": "Your Own Business", "ru": "Своё дело", "ua": "Власна справа" },
+      "desc": { "en": "Test an idea before you invest: strengths, risks and money potential.", "ru": "Проверь идею до вложений: сильные стороны, риски и денежный потенциал.", "ua": "Перевір ідею до вкладень: сильні сторони, ризики й грошовий потенціал." },
+      "q": { "en": ["Will my business idea succeed?", "Is now the right time to start?"], "ru": ["Будет ли успешна моя идея?", "Сейчас подходящее время начать?"], "ua": ["Чи буде успішною моя ідея?", "Чи зараз слушний час почати?"] },
+      "positions": [
+        { "en": "The idea", "ru": "Идея", "ua": "Ідея", "t": "situation" },
+        { "en": "Its strengths", "ru": "Сильные стороны", "ua": "Сильні сторони" },
+        { "en": "The risks", "ru": "Риски", "ua": "Ризики", "t": "obstacle" },
+        { "en": "Money potential", "ru": "Денежный потенциал", "ua": "Грошовий потенціал", "t": "money" },
+        { "en": "Advice", "ru": "Совет", "ua": "Порада", "t": "advice" }
+      ]
+    },
+    {
+      "id": "week", "cat": "future", "rows": [4, 3],
+      "name": { "en": "Week Ahead", "ru": "Неделя вперёд", "ua": "Тиждень наперед" },
+      "desc": { "en": "One card for each day of the coming week.", "ru": "По карте на каждый день предстоящей недели.", "ua": "По карті на кожен день наступного тижня." },
+      "q": { "en": ["What will my week bring?", "What should I watch for this week?"], "ru": ["Что принесёт мне эта неделя?", "На что обратить внимание на этой неделе?"], "ua": ["Що принесе мені цей тиждень?", "На що звернути увагу цього тижня?"] },
+      "positions": [
+        { "en": "Monday", "ru": "Понедельник", "ua": "Понеділок", "t": "day" },
+        { "en": "Tuesday", "ru": "Вторник", "ua": "Вівторок", "t": "day" },
+        { "en": "Wednesday", "ru": "Среда", "ua": "Середа", "t": "day" },
+        { "en": "Thursday", "ru": "Четверг", "ua": "Четвер", "t": "day" },
+        { "en": "Friday", "ru": "Пятница", "ua": "П’ятниця", "t": "day" },
+        { "en": "Saturday", "ru": "Суббота", "ua": "Субота", "t": "day" },
+        { "en": "Sunday", "ru": "Воскресенье", "ua": "Неділя", "t": "day" }
+      ]
+    },
+    {
+      "id": "two_paths", "cat": "choice", "rows": [1, 2, 2],
+      "name": { "en": "Two Paths", "ru": "Два пути", "ua": "Два шляхи" },
+      "desc": { "en": "Can’t decide? See where each option really leads.", "ru": "Не можете решить? Посмотрите, куда на самом деле ведёт каждый вариант.", "ua": "Не можете вирішити? Подивіться, куди насправді веде кожен варіант." },
+      "q": { "en": ["Which option should I choose?", "Should I move forward or wait?"], "ru": ["Какой вариант выбрать?", "Действовать сейчас или подождать?"], "ua": ["Який варіант обрати?", "Діяти зараз чи почекати?"] },
+      "positions": [
+        { "en": "Where you stand", "ru": "Где вы сейчас", "ua": "Де ви зараз", "t": "situation" },
+        { "en": "Option A", "ru": "Вариант А", "ua": "Варіант А" },
+        { "en": "Option B", "ru": "Вариант Б", "ua": "Варіант Б" },
+        { "en": "Where A leads", "ru": "Куда ведёт А", "ua": "Куди веде А", "t": "future" },
+        { "en": "Where B leads", "ru": "Куда ведёт Б", "ua": "Куди веде Б", "t": "future" }
+      ]
+    },
+    {
+      "id": "breakthrough", "cat": "choice", "rows": [2, 1, 2],
+      "name": { "en": "Breakthrough", "ru": "Прорыв", "ua": "Прорив" },
+      "desc": { "en": "Feeling stuck? Find the root of the problem and the way through it.", "ru": "Всё застопорилось? Найдите корень проблемы и путь через неё.", "ua": "Усе застопорилося? Знайдіть корінь проблеми і шлях крізь неї." },
+      "q": { "en": ["How do I solve this problem?", "Why do I feel stuck?"], "ru": ["Как решить эту проблему?", "Почему всё застопорилось?"], "ua": ["Як розв’язати цю проблему?", "Чому все застопорилося?"] },
+      "positions": [
+        { "en": "The problem", "ru": "Проблема", "ua": "Проблема", "t": "situation" },
+        { "en": "Its root", "ru": "Корень проблемы", "ua": "Корінь проблеми", "t": "foundation" },
+        { "en": "What you are not seeing", "ru": "Чего вы не замечаете", "ua": "Чого ви не помічаєте" },
+        { "en": "Your resource", "ru": "Ваш ресурс", "ua": "Ваш ресурс", "t": "opportunities" },
+        { "en": "The way through", "ru": "Выход", "ua": "Вихід", "t": "advice" }
+      ]
+    },
+    {
+      "id": "self_mirror", "cat": "self", "rows": [2, 1, 2],
+      "name": { "en": "Mirror of the Soul", "ru": "Зеркало души", "ua": "Дзеркало душі" },
+      "desc": { "en": "How you see yourself, how others see you, and the strength you have not used yet.", "ru": "Каким вы видите себя, каким вас видят другие и какая сила в вас ещё спит.", "ua": "Якими ви бачите себе, якими вас бачать інші і яка сила у вас ще спить." },
+      "q": { "en": ["Who am I really?", "What is my hidden strength?"], "ru": ["Кто я на самом деле?", "В чём моя скрытая сила?"], "ua": ["Хто я насправді?", "У чому моя прихована сила?"] },
+      "positions": [
+        { "en": "How you see yourself", "ru": "Как вы видите себя", "ua": "Як ви бачите себе", "t": "self" },
+        { "en": "How others see you", "ru": "Как вас видят другие", "ua": "Як вас бачать інші", "t": "environment" },
+        { "en": "Your hidden strength", "ru": "Скрытая сила", "ua": "Прихована сила", "t": "opportunities" },
+        { "en": "The fear to face", "ru": "Страх, который пора встретить", "ua": "Страх, який час зустріти", "t": "challenge" },
+        { "en": "Your way forward", "ru": "Ваш путь дальше", "ua": "Ваш шлях далі", "t": "advice" }
+      ]
+    },
+    {
+      "id": "chakras", "cat": "self", "rows": [2, 3, 2],
+      "name": { "en": "Seven Chakras", "ru": "Семь чакр", "ua": "Сім чакр" },
+      "desc": { "en": "Check in with each energy center, from root to crown, and see what needs balance.", "ru": "Пройдитесь по каждому энергетическому центру — от корня до макушки — и найдите, что нужно уравновесить.", "ua": "Пройдіться кожним енергетичним центром — від кореня до тім’я — і знайдіть, що потребує рівноваги." },
+      "q": { "en": ["Where is my energy blocked?", "How can I feel balanced again?"], "ru": ["Где заблокирована моя энергия?", "Как мне вернуть равновесие?"], "ua": ["Де заблокована моя енергія?", "Як мені повернути рівновагу?"] },
+      "positions": [
+        { "en": "Root: safety and money", "ru": "Корень: опора и деньги", "ua": "Корінь: опора й гроші" },
+        { "en": "Sacral: pleasure and desire", "ru": "Сакральная: удовольствие и желания", "ua": "Сакральна: задоволення й бажання" },
+        { "en": "Solar plexus: confidence", "ru": "Солнечное сплетение: уверенность", "ua": "Сонячне сплетіння: впевненість" },
+        { "en": "Heart: love", "ru": "Сердце: любовь", "ua": "Серце: кохання" },
+        { "en": "Throat: your voice", "ru": "Горло: ваш голос", "ua": "Горло: ваш голос" },
+        { "en": "Third eye: intuition", "ru": "Третий глаз: интуиция", "ua": "Третє око: інтуїція" },
+        { "en": "Crown: higher purpose", "ru": "Макушка: высшая цель", "ua": "Тім’я: вища мета", "t": "crown" }
+      ]
+    },
+    {
+      "id": "shadow", "cat": "self", "rows": [2, 2],
+      "name": { "en": "Meet Your Shadow", "ru": "Встреча с тенью", "ua": "Зустріч із тінню" },
+      "desc": { "en": "Gentle shadow work: what you hide, why, and how it can become your strength.", "ru": "Мягкая работа с тенью: что вы прячете, почему и как это станет вашей силой.", "ua": "М’яка робота з тінню: що ви ховаєте, чому і як це стане вашою силою." },
+      "q": { "en": ["What am I hiding from myself?", "What keeps repeating in my life?"], "ru": ["Что я прячу от себя?", "Что повторяется в моей жизни снова и снова?"], "ua": ["Що я ховаю від себе?", "Що повторюється в моєму житті знову й знову?"] },
+      "positions": [
+        { "en": "What you hide", "ru": "Что вы прячете", "ua": "Що ви ховаєте" },
+        { "en": "Why you hide it", "ru": "Почему прячете", "ua": "Чому ховаєте", "t": "foundation" },
+        { "en": "What it teaches you", "ru": "Чему это учит", "ua": "Чого це вчить" },
+        { "en": "How to embrace it", "ru": "Как принять это", "ua": "Як прийняти це", "t": "advice" }
+      ]
+    },
+    {
+      "id": "new_moon", "cat": "moon", "rows": [2, 1, 2],
+      "name": { "en": "New Moon Intentions", "ru": "Намерения на новолуние", "ua": "Наміри на молодик" },
+      "desc": { "en": "Set intentions for the new lunar cycle: what to start, what to release and what will help.", "ru": "Задай намерения на новый лунный цикл: что начать, что отпустить и что поможет.", "ua": "Задай наміри на новий місячний цикл: що почати, що відпустити і що допоможе." },
+      "q": { "en": ["What should I start this lunar cycle?", "What intention should I set?"], "ru": ["Что начать в этом лунном цикле?", "Какое намерение мне загадать?"], "ua": ["Що почати в цьому місячному циклі?", "Який намір мені загадати?"] },
+      "positions": [
+        { "en": "What to start", "ru": "Что начать", "ua": "Що почати", "t": "opportunities" },
+        { "en": "What to release", "ru": "Что отпустить", "ua": "Що відпустити" },
+        { "en": "Your intention", "ru": "Ваше намерение", "ua": "Ваш намір", "t": "crown" },
+        { "en": "What will support you", "ru": "Что поддержит", "ua": "Що підтримає" },
+        { "en": "Gift of the cycle", "ru": "Дар этого цикла", "ua": "Дар цього циклу", "t": "outcome" }
+      ]
+    },
+    {
+      "id": "full_moon", "cat": "moon", "rows": [2, 2],
+      "name": { "en": "Full Moon Release", "ru": "Полнолуние: отпустить", "ua": "Повня: відпустити" },
+      "desc": { "en": "Under the Full Moon: see what came to light, let go and celebrate how far you have come.", "ru": "В полнолуние: увидь, что проявилось, отпусти лишнее и оцени свой путь.", "ua": "У повню: побач, що проявилося, відпусти зайве й оціни свій шлях." },
+      "q": { "en": ["What do I need to let go of?", "What has this cycle taught me?"], "ru": ["Что мне пора отпустить?", "Чему меня научил этот цикл?"], "ua": ["Що мені час відпустити?", "Чого мене навчив цей цикл?"] },
+      "positions": [
+        { "en": "What came to light", "ru": "Что проявилось", "ua": "Що проявилося", "t": "situation" },
+        { "en": "What to release", "ru": "Что отпустить", "ua": "Що відпустити" },
+        { "en": "What to celebrate", "ru": "Чему порадоваться", "ua": "Чому порадіти" },
+        { "en": "Your next step", "ru": "Следующий шаг", "ua": "Наступний крок", "t": "advice" }
+      ]
+    },
+    {
+      "id": "karma", "cat": "destiny", "rows": [2, 1, 2],
+      "name": { "en": "Karmic Lessons", "ru": "Кармические уроки", "ua": "Кармічні уроки" },
+      "desc": { "en": "Patterns you carry from the past, the lesson in front of you and the gift you bring.", "ru": "Сценарии из прошлого, урок, который перед вами, и дар, который вы несёте.", "ua": "Сценарії з минулого, урок, що перед вами, і дар, який ви несете." },
+      "q": { "en": ["What karmic lesson am I living now?", "Why does this keep happening to me?"], "ru": ["Какой кармический урок я сейчас прохожу?", "Почему это повторяется со мной?"], "ua": ["Який кармічний урок я зараз проходжу?", "Чому це повторюється зі мною?"] },
+      "positions": [
+        { "en": "Echo of the past", "ru": "Эхо прошлого", "ua": "Відлуння минулого", "t": "past" },
+        { "en": "Your lesson now", "ru": "Ваш урок сейчас", "ua": "Ваш урок зараз", "t": "challenge" },
+        { "en": "What to forgive", "ru": "Что простить", "ua": "Що пробачити" },
+        { "en": "The gift you carry", "ru": "Ваш дар", "ua": "Ваш дар", "t": "opportunities" },
+        { "en": "The path forward", "ru": "Путь дальше", "ua": "Шлях далі", "t": "advice" }
+      ]
+    },
+    {
+      "id": "destiny", "cat": "destiny", "rows": [3, 3],
+      "name": { "en": "Path of Destiny", "ru": "Путь судьбы", "ua": "Шлях долі" },
+      "desc": { "en": "Your purpose, your gifts, your helpers and the next turning point on your path.", "ru": "Ваше предназначение, таланты, помощники и следующий поворот на пути.", "ua": "Ваше призначення, таланти, помічники й наступний поворот на шляху." },
+      "q": { "en": ["What is my life purpose?", "What is my destiny?"], "ru": ["В чём моё предназначение?", "Какая у меня судьба?"], "ua": ["У чому моє призначення?", "Яка в мене доля?"] },
+      "positions": [
+        { "en": "Your purpose", "ru": "Предназначение", "ua": "Призначення", "t": "crown" },
+        { "en": "Your gifts", "ru": "Ваши таланты", "ua": "Ваші таланти", "t": "opportunities" },
+        { "en": "Obstacles on the path", "ru": "Препятствия на пути", "ua": "Перешкоди на шляху", "t": "obstacle" },
+        { "en": "Your helpers", "ru": "Ваши помощники", "ua": "Ваші помічники", "t": "environment" },
+        { "en": "Next turning point", "ru": "Следующий поворот", "ua": "Наступний поворот", "t": "near" },
+        { "en": "Where your path leads", "ru": "Куда ведёт путь", "ua": "Куди веде шлях", "t": "final" }
+      ]
+    },
+    {
+      "id": "family", "cat": "family", "rows": [1, 3, 1],
+      "name": { "en": "Family Harmony", "ru": "Гармония в семье", "ua": "Гармонія в родині" },
+      "desc": { "en": "The mood at home, your role in it, and what brings your family closer.", "ru": "Атмосфера дома, ваша роль в ней и что сблизит вашу семью.", "ua": "Атмосфера вдома, ваша роль у ній і що зблизить вашу родину." },
+      "q": { "en": ["How can I bring peace to my family?", "Why is there tension at home?"], "ru": ["Как принести мир в семью?", "Почему дома напряжение?"], "ua": ["Як принести мир у родину?", "Чому вдома напруга?"] },
+      "positions": [
+        { "en": "The mood at home", "ru": "Атмосфера дома", "ua": "Атмосфера вдома", "t": "situation" },
+        { "en": "Your role", "ru": "Ваша роль", "ua": "Ваша роль", "t": "self" },
+        { "en": "Source of tension", "ru": "Источник напряжения", "ua": "Джерело напруги", "t": "obstacle" },
+        { "en": "What brings peace", "ru": "Что принесёт мир", "ua": "Що принесе мир" },
+        { "en": "Advice", "ru": "Совет", "ua": "Порада", "t": "advice" }
+      ]
+    },
+    {
+      "id": "parent_child", "cat": "family", "rows": [2, 2],
+      "name": { "en": "Parent & Child", "ru": "Родитель и ребёнок", "ua": "Батьки й дитина" },
+      "desc": { "en": "Understand your child better: their feelings, their needs and your bond ahead.", "ru": "Лучше понять ребёнка: его чувства, потребности и ваши отношения в будущем.", "ua": "Краще зрозуміти дитину: її почуття, потреби і ваші стосунки в майбутньому." },
+      "q": { "en": ["How can I understand my child better?", "What does my child need from me?"], "ru": ["Как лучше понять моего ребёнка?", "Что нужно моему ребёнку от меня?"], "ua": ["Як краще зрозуміти мою дитину?", "Що потрібно моїй дитині від мене?"] },
+      "positions": [
+        { "en": "Your child’s feelings", "ru": "Чувства ребёнка", "ua": "Почуття дитини", "t": "them" },
+        { "en": "What they need from you", "ru": "Что ребёнку нужно от вас", "ua": "Що дитині потрібно від вас" },
+        { "en": "Your lesson as a parent", "ru": "Ваш родительский урок", "ua": "Ваш батьківський урок", "t": "you" },
+        { "en": "Your bond ahead", "ru": "Ваша связь в будущем", "ua": "Ваш зв’язок у майбутньому", "t": "potential" }
+      ]
+    },
+    {
+      "id": "relocation", "cat": "travel", "rows": [1, 2, 2],
+      "name": { "en": "Should I Move?", "ru": "Стоит ли переезжать?", "ua": "Чи варто переїжджати?" },
+      "desc": { "en": "Thinking of a new city or country? See what you leave, what awaits and what to watch for.", "ru": "Думаете о новом городе или стране? Узнайте, что оставите, что ждёт и чего опасаться.", "ua": "Думаєте про нове місто чи країну? Дізнайтеся, що залишите, що чекає і чого остерігатися." },
+      "q": { "en": ["Should I move to another city?", "Will I be happy abroad?"], "ru": ["Стоит ли мне переезжать?", "Будет ли мне хорошо за границей?"], "ua": ["Чи варто мені переїжджати?", "Чи буде мені добре за кордоном?"] },
+      "positions": [
+        { "en": "Why you want to move", "ru": "Почему хочется переехать", "ua": "Чому хочеться переїхати", "t": "situation" },
+        { "en": "What you leave behind", "ru": "Что вы оставите", "ua": "Що ви залишите", "t": "past" },
+        { "en": "What awaits you there", "ru": "Что ждёт там", "ua": "Що чекає там", "t": "future" },
+        { "en": "Hidden risks", "ru": "Скрытые риски", "ua": "Приховані ризики", "t": "obstacle" },
+        { "en": "Advice", "ru": "Совет", "ua": "Порада", "t": "advice" }
+      ]
+    },
+    {
+      "id": "trip", "cat": "travel", "rows": [3],
+      "name": { "en": "Trip Forecast", "ru": "Прогноз поездки", "ua": "Прогноз подорожі" },
+      "desc": { "en": "How your trip will go, a surprise on the way and what you will bring home.", "ru": "Как пройдёт поездка, сюрприз в пути и что вы привезёте с собой.", "ua": "Як мине подорож, сюрприз у дорозі і що ви привезете з собою." },
+      "q": { "en": ["How will my trip go?", "What should I know before I travel?"], "ru": ["Как пройдёт моя поездка?", "Что важно знать перед поездкой?"], "ua": ["Як мине моя подорож?", "Що важливо знати перед подорожжю?"] },
+      "positions": [
+        { "en": "The journey", "ru": "Поездка", "ua": "Подорож", "t": "present" },
+        { "en": "A surprise on the way", "ru": "Сюрприз в пути", "ua": "Сюрприз у дорозі" },
+        { "en": "What you bring home", "ru": "Что привезёте домой", "ua": "Що привезете додому", "t": "outcome" }
+      ]
+    }
+  ]
+}

@@ -210,7 +210,9 @@ en: {
   py_9: 'A year of completion. Let go of what’s finished to make room for a new cycle.',
 
   // ── Spreads ──
-  spreadsTitle: 'Tarot spreads', spreadsSub: 'Ask a question and let the cards answer.',
+  spreadsTitle: 'Tarot spreads', spreadsSub: 'Over 30 spreads for love, money and every part of life.',
+  spAll: 'All', spSaved: 'Saved', spSavedEmpty: 'Tap the bookmark on any spread to keep it here.', spSavedOn: 'Saved', spSavedOff: 'Removed from saved',
+  popularSpreads: 'Popular spreads', seeAll: 'See all',
   history: 'Reading history',
   sp3Title: 'Past · Present · Future', sp3Desc: 'A clear picture of where you’ve been and where you’re heading.',
   sp3Q1: 'Where is my life heading?', sp3Q2: 'What should I focus on now?', sp3Q3: 'What is holding me back?',
@@ -509,7 +511,9 @@ ru: {
   py_8: 'Год силы и достижений. Карьера и финансы могут сделать рывок.',
   py_9: 'Год завершений. Отпусти законченное, чтобы освободить место новому циклу.',
 
-  spreadsTitle: 'Расклады Таро', spreadsSub: 'Задай вопрос — карты ответят.',
+  spreadsTitle: 'Расклады Таро', spreadsSub: 'Больше 30 раскладов: любовь, деньги и вся жизнь.',
+  spAll: 'Все', spSaved: 'Сохранённые', spSavedEmpty: 'Нажми на закладку у любого расклада, чтобы сохранить его здесь.', spSavedOn: 'Сохранено', spSavedOff: 'Убрано из сохранённых',
+  popularSpreads: 'Популярные расклады', seeAll: 'Все',
   history: 'История раскладов',
   sp3Title: 'Прошлое · Настоящее · Будущее', sp3Desc: 'Ясная картина: где ты был(-а) и куда движешься.',
   sp3Q1: 'Куда движется моя жизнь?', sp3Q2: 'На чём сосредоточиться сейчас?', sp3Q3: 'Что меня сдерживает?',
@@ -805,7 +809,9 @@ ua: {
   py_8: 'Рік сили й досягнень. Кар’єра та фінанси можуть зробити ривок.',
   py_9: 'Рік завершень. Відпусти завершене, щоб звільнити місце новому циклу.',
 
-  spreadsTitle: 'Розклади Таро', spreadsSub: 'Постав питання — карти дадуть відповідь.',
+  spreadsTitle: 'Розклади Таро', spreadsSub: 'Понад 30 розкладів: кохання, гроші й усе життя.',
+  spAll: 'Усі', spSaved: 'Збережені', spSavedEmpty: 'Натисни закладку на будь-якому розкладі, щоб зберегти його тут.', spSavedOn: 'Збережено', spSavedOff: 'Прибрано зі збережених',
+  popularSpreads: 'Популярні розклади', seeAll: 'Усі',
   history: 'Історія розкладів',
   sp3Title: 'Минуле · Теперішнє · Майбутнє', sp3Desc: 'Ясна картина: де ти був(-ла) і куди рухаєшся.',
   sp3Q1: 'Куди рухається моє життя?', sp3Q2: 'На чому зосередитися зараз?', sp3Q3: 'Що мене стримує?',

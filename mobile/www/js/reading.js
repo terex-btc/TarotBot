@@ -4,6 +4,7 @@ import { getLang } from './i18n.js';
 import { cardSuit } from './state.js';
 import { esc } from './ui.js';
 import { readingSkyLines, sx } from './sky.js';
+import { spreadCat } from './catalog.js';
 
 let details = null, detailsLang = null;
 export async function loadDetails() {
@@ -52,7 +53,7 @@ const TX = {
       crown: 'This is your conscious goal — what you are aiming for.', near: 'This is what is coming in the next weeks.',
       self: 'This is your inner attitude.', environment: 'This is the influence of people and circumstances around you.',
       hopes: 'These are your hopes and fears — often two sides of one coin.', final: 'This is where everything leads.',
-      answer: 'This card answers your question.',
+      answer: 'This card answers your question.', money: 'This is about money and work.',
     },
     lbl: { meaning: 'Meaning', love: 'Love & relationships', work: 'Work & money', advice: 'Advice', yn: 'Yes or no', overall: 'The overall picture',
            story: 'How the cards connect', patterns: 'What stands out', forYou: 'What it means for you', key: 'Key advice', energy: 'Energy of the spread' },
@@ -91,7 +92,7 @@ const TX = {
       crown: 'Это твоя сознательная цель — к чему ты стремишься.', near: 'Это то, что придёт в ближайшие недели.',
       self: 'Это твоё внутреннее отношение.', environment: 'Это влияние людей и обстоятельств вокруг тебя.',
       hopes: 'Это твои надежды и страхи — часто две стороны одной медали.', final: 'Это то, к чему всё ведёт.',
-      answer: 'Эта карта отвечает на твой вопрос.',
+      answer: 'Эта карта отвечает на твой вопрос.', money: 'Здесь — про деньги и работу.',
     },
     lbl: { meaning: 'Значение', love: 'Любовь и отношения', work: 'Работа и деньги', advice: 'Совет', yn: 'Да или нет', overall: 'Общая картина',
            story: 'Как карты связаны', patterns: 'Что важно заметить', forYou: 'Что это значит для тебя', key: 'Главный совет', energy: 'Энергия расклада' },
@@ -130,7 +131,7 @@ const TX = {
       crown: 'Це твоя свідома мета — до чого ти прагнеш.', near: 'Це те, що прийде найближчими тижнями.',
       self: 'Це твоє внутрішнє ставлення.', environment: 'Це вплив людей і обставин довкола тебе.',
       hopes: 'Це твої надії та страхи — часто два боки однієї медалі.', final: 'Це те, до чого все веде.',
-      answer: 'Ця карта відповідає на твоє питання.',
+      answer: 'Ця карта відповідає на твоє питання.', money: 'Тут — про гроші й роботу.',
     },
     lbl: { meaning: 'Значення', love: 'Кохання й стосунки', work: 'Робота й гроші', advice: 'Порада', yn: 'Так чи ні', overall: 'Загальна картина',
            story: 'Як карти пов’язані', patterns: 'Що варто помітити', forYou: 'Що це означає для тебе', key: 'Головна порада', energy: 'Енергія розкладу' },
@@ -165,10 +166,13 @@ const POS_MAP = {
   self: 'self', environment: 'environment', 'hopes and fears': 'hopes', 'final outcome': 'final', answer: 'answer',
 };
 export function posType(p) {
+  if (p && typeof p === 'object' && p.t) return p.t;   // тематичні розклади шлють тип позиції явно
   const en = String((p && typeof p === 'object' ? p.en : p) || '').toLowerCase().trim();
   return POS_MAP[en] || null;
 }
 const LOVE_POS = new Set(['state', 'partner', 'connection', 'potential', 'you', 'them', 'relationship', 'love']);
+const ADVICE_POS = ['advice', 'outcome', 'future', 'message', 'day', 'final', 'near', 'answer'];
+const isLoveSpread = id => id === 'love' || spreadCat(id) === 'love';
 
 // Текст картки для конкретної позиції: вступ + значення + доречний аспект
 export function positionText(card, pos, { spreadId } = {}) {
@@ -179,9 +183,9 @@ export function positionText(card, pos, { spreadId } = {}) {
   if (!d) return { intro, main: '', extra: '', extraLabel: '' };
   const main = card.isReversed ? d.rev : d.up;
   let extra = '', extraLabel = '';
-  if (LOVE_POS.has(type) || spreadId === 'love') { extra = d.love; extraLabel = T.lbl.love; }
-  else if (type === 'career' || type === 'energy' || type === 'opportunities') { extra = d.work; extraLabel = T.lbl.work; }
-  else if (['advice', 'outcome', 'future', 'message', 'day', 'final', 'near', 'answer'].includes(type)) { extra = d.advice; extraLabel = T.lbl.advice; }
+  if (LOVE_POS.has(type) || isLoveSpread(spreadId)) { extra = d.love; extraLabel = T.lbl.love; }
+  else if (['career', 'energy', 'opportunities', 'money'].includes(type) || (spreadCat(spreadId) === 'money' && !ADVICE_POS.includes(type))) { extra = d.work; extraLabel = T.lbl.work; }
+  else if (ADVICE_POS.includes(type)) { extra = d.advice; extraLabel = T.lbl.advice; }
   return { intro, main, extra, extraLabel };
 }
 
@@ -237,11 +241,11 @@ export function overallPicture(cards, positions, { name, keywords, spreadId, dat
   const forecast = [];
   if (od && cards.length > 1) {
     forecast.push({ label: T.lbl.love, text: od.love, card: name(outCard) });
-    if (spreadId !== 'love') forecast.push({ label: T.lbl.work, text: od.work, card: name(outCard) });
+    if (!isLoveSpread(spreadId)) forecast.push({ label: T.lbl.work, text: od.work, card: name(outCard) });
   }
 
   // ретрогради й затемнення на момент розкладу
-  const sky = readingSkyLines(date ? new Date(date) : new Date(), { love: spreadId === 'love' });
+  const sky = readingSkyLines(date ? new Date(date) : new Date(), { love: isLoveSpread(spreadId) });
 
   return { verdict, energy: T.energy[verdict], story, patterns, sky, yn, ynText: T.ynText[yn], advice, advCard, forecast };
 }

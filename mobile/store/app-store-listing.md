@@ -57,9 +57,13 @@ CARD OF THE DAY
 • Daily advice and a yes-or-no hint
 • Build your streak and see when your next card is ready
 
-TAROT SPREADS
+30+ TAROT SPREADS
 • Yes or No — one card, a clear answer
-• Love & Relationships — your feelings, theirs and where it can go
+• Love: Do They Really Love Me?, Will They Come Back?, Why the Silence?, Soulmate Connection and more
+• Money & career: Money Flow, Abundance Star, Career Crossroads, Stay or Go?
+• Moon rituals: New Moon Intentions and Full Moon Release
+• Karma & destiny, self-discovery, family, travel and the Week Ahead
+• Save your favorite spreads with one tap
 • Past · Present · Future, Your Month Ahead and Your Year Ahead
 • The legendary 10-card Celtic Cross
 • All 78 Rider-Waite cards, upright and reversed
@@ -137,9 +141,13 @@ Lucky Tarot — твой личный проводник к любви, день
 • Совет дня и подсказка «да или нет»
 • Серия дней и таймер до следующей карты
 
-РАСКЛАДЫ
+БОЛЬШЕ 30 РАСКЛАДОВ
 • Да или Нет — одна карта, ясный ответ
-• Любовь и отношения — твои чувства, чувства партнёра и куда всё идёт
+• Любовь: «Любит ли меня этот человек?», «Вернётся ли любимый человек?», «Почему нет ответа?», «Связь душ» и другие
+• Деньги и карьера: «Денежный поток», «Звезда изобилия», «Карьерный перекрёсток», «Остаться или уйти?»
+• Лунные ритуалы: намерения на новолуние и полнолуние
+• Карма и судьба, личность, семья, поездки и «Неделя вперёд»
+• Любимые расклады можно сохранить в закладки
 • Прошлое · Настоящее · Будущее, Твой месяц, Твой год
 • Легендарный Кельтский крест на 10 карт
 • Все 78 карт Райдера–Уэйта, прямые и перевёрнутые
@@ -209,9 +217,13 @@ Lucky Tarot — твій особистий провідник до коханн
 • Порада дня і підказка «так чи ні»
 • Серія днів і таймер до наступної карти
 
-РОЗКЛАДИ
+ПОНАД 30 РОЗКЛАДІВ
 • Так чи Ні — одна карта, чітка відповідь
-• Кохання і стосунки — твої почуття, почуття партнера і куди все йде
+• Кохання: «Чи кохає мене ця людина?», «Чи повернеться кохана людина?», «Чому немає відповіді?», «Зв’язок душ» та інші
+• Гроші й кар’єра: «Грошовий потік», «Зірка достатку», «Кар’єрне роздоріжжя», «Залишитися чи піти?»
+• Місячні ритуали: наміри на молодик і повню
+• Карма й доля, особистість, родина, подорожі й «Тиждень наперед»
+• Улюблені розклади можна зберегти в закладки
 • Минуле · Теперішнє · Майбутнє, Твій місяць, Твій рік
 • Легендарний Кельтський хрест на 10 карт
 • Усі 78 карт Райдера–Вейта, прямі й перевернуті
@@ -300,6 +312,7 @@ What makes Lucky Tarot different from a typical tarot app:
 - The Oracle: a conversational AI reader that answers the user's own questions with their zodiac sign in mind and keeps the conversation history on the device.
 - Cosmic Weather: exact astronomical dates of Mercury, Venus and Mars retrogrades and of solar and lunar eclipses (calculated in advance for 2026–2030). Active events are shown at the top of the Today screen, noted in readings, woven into the daily horoscope and marked in the Moon calendar; optional local notifications announce them.
 - A daily ritual in one place: Card of the Day, a horoscope and the Moon phase, personalized with the user's zodiac sign, chosen focus and today's sky.
+- More than 30 spreads organized by topic (love, money and career, Moon rituals, karma, family, travel), with a picture of each layout and bookmarks.
 - A reading journal: every spread is saved with notes, mood and a "came true" mark, so users can look back at what actually happened.
 - Native experience: local notifications, haptics, sharing, and in-app purchases through StoreKit. All screens and content are bundled in the app; it is not a website wrapper.
 

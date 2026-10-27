@@ -2,7 +2,7 @@
 import { t, getLang, locale } from '../i18n.js';
 import { state, track, onStateChange } from '../state.js';
 import { api } from '../api.js';
-import { haptic, share } from '../platform.js';
+import { haptic, share, storage } from '../platform.js';
 import { pushScreen, openSheet, closeLayer, esc, spinner, toast, typeText, delay } from '../ui.js';
 import { cardBack, sparkle, icons } from '../art.js';
 import { play } from '../sound.js';
@@ -13,18 +13,19 @@ import { loadDetails, overallPicture, overallHtml, cardBlocksHtml, yesNo, cardDe
 import { journalHtml, wireJournal, moodBadge } from '../journal.js';
 import { readingSkyLines } from '../sky.js';
 import { readingDone, afterReadingClosed } from '../moments.js';
+import { CATEGORIES, CATALOG, spreadCat } from '../catalog.js';
 
 const P = (en, ru, ua) => ({ en, ru, ua });
-export const SPREADS = [
-  { id: 'yes_no', count: 1, free: true, title: 'spYnTitle', desc: 'spYnDesc', long: 'spYnLong', q: ['spYnQ1', 'spYnQ2', 'spYnQ3'],
+const CLASSICS = [
+  { id: 'yes_no', count: 1, free: true, rows: [1], title: 'spYnTitle', desc: 'spYnDesc', long: 'spYnLong', q: ['spYnQ1', 'spYnQ2', 'spYnQ3'],
     positions: [P('Answer', 'Ответ', 'Відповідь')] },
-  { id: 'three_card', count: 3, title: 'sp3Title', desc: 'sp3Desc', long: 'sp3Long', q: ['sp3Q1', 'sp3Q2', 'sp3Q3'],
+  { id: 'three_card', count: 3, rows: [3], title: 'sp3Title', desc: 'sp3Desc', long: 'sp3Long', q: ['sp3Q1', 'sp3Q2', 'sp3Q3'],
     positions: [P('Past', 'Прошлое', 'Минуле'), P('Present', 'Настоящее', 'Теперішнє'), P('Future', 'Будущее', 'Майбутнє')] },
-  { id: 'love', count: 4, title: 'spLoveTitle', desc: 'spLoveDesc', long: 'spLoveLong', q: ['spLoveQ1', 'spLoveQ2', 'spLoveQ3'],
+  { id: 'love', count: 4, rows: [2, 2], title: 'spLoveTitle', desc: 'spLoveDesc', long: 'spLoveLong', q: ['spLoveQ1', 'spLoveQ2', 'spLoveQ3'],
     positions: [P('Your feelings', 'Ваше состояние', 'Ваш стан'), P('Partner', 'Партнёр', 'Партнер'), P('Connection', 'Связь', 'Зв’язок'), P('Potential', 'Потенциал', 'Потенціал')] },
-  { id: 'month', count: 4, title: 'spMonthTitle', desc: 'spMonthDesc', long: 'spMonthLong', q: ['spMonthQ1', 'spMonthQ2'],
+  { id: 'month', count: 4, rows: [2, 2], title: 'spMonthTitle', desc: 'spMonthDesc', long: 'spMonthLong', q: ['spMonthQ1', 'spMonthQ2'],
     positions: [P('Overall energy', 'Общая энергия', 'Загальна енергія'), P('Main challenge', 'Вызов месяца', 'Виклик місяця'), P('Opportunities', 'Возможности', 'Можливості'), P('Outcome', 'Итог', 'Підсумок')] },
-  { id: 'year', count: 6, title: 'spYearTitle', desc: 'spYearDesc', long: 'spYearLong', q: ['spYearQ1', 'spYearQ2'],
+  { id: 'year', count: 6, rows: [3, 3], title: 'spYearTitle', desc: 'spYearDesc', long: 'spYearLong', q: ['spYearQ1', 'spYearQ2'],
     positions: [P('Theme of the year', 'Тема года', 'Тема року'), P('Challenges', 'Вызовы', 'Виклики'), P('Opportunities', 'Возможности', 'Можливості'),
       P('Love', 'Любовь', 'Кохання'), P('Career', 'Карьера', 'Кар’єра'), P('Outcome', 'Результат', 'Результат')] },
   { id: 'celtic', count: 10, title: 'spCelticTitle', desc: 'spCelticDesc', long: 'spCelticLong', q: ['spCelticQ1', 'spCelticQ2'],
@@ -33,17 +34,71 @@ export const SPREADS = [
       P('Self', 'Ты', 'Ти'), P('Environment', 'Окружение', 'Оточення'), P('Hopes and fears', 'Надежды и страхи', 'Надії та страхи'), P('Final outcome', 'Итог', 'Підсумок')] },
 ];
 
-// Порядок під інтереси з онбордингу: «Так/Ні» завжди першим, далі — найближче до теми людини
-function orderedSpreads() {
-  const f = state.focus || [];
-  const boost = id => (id === 'yes_no' ? 100 : 0) +
-    (f.includes('love') && id === 'love' ? 10 : 0) +
-    (f.includes('career') && (id === 'month' || id === 'year') ? 8 : 0) +
-    ((f.includes('growth') || f.includes('spirit')) && id === 'celtic' ? 6 : 0);
-  return SPREADS.map((s, i) => ({ s, w: boost(s.id) - i * 0.01 })).sort((a, b) => b.w - a.w).map(x => x.s);
+// Тематичні розклади з каталогу (data/spreads.json) — у тому ж форматі, що й класичні
+export const SPREADS = [...CLASSICS, ...CATALOG.map(c => ({ ...c, count: c.positions.length, free: !!c.free, catalog: true }))];
+
+// Назва / опис / підказки-питання: у класичних — ключі i18n, у каталозі — тексти {en,ru,ua}
+const loc = o => o[getLang()] || o.en;
+export const spTitle = sp => sp.catalog ? loc(sp.name) : t(sp.title);
+const spLong = sp => sp.catalog ? loc(sp.desc) : t(sp.long);
+const spChips = sp => sp.catalog ? loc(sp.q) : sp.q.map(k => t(k));
+
+// Категорії: спершу ті, що людина обрала в онбордингу, але видно всі — і тим, хто нічого не обрав
+const FOCUS_CAT = { love: 'love', career: 'money', growth: 'self', balance: 'moon', family: 'family', spirit: 'destiny' };
+function orderedCats() {
+  const f = (state.focus || []).map(k => FOCUS_CAT[k]).filter(Boolean);
+  return [...CATEGORIES].sort((a, b) => f.includes(b.id) - f.includes(a.id));
+}
+const inCat = id => SPREADS.filter(sp => spreadCat(sp.id) === id);
+
+// Закладки — на пристрої
+const FAV_KEY = 'lt_fav_spreads';
+const favs = () => { try { return JSON.parse(storage.get(FAV_KEY) || '[]'); } catch (_) { return []; } };
+function toggleFav(id) {
+  const f = favs();
+  const on = !f.includes(id);
+  storage.set(FAV_KEY, JSON.stringify(on ? [id, ...f] : f.filter(x => x !== id)));
+  return on;
+}
+
+// Схема розкладу на плитці: ряди «карт», як вони ляжуть на стіл
+function shapeHtml(sp) {
+  if (sp.id === 'celtic') return `<span class="sp-shape celtic">${Array.from({ length: 10 }, (_, i) => `<i style="grid-area:c${i + 1}"></i>`).join('')}</span>`;
+  const rows = sp.rows || [sp.count];
+  return `<span class="sp-shape" style="--r:${rows.length}">${rows.map(n => `<span>${'<i></i>'.repeat(n)}</span>`).join('')}</span>`;
+}
+
+export function spreadTileHtml(sp) {
+  const on = favs().includes(sp.id);
+  return `<div class="sp-tile cat-${spreadCat(sp.id)}" role="button" tabindex="0" data-id="${sp.id}">
+      ${shapeHtml(sp)}
+      <b class="serif">${esc(spTitle(sp))}</b>
+      <small>${t('nCards', { n: sp.count })}${sp.free ? ` · <em class="free-tag">${t('freeTag')}</em>` : ''}</small>
+      ${state.isPremium || sp.free ? '' : '<span class="sc-lock">PRO</span>'}
+      <button class="sp-fav${on ? ' on' : ''}" data-fav="${sp.id}" aria-label="${t('spSaved')}">${on ? icons.bookmarkOn : icons.bookmark}</button>
+    </div>`;
+}
+
+// Клік по плитці відкриває розклад, по закладці — зберігає (onFav — перемалювати список «Збережені»)
+export function wireSpreadTiles(box, onFav) {
+  box.querySelectorAll('.sp-tile').forEach(el => {
+    const open = () => { haptic('light'); openSpread(spreadById(el.dataset.id)); };
+    el.onclick = open;
+    el.onkeydown = e => { if (e.key === 'Enter') open(); };
+  });
+  box.querySelectorAll('.sp-fav').forEach(b => b.onclick = e => {
+    e.stopPropagation();
+    const on = toggleFav(b.dataset.fav);
+    haptic(on ? 'success' : 'light');
+    track('spread_fav', `${b.dataset.fav}:${on ? 1 : 0}`);
+    document.querySelectorAll(`.sp-fav[data-fav="${b.dataset.fav}"]`).forEach(x => { x.classList.toggle('on', on); x.innerHTML = on ? icons.bookmarkOn : icons.bookmark; });
+    toast(t(on ? 'spSavedOn' : 'spSavedOff'));
+    onFav?.();
+  });
 }
 
 let root;
+let filter = 'all';
 
 export function mountSpreads(el) {
   root = el;
@@ -51,32 +106,59 @@ export function mountSpreads(el) {
   onStateChange(w => { if (['premium', 'lang', 'cardback'].includes(w)) render(); });
 }
 
+function heroYesNo() {
+  const sp = spreadById('yes_no');
+  return `<button class="spread-card sc-yes_no" data-id="yes_no">
+      <span class="sc-fan n1"><span class="sc-c" style="--k:0;--n:1">${cardBack({ glow: false })}</span></span>
+      <span class="sc-text">
+        <span class="sc-title serif">${t(sp.title)}</span>
+        <span class="sc-desc">${t(sp.desc)}</span>
+        <span class="sc-meta"><b class="free-tag">${t('freeTag')}</b><span>· ${t('nCards', { n: 1 })}</span><span>· ${sparkle()} AI</span></span>
+      </span>
+    </button>`;
+}
+
 function render() {
+  const L = getLang();
+  const grid = list => `<div class="sp-grid">${list.map(spreadTileHtml).join('')}</div>`;
+  let body;
+  if (filter === 'saved') {
+    const saved = favs().map(spreadById).filter(Boolean);
+    body = saved.length ? grid(saved) : `<div class="sp-empty">${icons.bookmark}<p>${t('spSavedEmpty')}</p></div>`;
+  } else if (filter !== 'all') {
+    body = grid(inCat(filter));
+  } else {
+    body = heroYesNo() + orderedCats().map(c => {
+      const list = inCat(c.id).filter(sp => sp.id !== 'yes_no');
+      return list.length ? `<section class="sp-sec cat-${c.id}">
+          <h3 class="sp-sec-h"><span class="sp-sec-ico">${icons[c.icon] || ''}</span>${esc(c[L] || c.en)}<small>${list.length}</small></h3>
+          ${grid(list)}
+        </section>` : '';
+    }).join('');
+  }
+  const chip = (id, label, ico = '') => `<button class="sp-chip${filter === id ? ' on' : ''} cat-${id}" data-f="${id}">${ico}${esc(label)}</button>`;
   root.innerHTML = `<div class="scroll tab-scroll">
       <header class="tab-head row">
         <div><h1 class="serif">${t('spreadsTitle')}</h1><p>${t('spreadsSub')}</p></div>
         <button class="icon-btn soft" id="sp-history" aria-label="${t('journal')}">${icons.history}</button>
       </header>
-      <div class="spread-list">${orderedSpreads().map((s, i) => `
-        <button class="spread-card sc-${s.id}" data-id="${s.id}" style="--i:${i}">
-          <span class="sc-fan n${Math.min(s.count, 5)}">${Array.from({ length: Math.min(s.count, 5) }, (_, k) =>
-            `<span class="sc-c" style="--k:${k};--n:${Math.min(s.count, 5)}">${cardBack({ glow: false })}</span>`).join('')}</span>
-          <span class="sc-text">
-            <span class="sc-title serif">${t(s.title)}</span>
-            <span class="sc-desc">${t(s.desc)}</span>
-            ${s.count > 1 && s.count <= 4 ? `<span class="sc-pos">${s.positions.map(p => esc(p[getLang()] || p.en)).join(' · ')}</span>` : ''}
-            <span class="sc-meta">${s.free ? `<b class="free-tag">${t('freeTag')}</b> · ` : ''}${t('nCards', { n: s.count })} · ${sparkle()} AI</span>
-          </span>
-          ${state.isPremium || s.free ? '' : `<span class="sc-lock">PRO</span>`}
-        </button>`).join('')}
-      </div>
+      <div class="sp-cats">${chip('all', t('spAll'))}${chip('saved', t('spSaved'), icons.bookmark)}${orderedCats().map(c => chip(c.id, c[L] || c.en, icons[c.icon] || '')).join('')}</div>
+      <div class="sp-body">${body}</div>
       <p class="disclaimer">${t('disclaimer')}</p>
     </div>`;
   root.querySelector('#sp-history').onclick = () => { haptic('light'); openHistory(); };
-  root.querySelectorAll('.spread-card').forEach(b => b.onclick = () => {
-    haptic('light');
-    openSpread(SPREADS.find(s => s.id === b.dataset.id));
+  root.querySelector('.sc-yes_no')?.addEventListener('click', () => { haptic('light'); openSpread(spreadById('yes_no')); });
+  root.querySelectorAll('.sp-chip').forEach(b => b.onclick = () => {
+    haptic('select');
+    filter = b.dataset.f;
+    track('spread_filter', filter);
+    const x = root.querySelector('.scroll').scrollTop;
+    render();
+    const sc = root.querySelector('.scroll');
+    sc.scrollTop = Math.min(x, root.querySelector('.sp-cats').offsetTop - 8);
+    root.querySelector(`.sp-chip[data-f="${filter}"]`)?.scrollIntoView({ inline: 'center', block: 'nearest', behavior: 'smooth' });
   });
+  wireSpreadTiles(root, () => { if (filter === 'saved') render(); });
 }
 
 export function spreadById(id) { return SPREADS.find(s => s.id === id); }
@@ -85,12 +167,12 @@ export function openSpread(spread, prefill = '') {
   track(spread.id === 'yes_no' ? 'yesno_open' : 'spread_open', spread.id);
   if (!state.isPremium && !spread.free) { showPaywall({ source: `spread_${spread.id}` }); return; }
   const layer = openSheet(`<div class="ask">
-      <h2 class="serif">${t(spread.title)}</h2>
-      <p class="ask-long">${t(spread.long)}</p>
+      <h2 class="serif">${esc(spTitle(spread))}</h2>
+      <p class="ask-long">${esc(spLong(spread))}</p>
       ${spread.count > 1 ? `<div class="ask-pos">${spread.positions.map((p, i) => `<span><b>${i + 1}</b>${esc(p[getLang()] || p.en)}</span>`).join('')}</div>` : ''}
       <p class="muted">${t(spread.id === 'yes_no' ? 'ynAskSub' : 'askQuestionSub')}</p>
       <textarea id="q-input" class="field area" maxlength="300" rows="3" placeholder="${t(spread.id === 'yes_no' ? 'ynPlaceholder' : 'questionPlaceholder')}">${esc(prefill)}</textarea>
-      <div class="chips wrap">${spread.q.map(k => `<button class="chip btn-chip" data-q="${esc(t(k))}">${t(k)}</button>`).join('')}</div>
+      <div class="chips wrap">${spChips(spread).map(q => `<button class="chip btn-chip" data-q="${esc(q)}">${esc(q)}</button>`).join('')}</div>
       <button class="btn-primary" id="q-go"><span>${t(spread.count === 1 ? 'drawCard' : 'drawCards')}</span>${icons.chevron}</button>
       <button class="btn-text" id="q-skip">${t('skipQuestion')}</button>
     </div>`, { tall: false, cls: 'ask-layer' });
@@ -104,18 +186,26 @@ export function openSpread(spread, prefill = '') {
 async function startReading(spread, question) {
   const L = getLang();
   const celtic = spread.id === 'celtic';
+  const rows = spread.catalog ? spread.rows : null;
+  const numbered = celtic || (rows && spread.count >= 5);
+  const slot = i => `
+        <div class="rd-slot" style="--i:${i}${celtic ? `;grid-area:c${i + 1}` : ''}">
+          <div class="rd-card"><div class="flip"><div class="face back">${cardBack()}</div><div class="face front"></div></div></div>
+          ${numbered ? `<span class="rd-num">${i + 1}</span>${rows ? '<div class="rd-name"></div>' : ''}` : '<div class="rd-pos"></div><div class="rd-name"></div>'}
+        </div>`;
+  let k = 0;
+  const gridHtml = rows
+    ? `<div class="rd-grid rows" id="rd-grid" style="--cols:${Math.max(...rows)}">${rows.map(n => `<div class="rd-line">${Array.from({ length: n }, () => slot(k++)).join('')}</div>`).join('')}</div>`
+    : `<div class="rd-grid n${spread.count}${celtic ? ' celtic' : ''}" id="rd-grid">${Array.from({ length: spread.count }, (_, i) => slot(i)).join('')}</div>`;
+  const legend = rows && numbered
+    ? `<ol class="rd-legend">${spread.positions.map(p => `<li>${esc(p[getLang()] || p.en)}</li>`).join('')}</ol>` : '';
   const layer = pushScreen(`<div class="reading">
       ${question ? `<div class="q-badge">“${esc(question)}”</div>` : ''}
       <p class="reading-hint" id="rd-hint">${t('shuffling')}</p>
-      <div class="rd-grid n${spread.count}${celtic ? ' celtic' : ''}" id="rd-grid">${Array.from({ length: spread.count }, (_, i) => `
-        <div class="rd-slot" style="--i:${i}${celtic ? `;grid-area:c${i + 1}` : ''}">
-          <div class="rd-card"><div class="flip"><div class="face back">${cardBack()}</div><div class="face front"></div></div></div>
-          ${celtic ? `<span class="rd-num">${i + 1}</span>` : '<div class="rd-pos"></div><div class="rd-name"></div>'}
-        </div>`).join('')}
-      </div>
-      ${celtic ? `<p class="muted center celtic-note">${t('celticTapNote')}</p>` : ''}
+      ${gridHtml}
+      ${celtic ? `<p class="muted center celtic-note">${t('celticTapNote')}</p>` : legend}
       <div class="rd-result" id="rd-result"></div>
-    </div>`, { title: t(spread.title), cls: 'reading-layer', onClose: () => { if (layer?.dataset.done) afterReadingClosed(); } });
+    </div>`, { title: esc(spTitle(spread)), cls: 'reading-layer', onClose: () => { if (layer?.dataset.done) afterReadingClosed(); } });
 
   const grid = layer.querySelector('#rd-grid');
   grid.classList.add('dealing');
@@ -162,7 +252,7 @@ async function startReading(spread, question) {
 function spreadTitle(r) {
   if (r.spreadType === 'daily') return t('cardOfDay');
   const sp = spreadById(r.spreadType);
-  return sp ? t(sp.title) : posLabel(r.spreadName);
+  return sp ? spTitle(sp) : posLabel(r.spreadName);
 }
 
 function posLabel(p) {
