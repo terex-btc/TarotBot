@@ -99,6 +99,17 @@ app.post('/api/ai/chat', (req, res) => {
   if (!premium) return res.status(402).json({ ok: false, error: 'premium_required' });
   setTimeout(() => res.json({ ok: true, reply: (AI[req.body.lang] || AI.en).split('\n')[0] }), 1100);
 });
+// Тренажер тлумачення — заглушка AI-вчителя
+app.post('/api/ai/practice', (req, res) => {
+  if (!premium) return res.status(402).json({ ok: false, error: 'premium_required' });
+  if (String(req.body.answer || '').trim().length < 40) return res.status(400).json({ ok: false, error: 'bad_request' });
+  setTimeout(() => res.json({ ok: true, score: 7,
+    good: ['You read the first card in its position correctly', 'You connected the cards into one story'],
+    missed: ['Say how the reversed card changes the advice', 'Answer the question directly in one sentence'],
+    tip: 'Start with the overall mood of the spread, then go card by card.',
+    model: 'The past card shows the energy you are coming from; the present card is the challenge you face now; the future card points to a hopeful turn if you act on the advice. In short: let go of the old worry and take one practical step this week.',
+  }), 1400);
+});
 app.get('/api/app/horoscope/:sign', (req, res) => {
   const date = req.query.date || new Date().toISOString().slice(0, 10);
   setTimeout(() => res.json({ ok: true, sign: req.params.sign,

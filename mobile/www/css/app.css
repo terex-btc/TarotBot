@@ -1300,3 +1300,35 @@ button.pro-pill { animation: pulse 2.6s ease-in-out infinite; }
 .rd-legend li::marker { color: var(--lav2); font-weight: 900; }
 .sp-body .sc-meta { flex-wrap: wrap; row-gap: 2px; }
 .sp-body .sc-meta > span { display: inline-flex; align-items: center; gap: 5px; white-space: nowrap; }
+
+/* ══ Тренажер тлумачення ════════════════════════════════════════════════ */
+.pc-trainer { background: linear-gradient(130deg, #5a3a12, #6b2f6e 55%, #3b22b0); }
+.pc-trainer .pc-icon .sparkle { width: 32px; height: 32px; color: var(--gold); }
+.trainer { text-align: center; padding-bottom: 20px; }
+.trainer .rd-grid { margin: 14px 0 6px; }
+.tr-task { margin: 14px 4px 12px; font-size: 15px; line-height: 1.45; text-align: left; }
+.trainer .field.area { min-height: 150px; text-align: left; }
+.tr-min { margin: 8px 4px 0; font-size: 13.5px; color: var(--text3); text-align: left; }
+.tr-err { margin: 10px 4px 0; font-size: 14px; color: #ff9db0; text-align: left; }
+.trainer .btn-primary { margin-top: 16px; }
+.trainer .btn-primary .sparkle { width: 16px; height: 16px; color: var(--gold); }
+.trainer .btn-primary:disabled { opacity: .45; }
+.tr-score { display: flex; align-items: center; gap: 18px; padding: 18px; border-radius: var(--r-lg); background: var(--surface); border: 1px solid var(--line); text-align: left; }
+.tr-score .lp-ring { width: 82px; height: 82px; }
+.tr-score .lp-ring span { font-size: 28px; }
+.tr-score .lp-ring small { font-size: 13px; color: var(--text3); font-family: var(--sans); }
+.tr-score > div:last-child { display: flex; flex-direction: column; gap: 2px; }
+.tr-score > div:last-child small { font-size: 12.5px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; color: var(--text3); }
+.tr-score > div:last-child b { font-size: 24px; }
+.tr-list { margin-top: 18px; text-align: left; }
+.tr-list h4 { margin: 0 4px 8px; font-size: 13px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; color: var(--text3); }
+.tr-list ul { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+.tr-list li { display: flex; gap: 10px; align-items: flex-start; padding: 12px 14px; border-radius: var(--r-md); background: rgba(255, 255, 255, .04); border: 1px solid var(--line); font-size: 15px; line-height: 1.4; }
+.tr-list li > svg { flex: none; width: 18px; height: 18px; margin-top: 2px; }
+.tr-list.good li > svg { color: var(--green); }
+.tr-list.miss li > svg { color: var(--gold); }
+.tr-tip { margin-top: 18px; padding: 14px 16px; border-radius: var(--r-md); border: 1px dashed var(--line2); text-align: left; }
+.tr-tip span { font-size: 13px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; color: var(--lav2); }
+.tr-tip p { margin-top: 6px; font-size: 15px; line-height: 1.45; }
+.trainer .ai-box { margin-top: 18px; }
+.tr-again { margin-top: 18px; opacity: .9; }

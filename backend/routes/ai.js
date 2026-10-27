@@ -4,6 +4,7 @@ const router  = express.Router();
 const { pool } = require('../db');
 const { isAdmin } = require('../config/admins');
 const { isLunaraFreePro } = require('../middleware/security');
+const { MAJOR_ARCANA } = require('../config/tarotCards');
 
 // Безкоштовне AI-тлумачення карти дня — дозволяємо не-преміуму лише 1 раз.
 // Повертає true, якщо запит можна виконати (преміум або ще не використано).
@@ -168,6 +169,68 @@ router.post('/interpret', async (req, res) => {
     res.json({ ok: true, interpretation: text });
   } catch (e) {
     console.error('[AI] interpret error:', e.message);
+    res.status(500).json({ ok: false, error: 'ai_error' });
+  }
+});
+
+// POST /api/ai/practice — тренажер тлумачення: AI-вчитель оцінює тлумачення учня (застосунок)
+router.post('/practice', async (req, res) => {
+  try {
+    if (!process.env.ANTHROPIC_API_KEY) {
+      return res.status(503).json({ ok: false, error: 'AI not configured' });
+    }
+    const { cards, positions, question, answer, lang } = req.body;
+    if (req.telegramUserId && req.body.userId && String(req.body.userId) !== req.telegramUserId) {
+      return res.status(403).json({ ok: false, error: 'forbidden' });
+    }
+    const userId = req.telegramUserId || req.body.userId;
+    if (!isLunaraFreePro(req) && !(await isPremiumUser(userId))) {
+      return res.status(402).json({ ok: false, error: 'premium_required' });
+    }
+    if (userId && !checkRateLimit(String(userId))) {
+      return res.status(429).json({ ok: false, error: 'rate_limit' });
+    }
+    const text = String(answer || '').trim().slice(0, 1500);
+    if (!Array.isArray(cards) || !cards.length || cards.length > 5 || text.length < 40) {
+      return res.status(400).json({ ok: false, error: 'bad_request' });
+    }
+    // Карти беремо з колоди на сервері — клієнт шле лише id і перевернутість
+    const lines = cards.map((c, i) => {
+      const card = MAJOR_ARCANA[Number(c?.id)];
+      if (!card) return null;
+      const p = positions?.[i];
+      const pos = p && typeof p === 'object' ? (p.en || '') : String(p || '');
+      const meaning = c.isReversed ? (card.reversed?.en || '') : (card.upright?.en || '');
+      return `${i + 1}. ${pos}: ${card.name}${c.isReversed ? ' (reversed)' : ''} — traditional meaning: ${meaning}`;
+    });
+    if (lines.includes(null)) return res.status(400).json({ ok: false, error: 'bad_request' });
+
+    const l = normLang(lang);
+    const langName = { en: 'natural American English (US spelling)', ru: 'Russian', ua: 'Ukrainian' }[l];
+    const system = `You are a kind but honest tarot teacher who trains beginners in the Rider-Waite tradition. A student has interpreted a practice spread. Grade the interpretation on: (1) how well each card's meaning fits its position, (2) connecting the cards into one story, (3) answering the question, (4) a clear, practical piece of advice. Be warm and specific: praise the student's real ideas and point out exactly what to add. This is for learning and entertainment: never predict illness or death and never give medical, legal or financial advice. Write every text value in ${langName}, addressing the student as "you". Reply with one JSON object and nothing else, in exactly this shape: {"score": <integer from 1 to 10>, "good": [<1 to 3 short points>], "missed": [<1 to 3 short points>], "tip": "<one sentence>", "model": "<your own interpretation of this spread for this question, at most 110 words>"}`;
+    const prompt = `Question: ${String(question || '').slice(0, 300) || '(no question)'}\nSpread:\n${lines.join('\n')}\n\nThe student's interpretation:\n"""\n${text}\n"""`;
+
+    const msg = await getClient().messages.stream({
+      model: 'claude-opus-5-5',
+      max_tokens: 6000,
+      thinking: { type: 'adaptive' },
+      system,
+      messages: [{ role: 'user', content: prompt }],
+    }).finalMessage();
+    const raw = msg.content.find(b => b.type === 'text')?.text || '';
+    let r = null;
+    try { r = JSON.parse((raw.match(/\{[\s\S]*\}/) || [raw])[0]); } catch (_) {}
+    if (!r || typeof r !== 'object') return res.status(502).json({ ok: false, error: 'ai_error' });
+
+    const list = a => (Array.isArray(a) ? a : []).map(x => String(x).trim()).filter(Boolean).slice(0, 3);
+    const score = Math.max(1, Math.min(10, Math.round(Number(r.score) || 1)));
+    if (userId) {
+      pool.query(`INSERT INTO activity_log (user_id, event_type, meta) VALUES ($1,'ai_practice',$2)`,
+        [String(userId), String(score)]).catch(() => {});
+    }
+    res.json({ ok: true, score, good: list(r.good), missed: list(r.missed), tip: String(r.tip || ''), model: String(r.model || '') });
+  } catch (e) {
+    console.error('[AI] practice error:', e.message);
     res.status(500).json({ ok: false, error: 'ai_error' });
   }
 });

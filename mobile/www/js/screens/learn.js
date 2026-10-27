@@ -8,7 +8,7 @@ import { haptic, storage } from '../platform.js';
 import { pushScreen, closeLayer, esc, spinner, typeText, toast } from '../ui.js';
 import { sparkle, icons } from '../art.js';
 import { play } from '../sound.js';
-import { LESSONS, DECK_SPREADS } from '../learn-content.js';
+import { LESSONS, DECK_SPREADS, TRAINER_QUESTIONS } from '../learn-content.js';
 import { cardName, cardKeywords, cardImg, openCardDetail } from './library.js';
 import { showPaywall } from './paywall.js';
 import { userAstro } from './today.js';
@@ -42,6 +42,11 @@ function render() {
     </div>
 
     <h3 class="section-title">${t('practice')}</h3>
+    <button class="practice-card pc-trainer" id="lr-trainer">
+      <span class="pc-icon">${sparkle()}</span>
+      <span class="pc-text"><b class="serif">${t('trainer')}</b><span>${t('trainerSub')}</span></span>
+      ${state.isPremium ? icons.chevron : '<span class="sc-lock static">PRO</span>'}
+    </button>
     <button class="practice-card pc-deck" id="lr-deck">
       <span class="pc-art">${['card_06', 'card_17', 'cups_02'].map((c, i) =>
         `<span class="pc-c" style="--i:${i}"><img src="/assets/cards/${c}.jpg" alt="" loading="lazy"></span>`).join('')}</span>
@@ -54,18 +59,19 @@ function render() {
       ${icons.chevron}
     </button>
 
-    <h3 class="section-title">${t('lessons')}</h3>
-    <div class="lesson-list">${LESSONS.map((l, i) => {
+    ${[1, 2].map(lv => `<h3 class="section-title">${t('learnLevel' + lv)}</h3>
+    <div class="lesson-list">${LESSONS.map((l, i) => ({ l, i })).filter(({ l }) => (l.level || 1) === lv).map(({ l, i }) => {
       const locked = i >= FREE_LESSONS && !state.isPremium;
       return `<button class="lesson-row${done.has(l.id) ? ' done' : ''}" data-i="${i}">
         <span class="lr-num">${done.has(l.id) ? icons.check : `<span>${i + 1}</span>`}</span>
         <span class="lr-text"><b>${esc(l.title[L])}</b><small>${icons.clock}${t('minutes', { n: l.minutes })}</small></span>
         ${locked ? '<span class="sc-lock static">PRO</span>' : icons.chevron}
       </button>`;
-    }).join('')}</div>
+    }).join('')}</div>`).join('')}
     <p class="disclaimer">${t('disclaimer')}</p>
   </div>`;
 
+  root.querySelector('#lr-trainer').onclick = () => { haptic('light'); openTrainer(); };
   root.querySelector('#lr-deck').onclick = () => { haptic('light'); openReadMyDeck(); };
   root.querySelector('#lr-flash').onclick = () => { haptic('light'); openFlashcards(); };
   root.querySelectorAll('.lesson-row').forEach(b => b.onclick = () => {
@@ -240,6 +246,99 @@ function openReadMyDeck() {
   };
 
   step1();
+}
+
+// ── Тренажер тлумачення: 3 карти під питання → учень пише тлумачення → AI-вчитель оцінює ──
+const MIN_ANSWER = 60;
+async function openTrainer() {
+  track('trainer_open');
+  if (!state.isPremium) { showPaywall({ source: 'trainer' }); return; }
+  const cards = await loadCards();
+  if (!cards?.length) { toast(t('errOffline')); return; }
+  await loadDetails();
+  const L = getLang();
+  const layer = pushScreen(`<div class="trainer" id="tr"></div>`, { title: t('trainer') });
+  const box = layer.querySelector('#tr');
+  const pick = arr => arr[Math.floor(Math.random() * arr.length)];
+  let st;
+
+  const deal = () => {
+    const pool = [...cards];
+    const picks = Array.from({ length: 3 }, () => ({ ...pool.splice(Math.floor(Math.random() * pool.length), 1)[0], isReversed: Math.random() < 0.15 }));
+    st = { spread: pick(DECK_SPREADS.filter(s => s.count === 3)), picks, question: pick(TRAINER_QUESTIONS[L] || TRAINER_QUESTIONS.en), answer: '' };
+    ask();
+  };
+
+  const cardsHtml = () => `<div class="rd-grid n3">${st.picks.map((c, i) => `
+      <div class="rd-slot" style="--i:${i}">
+        <button class="rd-card flipped" data-i="${i}"><div class="flip"><div class="face back"></div>
+          <div class="face front"><div class="card-frame${c.isReversed ? ' rev' : ''}">${cardImg(c)}</div></div></div></button>
+        <div class="rd-pos">${esc(st.spread.positions[i][L])}</div>
+        <div class="rd-name">${esc(cardName(c))}${c.isReversed ? ` · ${t('reversedShort')}` : ''}</div>
+      </div>`).join('')}</div>`;
+  const wireCards = () => box.querySelectorAll('.rd-card').forEach(b => b.onclick = () => openCardDetail(st.picks[Number(b.dataset.i)]));
+
+  const ask = (err = '') => {
+    box.innerHTML = `<div class="q-badge">“${esc(st.question)}”</div>
+      ${cardsHtml()}
+      <p class="muted tr-task">${t('trainerTask')}</p>
+      <textarea class="field area" id="tr-a" rows="6" maxlength="1500" placeholder="${t('trainerPh')}">${esc(st.answer)}</textarea>
+      <p class="tr-min" id="tr-min">${t('trainerMin', { n: MIN_ANSWER })}</p>
+      ${err ? `<p class="tr-err">${esc(err)}</p>` : ''}
+      <button class="btn-primary" id="tr-go"><span>${t('trainerCheck')}</span>${sparkle()}</button>
+      <button class="btn-text" id="tr-new">${t('trainerNew')}</button>`;
+    wireCards();
+    const a = box.querySelector('#tr-a'), go = box.querySelector('#tr-go'), min = box.querySelector('#tr-min');
+    const upd = () => {
+      st.answer = a.value;
+      const ok = a.value.trim().length >= MIN_ANSWER;
+      go.disabled = !ok;
+      min.classList.toggle('hidden', ok);
+    };
+    a.oninput = upd;
+    upd();
+    go.onclick = check;
+    box.querySelector('#tr-new').onclick = () => { haptic('light'); deal(); layer.querySelector('.push-body').scrollTop = 0; };
+  };
+
+  const check = async () => {
+    haptic('medium');
+    const go = box.querySelector('#tr-go');
+    go.disabled = true;
+    go.insertAdjacentHTML('afterend', `<div id="tr-wait">${spinner(t('trainerChecking'))}</div>`);
+    const res = await api('POST', '/ai/practice', {
+      cards: st.picks.map(c => ({ id: c.id, isReversed: c.isReversed })), positions: st.spread.positions,
+      question: st.question, answer: st.answer.trim(), lang: L, userId: state.userId,
+    });
+    if (res.error === 'premium_required') { box.querySelector('#tr-wait')?.remove(); go.disabled = false; showPaywall({ source: 'trainer' }); return; }
+    if (!res.ok) { ask(t(res.error === 'offline' ? 'errOffline' : 'trainerOff')); return; }
+    track('trainer_scored', String(res.score));
+    haptic('success');
+    result(res);
+  };
+
+  const result = r => {
+    const lvl = r.score >= 9 ? 4 : r.score >= 7 ? 3 : r.score >= 5 ? 2 : 1;
+    const list = (title, items, cls) => items?.length ? `<div class="tr-list ${cls}"><h4>${t(title)}</h4><ul>${items.map(x =>
+      `<li>${cls === 'good' ? icons.check : sparkle()}<span>${esc(x)}</span></li>`).join('')}</ul></div>` : '';
+    box.innerHTML = `<div class="tr-score">
+        <div class="lp-ring" style="--p:${r.score * 10}"><span class="serif">${r.score}<small>/10</small></span></div>
+        <div><small>${t('trainerScore')}</small><b class="serif">${t('trainerLvl' + lvl)}</b></div>
+      </div>
+      ${list('trainerGood', r.good, 'good')}
+      ${list('trainerMissed', r.missed, 'miss')}
+      ${r.tip ? `<div class="tr-tip"><span>${t('trainerTip')}</span><p>${esc(r.tip)}</p></div>` : ''}
+      ${r.model ? `<div class="ai-box"><div class="ai-box-head">${sparkle()}<span>${t('trainerModel')}</span></div><p class="ai-text">${esc(r.model)}</p></div>` : ''}
+      <div class="tr-again">${cardsHtml()}</div>
+      <div class="ds-actions"><button class="btn-ghost" id="tr-retry">${t('trainerRetry')}</button>
+        <button class="btn-primary" id="tr-next"><span>${t('trainerNew')}</span>${icons.chevron}</button></div>`;
+    wireCards();
+    box.querySelector('#tr-retry').onclick = () => { haptic('light'); ask(); };
+    box.querySelector('#tr-next').onclick = () => { haptic('light'); deal(); };
+    layer.querySelector('.push-body').scrollTop = 0;
+  };
+
+  deal();
 }
 
 // ── Картки-тренажер: картинка → згадай значення → перевір себе ──────────────

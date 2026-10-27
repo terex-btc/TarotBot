@@ -87,7 +87,8 @@ ASK THE ORACLE
 • Chat with your personal AI Oracle about love, work and choices — day or night
 
 LEARN TAROT
-• Short lessons for beginners, from your first card to reading patterns like a pro
+• A 20-lesson course in two levels: from your first card to the Fool’s Journey, the four suits, court cards, love and money readings
+• Interpretation trainer: read three cards in your own words and get a score and feedback from an AI teacher
 • Flashcards to memorize all 78 cards
 • Read My Deck: pulled cards from your own deck? Enter them and get their meanings
 
@@ -166,7 +167,9 @@ Lucky Tarot — твой личный проводник к любви, день
 • Личный ИИ-оракул отвечает на вопросы о любви, работе и выборе — днём и ночью
 
 ОБУЧЕНИЕ ТАРО
-• Короткие уроки для новичков, карточки для запоминания всех 78 карт
+• Курс из 20 уроков в два уровня: от первой карты до пути Шута, мастей, придворных карт, раскладов на любовь и деньги
+• Тренажёр трактовки: истолкуй три карты своими словами и получи оценку и разбор от ИИ-учителя
+• Карточки для запоминания всех 78 карт
 • «Прочитать мою колоду» — введи карты из своей колоды и получи значения
 
 ДНЕВНИК РАСКЛАДОВ
@@ -242,7 +245,9 @@ Lucky Tarot — твій особистий провідник до коханн
 • Особистий ШІ-оракул відповідає на питання про кохання, роботу й вибір — удень і вночі
 
 НАВЧАННЯ ТАРО
-• Короткі уроки для початківців, картки для запам’ятовування всіх 78 карт
+• Курс із 20 уроків у два рівні: від першої карти до шляху Блазня, мастей, придворних карт, розкладів на кохання й гроші
+• Тренажер тлумачення: розтлумач три карти своїми словами й отримай оцінку та розбір від ШІ-вчителя
+• Картки для запам’ятовування всіх 78 карт
 • «Прочитати мою колоду» — введи карти зі своєї колоди й отримай значення
 
 ЩОДЕННИК РОЗКЛАДІВ
@@ -312,6 +317,7 @@ What makes Lucky Tarot different from a typical tarot app:
 - The Oracle: a conversational AI reader that answers the user's own questions with their zodiac sign in mind and keeps the conversation history on the device.
 - Cosmic Weather: exact astronomical dates of Mercury, Venus and Mars retrogrades and of solar and lunar eclipses (calculated in advance for 2026–2030). Active events are shown at the top of the Today screen, noted in readings, woven into the daily horoscope and marked in the Moon calendar; optional local notifications announce them.
 - A daily ritual in one place: Card of the Day, a horoscope and the Moon phase, personalized with the user's zodiac sign, chosen focus and today's sky.
+- Learning, not just readings: a 20-lesson course and an interpretation trainer where an AI teacher scores the user’s own reading of three cards.
 - More than 30 spreads organized by topic (love, money and career, Moon rituals, karma, family, travel), with a picture of each layout and bookmarks.
 - A reading journal: every spread is saved with notes, mood and a "came true" mark, so users can look back at what actually happened.
 - Native experience: local notifications, haptics, sharing, and in-app purchases through StoreKit. All screens and content are bundled in the app; it is not a website wrapper.
