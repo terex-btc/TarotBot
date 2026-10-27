@@ -158,7 +158,7 @@ router.post('/interpret', async (req, res) => {
     }
 
     const stream = getClient().messages.stream({
-      model: 'claude-haiku-4-5',
+      model: 'claude-haiku-5-5',
       max_tokens: 500,
       system: systemPrompt,
       messages: [{ role: 'user', content: parts.join('\n') }],
@@ -285,7 +285,7 @@ router.post('/chat', async (req, res) => {
       .map(m => ({ role: m.role === 'user' ? 'user' : 'assistant', content: String(m.content).slice(0, 500) }));
 
     const finalMsg = await getClient().messages.create({
-      model: 'claude-haiku-4-5',
+      model: 'claude-haiku-5-5',
       max_tokens: 250,
       system: systemPrompt,
       messages: apiMessages,
