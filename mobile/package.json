@@ -2,7 +2,7 @@
   "name": "lunara-app",
   "private": true,
   "version": "1.0.0",
-  "description": "Lunara — Tarot & Astrology (iOS/Android via Capacitor, web, Telegram)",
+  "description": "Lucky Tarot: Love & Money (iOS/Android via Capacitor, web, Telegram)",
   "scripts": {
     "dev": "node dev/mock-server.js",
     "assets:copy": "node scripts/copy-assets.js",

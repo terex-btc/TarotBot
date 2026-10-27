@@ -62,7 +62,7 @@ npm start
 
 ## Застосунок для App Store (`mobile/`)
 
-Новий продукт **Lunara** (EN за замовчуванням + RU/UA) — окремо від старого фронтенду `frontend/`, який і далі обслуговує бота.
+Новий продукт **Lucky Tarot: Love & Money** (до 27.10.2026 називався Lunara; внутрішні імена `lunara_*`, домен lunara-tarot і Bundle ID `app.lunara.tarot` лишились; EN за замовчуванням + RU/UA) — окремо від старого фронтенду `frontend/`, який і далі обслуговує бота.
 - Код: `mobile/www` (vanilla ES-модулі, без збирача). Інструкція: `mobile/README.md`.
 - Сервер віддає його на `/app/`; на iOS/Android — через Capacitor (`mobile/capacitor.config.json`).
 - Локально без БД і бота: `node mobile/dev/mock-server.js` → http://localhost:4173/app/

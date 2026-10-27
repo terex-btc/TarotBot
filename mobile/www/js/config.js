@@ -3,7 +3,7 @@
 
 export const CONFIG = {
   // Робоча назва. Перед подачею в App Store — перевірити, що назва вільна.
-  APP_NAME: 'Lunara',
+  APP_NAME: 'Lucky Tarot',
   APP_TAGLINE: 'Tarot & Astrology',
 
   // Сервер (на нативі запити йдуть сюди; у браузері/Telegram — на той самий origin)

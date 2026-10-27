@@ -1,4 +1,4 @@
-# Lunara — тексты для App Store Connect
+# Lucky Tarot (бывшая Lunara) — тексты для App Store Connect
 
 Всё готово для копирования. Основной язык страницы — **English (U.S.)**, плюс локализации **Russian** и **Ukrainian**
 (в App Store Connect: App Information → Localizable Information → добавить языки).
@@ -27,9 +27,9 @@
 
 **App Name** (25/30)
 ```
-Lunara: Tarot & Astrology
+Lucky Tarot: Love & Money
 ```
-Если название занято: `Lunara Tarot: Daily Card` или `Lunara: Tarot & Horoscope`.
+Если название занято: `Lucky Tarot: Love & Luck` или `Lucky Tarot: Daily Card`.
 
 **Subtitle** (29/30)
 ```
@@ -43,12 +43,12 @@ Mercury and Venus are retrograde until Nov 13. See what it means for your love l
 
 **Keywords** (98/100) — слова из названия и подзаголовка Apple учитывает сама, их не повторяем
 ```
-zodiac,psychic,oracle,retrograde,numerology,fortune,reading,cards,spiritual,celtic,lunar,love,sign
+zodiac,psychic,oracle,retrograde,numerology,fortune,reading,cards,celtic,lunar,sign,astrology,luck
 ```
 
 **Description**
 ```
-Lunara is your personal guide to tarot, astrology and the Moon — beautiful, simple and written just for you.
+Lucky Tarot is your personal guide to love, money and luck — through tarot, astrology and the Moon. Beautiful, simple and written just for you.
 
 Start every morning with your Card of the Day, ask a quick yes-or-no question, or go deep with a full Celtic Cross. Every card comes with a clear explanation in plain English, plus the big picture of what your whole spread is telling you.
 
@@ -92,7 +92,7 @@ YOUR READING JOURNAL
 
 Available in English, Russian and Ukrainian.
 
-LUNARA PRO
+LUCKY TAROT PRO
 Unlock every spread, unlimited AI readings, the Oracle chat, reversed meanings, all lessons, custom card backs and every new feature.
 • Weekly: $6.99 per week, with a 3-day free trial
 • Yearly: $39.99 per year
@@ -103,32 +103,32 @@ Payment is charged to your Apple ID at confirmation of purchase. Your subscripti
 Terms of Use: https://lunara-tarot.up.railway.app/app/legal/terms.html
 Privacy Policy: https://lunara-tarot.up.railway.app/app/legal/privacy.html
 
-Lunara is for entertainment and self-reflection. It does not replace professional medical, legal or financial advice.
+Lucky Tarot is for entertainment and self-reflection. It does not replace professional medical, legal or financial advice.
 ```
 
 ---
 
 ## 3. Russian — локализация
 
-**Name** (25/30)
+**Name** (28/30)
 ```
-Lunara: Таро и астрология
+Lucky Tarot: любовь и деньги
 ```
-**Subtitle** (26/30)
+**Subtitle** (26/30) — «таро» по-русски, чтобы находили по кириллице
 ```
-Карта дня, гороскоп и Луна
+Таро, карта дня и гороскоп
 ```
 **Promotional Text** (118/170)
 ```
 Меркурий и Венера ретроградны до 13 ноября. Узнай, что это значит для любви и планов, — и вытяни бесплатную карту дня.
 ```
-**Keywords** (95/100)
+**Keywords** (99/100)
 ```
-зодиак,гадание,расклад,оракул,ретроград,меркурий,нумерология,любовь,карты,эзотерика,знак,да нет
+зодиак,гадание,расклад,оракул,ретроград,меркурий,нумерология,удача,карты,эзотерика,знак,да нет,луна
 ```
 **Description**
 ```
-Lunara — твой личный проводник в мир Таро, астрологии и Луны. Красиво, просто и написано именно для тебя.
+Lucky Tarot — твой личный проводник к любви, деньгам и удаче: Таро, астрология и Луна. Красиво, просто и написано именно для тебя.
 
 Начинай утро с карты дня, задай быстрый вопрос «да или нет» или сделай подробный Кельтский крест. Каждая карта объяснена понятным языком, а «общая картина» показывает, о чём говорит весь расклад.
 
@@ -164,7 +164,7 @@ Lunara — твой личный проводник в мир Таро, астр
 ДНЕВНИК РАСКЛАДОВ
 • Все расклады сохраняются: заметки, настроение и отметка «сбылось»
 
-LUNARA PRO
+LUCKY TAROT PRO
 Все расклады, безлимитные ИИ-толкования, чат с Оракулом, перевёрнутые значения, все уроки, рубашки карт и все новые функции.
 • Неделя: $6.99 с бесплатным пробным периодом 3 дня
 • Год: $39.99
@@ -175,32 +175,32 @@ LUNARA PRO
 Условия использования: https://lunara-tarot.up.railway.app/app/legal/terms.html
 Политика конфиденциальности: https://lunara-tarot.up.railway.app/app/legal/privacy.html
 
-Lunara создана для развлечения и самопознания и не заменяет профессиональных медицинских, юридических или финансовых советов.
+Lucky Tarot создано для развлечения и самопознания и не заменяет профессиональных медицинских, юридических или финансовых советов.
 ```
 
 ---
 
 ## 4. Ukrainian — локализация
 
-**Name** (26/30)
+**Name** (28/30)
 ```
-Lunara: Таро та астрологія
+Lucky Tarot: кохання і гроші
 ```
-**Subtitle** (28/30)
+**Subtitle** (26/30) — «таро» українською, щоб знаходили кирилицею
 ```
-Карта дня, гороскоп і Місяць
+Таро, карта дня і гороскоп
 ```
 **Promotional Text** (127/170)
 ```
 Меркурій і Венера ретроградні до 13 листопада. Дізнайся, що це означає для кохання й планів, — і витягни безкоштовну карту дня.
 ```
-**Keywords** (98/100)
+**Keywords** (96/100)
 ```
-зодіак,ворожіння,розклад,оракул,ретроград,меркурій,нумерологія,кохання,карти,езотерика,знак,так ні
+зодіак,ворожіння,розклад,оракул,ретроград,меркурій,нумерологія,удача,карти,езотерика,знак,так ні
 ```
 **Description**
 ```
-Lunara — твій особистий провідник у світ Таро, астрології та Місяця. Красиво, просто й написано саме для тебе.
+Lucky Tarot — твій особистий провідник до кохання, грошей і удачі: Таро, астрологія та Місяць. Красиво, просто й написано саме для тебе.
 
 Починай ранок із карти дня, постав швидке питання «так чи ні» або зроби докладний Кельтський хрест. Кожна карта пояснена зрозумілою мовою, а «загальна картина» показує, про що говорить увесь розклад.
 
@@ -236,7 +236,7 @@ Lunara — твій особистий провідник у світ Таро, 
 ЩОДЕННИК РОЗКЛАДІВ
 • Усі розклади зберігаються: нотатки, настрій і позначка «справдилось»
 
-LUNARA PRO
+LUCKY TAROT PRO
 Усі розклади, безлімітні ШІ-тлумачення, чат з Оракулом, перевернуті значення, усі уроки, сорочки карт і всі нові функції.
 • Тиждень: $6.99 з безкоштовним пробним періодом 3 дні
 • Рік: $39.99
@@ -247,14 +247,14 @@ LUNARA PRO
 Умови використання: https://lunara-tarot.up.railway.app/app/legal/terms.html
 Політика конфіденційності: https://lunara-tarot.up.railway.app/app/legal/privacy.html
 
-Lunara створена для розваги й самопізнання і не замінює професійних медичних, юридичних чи фінансових порад.
+Lucky Tarot створено для розваги й самопізнання і не замінює професійних медичних, юридичних чи фінансових порад.
 ```
 
 ---
 
 ## 5. Подписки (In-App Purchases → Subscriptions)
 
-**Subscription Group:** `Lunara PRO`
+**Subscription Group:** `Lucky Tarot PRO`
 
 | | Weekly | Yearly |
 |---|---|---|
@@ -263,7 +263,7 @@ Lunara створена для розваги й самопізнання і н�
 | Duration | 1 week | 1 year |
 | Price | $6.99 | $39.99 |
 | Introductory offer | Free trial, 3 days | — |
-| Display Name | Lunara PRO Weekly | Lunara PRO Yearly |
+| Display Name | Lucky Tarot PRO Weekly | Lucky Tarot PRO Yearly |
 | Description (≤45) | Every spread, AI readings and the Oracle | Every spread, AI readings and the Oracle |
 
 Product ID должны совпадать именно так — они уже прописаны в приложении (`mobile/www/js/config.js`).
@@ -296,20 +296,20 @@ Tracking: **No** — данные не используются для слеж�
 ## 8. Заметки для проверяющего Apple (App Review Information → Notes)
 
 ```
-What makes Lunara different from a typical tarot app:
+What makes Lucky Tarot different from a typical tarot app:
 - The Oracle: a conversational AI reader that answers the user's own questions with their zodiac sign in mind and keeps the conversation history on the device.
 - Cosmic Weather: exact astronomical dates of Mercury, Venus and Mars retrogrades and of solar and lunar eclipses (calculated in advance for 2026–2030). Active events are shown at the top of the Today screen, noted in readings, woven into the daily horoscope and marked in the Moon calendar; optional local notifications announce them.
 - A daily ritual in one place: Card of the Day, a horoscope and the Moon phase, personalized with the user's zodiac sign, chosen focus and today's sky.
 - A reading journal: every spread is saved with notes, mood and a "came true" mark, so users can look back at what actually happened.
 - Native experience: local notifications, haptics, sharing, and in-app purchases through StoreKit. All screens and content are bundled in the app; it is not a website wrapper.
 
-Lunara does not require a login. On first launch the app creates an anonymous account on our server, and onboarding asks for a first name and birth date (used only for the zodiac sign and numerology).
+Lucky Tarot does not require a login. On first launch the app creates an anonymous account on our server, and onboarding asks for a first name and birth date (used only for the zodiac sign and numerology).
 
-Subscriptions (Lunara PRO, weekly with a 3-day free trial and yearly) are sold through StoreKit and validated with RevenueCat. The paywall appears after onboarding and after the first reading; it can also be opened from Profile.
+Subscriptions (Lucky Tarot PRO, weekly with a 3-day free trial and yearly) are sold through StoreKit and validated with RevenueCat. The paywall appears after onboarding and after the first reading; it can also be opened from Profile.
 
 AI features (the Oracle chat and personal AI readings) are generated by Anthropic Claude on our server. Card meanings, horoscopes and all spreads also work without AI.
 
-Lunara is for entertainment and self-reflection only and does not give medical, legal or financial advice.
+Lucky Tarot is for entertainment and self-reflection only and does not give medical, legal or financial advice.
 ```
 Contact Information: твоё имя, телефон и рабочая почта (проверяющий может написать).
 
@@ -322,5 +322,5 @@ Contact Information: твоё имя, телефон и рабочая почт�
 - [ ] **Условия и политика конфиденциальности — сейчас шаблоны.** На страницах `terms.html` и `privacy.html` стоят пустые поля [DATE], [COMPANY NAME], [ADDRESS], [JURISDICTION] и пометка «Template». Почта уже вписана. Нужны: имя продавца (как в Apple Developer) и страна — я заполню.
 - [ ] **Ключ Claude (ANTHROPIC_API_KEY) на Railway.** Без него Оракул и ИИ-толкования выдают ошибку — проверяющий Apple это увидит и отклонит приложение.
 - [ ] **Выключить бесплатный PRO** (`LUNARA_FREE_PRO`) хотя бы для iOS — иначе пейвол не показывается и проверяющий не сможет протестировать покупку.
-- [ ] **Проверить, свободно ли название** «Lunara» в App Store при создании приложения (если нет — запасные варианты выше).
+- [ ] **Проверить, свободно ли название** «Lucky Tarot: Love & Money» при создании приложения в App Store Connect (поиск 27.10.2026 точных совпадений не нашёл; запасные варианты — выше). Bundle ID `app.lunara.tarot` и адрес сайта пользователи не видят — их не меняем.
 - [ ] Скриншоты: `mobile/store/screenshots/` (7 шт., 6.9", 1320×2868) — загрузить в раздел iPhone 6.9".

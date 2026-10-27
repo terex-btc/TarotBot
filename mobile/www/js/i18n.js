@@ -39,14 +39,14 @@ const plural = (n, one, few, many) => {
 const D = {
 // ════════════════════════════════════════════════════════════════════════════
 en: {
-  appName: 'Lunara',
+  appName: 'Lucky Tarot',
   continue: 'Continue', close: 'Close', cancel: 'Cancel', save: 'Save', saved: 'Saved', send: 'Send',
   share: 'Share', copied: 'Copied to clipboard', retry: 'Try again', gotIt: 'Got it', notNow: 'Not now',
   errOffline: 'No connection. Please check your internet.',
   errGeneric: 'Something went wrong. Please try again.',
   fillAll: 'Please fill in all fields',
   today: 'Today', profile: 'Profile', free: 'Free',
-  disclaimer: 'Lunara is for entertainment and self-reflection. It doesn’t replace professional advice.',
+  disclaimer: 'Lucky Tarot is for entertainment and self-reflection. It doesn’t replace professional advice.',
 
   tabToday: 'Today', tabSpreads: 'Spreads', tabAsk: 'Ask', tabCards: 'Cards', tabMe: 'Me',
 
@@ -67,7 +67,7 @@ en: {
   namePlaceholder: 'Your name',
   askBirth: 'When were you born, {name}?',
   askBirthSub: 'Your birth date reveals your sign, life path number and personal cycles.',
-  ageNote: 'You must be 18 or older to use Lunara.',
+  ageNote: 'You must be 18 or older to use Lucky Tarot.',
   askFocus: 'What would you like guidance on?',
   askFocusSub: 'Choose one or more — we’ll tailor your readings.',
   focus_love: 'Love & relationships', focusEmoji_love: '💞',
@@ -108,7 +108,7 @@ en: {
   purchaseFailed: 'The purchase didn’t go through. Please try again.',
   restoring: 'Restoring…', restored: 'Your PRO access has been restored ✨', nothingToRestore: 'No active subscription found',
   previewTitle: 'Coming soon to the App Store',
-  previewText: 'This is a preview of Lunara. Subscriptions will be available in the iOS app and billed securely through your Apple ID.',
+  previewText: 'This is a preview of Lucky Tarot. Subscriptions will be available in the iOS app and billed securely through your Apple ID.',
   welcomePro: 'Welcome to PRO', welcomeProSub: 'Everything is unlocked. Enjoy the journey ✨',
   unlockPro: 'Unlock PRO', tryFree: 'Try it free',
 
@@ -265,11 +265,11 @@ en: {
   flashKnown: 'Known: {n} of {total}', flashHint: 'Name the card and its meaning, then tap to check',
   flashAgain: 'Still learning', flashKnow: 'I know it',
   accountId: 'Account ID',
-  freeProNote: 'All PRO features are free while Lunara is in preview.',
+  freeProNote: 'All PRO features are free while Lucky Tarot is in preview.',
   seePaywall: 'See subscription screen',
   demoUnlocked: 'Demo access: PRO is on for 7 days ✨',
   editProfile: 'Edit profile', proActive: 'PRO is active', proUntil: 'Active until {date}', manageSub: 'Manage subscription',
-  upgradeTitle: 'Lunara PRO', upgradeSub: 'All spreads, unlimited AI readings and the Oracle.',
+  upgradeTitle: 'Lucky Tarot PRO', upgradeSub: 'All spreads, unlimited AI readings and the Oracle.',
   yourChart: 'Your chart', personalYear: 'Personal year',
   settings: 'Settings', language: 'Language', dailyReminder: 'Daily reminder',
   contactSupport: 'Contact support', deleteAccount: 'Delete account',
@@ -345,14 +345,14 @@ en: {
 
 // ════════════════════════════════════════════════════════════════════════════
 ru: {
-  appName: 'Lunara',
+  appName: 'Lucky Tarot',
   continue: 'Продолжить', close: 'Закрыть', cancel: 'Отмена', save: 'Сохранить', saved: 'Сохранено', send: 'Отправить',
   share: 'Поделиться', copied: 'Скопировано', retry: 'Повторить', gotIt: 'Понятно', notNow: 'Не сейчас',
   errOffline: 'Нет соединения. Проверь интернет.',
   errGeneric: 'Что-то пошло не так. Попробуй ещё раз.',
   fillAll: 'Заполни все поля',
   today: 'Сегодня', profile: 'Профиль', free: 'Free',
-  disclaimer: 'Lunara — для развлечения и саморефлексии. Не заменяет профессиональную консультацию.',
+  disclaimer: 'Lucky Tarot — для развлечения и саморефлексии. Не заменяет профессиональную консультацию.',
 
   tabToday: 'Сегодня', tabSpreads: 'Расклады', tabAsk: 'Спросить', tabCards: 'Карты', tabMe: 'Я',
 
@@ -372,7 +372,7 @@ ru: {
   namePlaceholder: 'Твоё имя',
   askBirth: 'Когда твой день рождения, {name}?',
   askBirthSub: 'Дата рождения раскрывает твой знак, число судьбы и личные циклы.',
-  ageNote: 'Lunara доступна с 18 лет.',
+  ageNote: 'Приложение Lucky Tarot доступно с 18 лет.',
   askFocus: 'В чём тебе нужна подсказка?',
   askFocusSub: 'Выбери одно или несколько — мы настроим расклады под тебя.',
   focus_love: 'Любовь и отношения', focus_career: 'Карьера и деньги', focus_growth: 'Личный рост',
@@ -409,7 +409,7 @@ ru: {
   purchaseFailed: 'Покупка не прошла. Попробуй ещё раз.',
   restoring: 'Восстанавливаем…', restored: 'Доступ PRO восстановлен ✨', nothingToRestore: 'Активная подписка не найдена',
   previewTitle: 'Скоро в App Store',
-  previewText: 'Это предварительная версия Lunara. Подписка будет доступна в iOS-приложении с оплатой через Apple ID.',
+  previewText: 'Это предварительная версия Lucky Tarot. Подписка будет доступна в iOS-приложении с оплатой через Apple ID.',
   welcomePro: 'Добро пожаловать в PRO', welcomeProSub: 'Всё открыто. Приятного путешествия ✨',
   unlockPro: 'Открыть PRO', tryFree: 'Попробовать бесплатно',
 
@@ -561,11 +561,11 @@ ru: {
   flashKnown: 'Знаешь: {n} из {total}', flashHint: 'Назови карту и её значение, потом нажми, чтобы проверить',
   flashAgain: 'Ещё учу', flashKnow: 'Знаю',
   accountId: 'ID аккаунта',
-  freeProNote: 'Пока Lunara в предварительной версии, все функции PRO бесплатны.',
+  freeProNote: 'Пока Lucky Tarot в предварительной версии, все функции PRO бесплатны.',
   seePaywall: 'Посмотреть экран подписки',
   demoUnlocked: 'Демо-доступ: PRO включён на 7 дней ✨',
   editProfile: 'Изменить профиль', proActive: 'PRO активен', proUntil: 'Действует до {date}', manageSub: 'Управлять подпиской',
-  upgradeTitle: 'Lunara PRO', upgradeSub: 'Все расклады, безлимитные AI-толкования и Оракул.',
+  upgradeTitle: 'Lucky Tarot PRO', upgradeSub: 'Все расклады, безлимитные AI-толкования и Оракул.',
   yourChart: 'Твоя карта', personalYear: 'Личный год',
   settings: 'Настройки', language: 'Язык', dailyReminder: 'Ежедневное напоминание',
   contactSupport: 'Написать в поддержку', deleteAccount: 'Удалить аккаунт',
@@ -641,14 +641,14 @@ ru: {
 
 // ════════════════════════════════════════════════════════════════════════════
 ua: {
-  appName: 'Lunara',
+  appName: 'Lucky Tarot',
   continue: 'Продовжити', close: 'Закрити', cancel: 'Скасувати', save: 'Зберегти', saved: 'Збережено', send: 'Надіслати',
   share: 'Поділитися', copied: 'Скопійовано', retry: 'Повторити', gotIt: 'Зрозуміло', notNow: 'Не зараз',
   errOffline: 'Немає з’єднання. Перевір інтернет.',
   errGeneric: 'Щось пішло не так. Спробуй ще раз.',
   fillAll: 'Заповни всі поля',
   today: 'Сьогодні', profile: 'Профіль', free: 'Free',
-  disclaimer: 'Lunara — для розваги та саморефлексії. Не замінює професійну консультацію.',
+  disclaimer: 'Lucky Tarot — для розваги та саморефлексії. Не замінює професійну консультацію.',
 
   tabToday: 'Сьогодні', tabSpreads: 'Розклади', tabAsk: 'Запитати', tabCards: 'Карти', tabMe: 'Я',
 
@@ -668,7 +668,7 @@ ua: {
   namePlaceholder: 'Твоє ім’я',
   askBirth: 'Коли твій день народження, {name}?',
   askBirthSub: 'Дата народження розкриває твій знак, число долі та особисті цикли.',
-  ageNote: 'Lunara доступна з 18 років.',
+  ageNote: 'Застосунок Lucky Tarot доступний з 18 років.',
   askFocus: 'У чому тобі потрібна підказка?',
   askFocusSub: 'Обери одне чи кілька — ми налаштуємо розклади під тебе.',
   focus_love: 'Кохання і стосунки', focus_career: 'Кар’єра і гроші', focus_growth: 'Особистий ріст',
@@ -705,7 +705,7 @@ ua: {
   purchaseFailed: 'Покупка не пройшла. Спробуй ще раз.',
   restoring: 'Відновлюємо…', restored: 'Доступ PRO відновлено ✨', nothingToRestore: 'Активну підписку не знайдено',
   previewTitle: 'Незабаром в App Store',
-  previewText: 'Це попередня версія Lunara. Підписка буде доступна в iOS-застосунку з оплатою через Apple ID.',
+  previewText: 'Це попередня версія Lucky Tarot. Підписка буде доступна в iOS-застосунку з оплатою через Apple ID.',
   welcomePro: 'Вітаємо в PRO', welcomeProSub: 'Усе відкрито. Приємної подорожі ✨',
   unlockPro: 'Відкрити PRO', tryFree: 'Спробувати безкоштовно',
 
@@ -857,11 +857,11 @@ ua: {
   flashKnown: 'Знаєш: {n} з {total}', flashHint: 'Назви карту та її значення, потім натисни, щоб перевірити',
   flashAgain: 'Ще вчу', flashKnow: 'Знаю',
   accountId: 'ID акаунта',
-  freeProNote: 'Поки Lunara в попередній версії, усі функції PRO безкоштовні.',
+  freeProNote: 'Поки Lucky Tarot в попередній версії, усі функції PRO безкоштовні.',
   seePaywall: 'Подивитися екран підписки',
   demoUnlocked: 'Демо-доступ: PRO увімкнено на 7 днів ✨',
   editProfile: 'Змінити профіль', proActive: 'PRO активний', proUntil: 'Діє до {date}', manageSub: 'Керувати підпискою',
-  upgradeTitle: 'Lunara PRO', upgradeSub: 'Усі розклади, безлімітні AI-тлумачення та Оракул.',
+  upgradeTitle: 'Lucky Tarot PRO', upgradeSub: 'Усі розклади, безлімітні AI-тлумачення та Оракул.',
   yourChart: 'Твоя карта', personalYear: 'Особистий рік',
   settings: 'Налаштування', language: 'Мова', dailyReminder: 'Щоденне нагадування',
   contactSupport: 'Написати в підтримку', deleteAccount: 'Видалити акаунт',

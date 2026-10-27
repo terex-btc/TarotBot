@@ -281,7 +281,7 @@ export async function openDaily() {
     }, 30000);
     setTimeout(() => info.classList.add('show'), instant ? 0 : 650);
     info.querySelector('#ds-share').onclick = async () => {
-      const ok = await share({ title: t('cardOfDay'), text: t('shareDaily', { card: cardName(card), app: 'Lunara' }) });
+      const ok = await share({ title: t('cardOfDay'), text: t('shareDaily', { card: cardName(card), app: t('appName') }) });
       if (ok === 'copied') toast(t('copied'));
     };
     info.querySelector('#ds-more').onclick = () => openCardDetail(card);
