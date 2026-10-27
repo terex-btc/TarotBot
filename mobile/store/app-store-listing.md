@@ -10,8 +10,8 @@
 
 | Поле | Значение |
 |---|---|
-| Bundle ID | `app.lunara.tarot` (уже прописан в iOS-проекте) |
-| SKU | `lunara-ios-001` (любой уникальный внутренний код) |
+| Bundle ID | `com.luckytarot.app` (уже прописан в iOS-проекте; если Apple скажет, что занят, — `com.luckytarot.lovemoney`) |
+| SKU | `luckytarot-ios-001` (любой уникальный внутренний код) |
 | Primary category | **Lifestyle** |
 | Secondary category | **Entertainment** |
 | Price | Free (деньги — через подписки внутри приложения) |
@@ -258,7 +258,7 @@ Lucky Tarot створено для розваги й самопізнання �
 
 | | Weekly | Yearly |
 |---|---|---|
-| Product ID | `lunara_pro_weekly` | `lunara_pro_yearly` |
+| Product ID | `luckytarot_pro_weekly` | `luckytarot_pro_yearly` |
 | Reference Name | PRO Weekly | PRO Yearly |
 | Duration | 1 week | 1 year |
 | Price | $6.99 | $39.99 |
@@ -322,5 +322,5 @@ Contact Information: твоё имя, телефон и рабочая почт�
 - [ ] **Условия и политика конфиденциальности — сейчас шаблоны.** На страницах `terms.html` и `privacy.html` стоят пустые поля [DATE], [COMPANY NAME], [ADDRESS], [JURISDICTION] и пометка «Template». Почта уже вписана. Нужны: имя продавца (как в Apple Developer) и страна — я заполню.
 - [ ] **Ключ Claude (ANTHROPIC_API_KEY) на Railway.** Без него Оракул и ИИ-толкования выдают ошибку — проверяющий Apple это увидит и отклонит приложение.
 - [ ] **Выключить бесплатный PRO** (`LUNARA_FREE_PRO`) хотя бы для iOS — иначе пейвол не показывается и проверяющий не сможет протестировать покупку.
-- [ ] **Проверить, свободно ли название** «Lucky Tarot: Love & Money» при создании приложения в App Store Connect (поиск 27.10.2026 точных совпадений не нашёл; запасные варианты — выше). Bundle ID `app.lunara.tarot` и адрес сайта пользователи не видят — их не меняем.
+- [ ] **Проверить, свободно ли название** «Lucky Tarot: Love & Money» при создании приложения в App Store Connect (поиск 27.10.2026 точных совпадений не нашёл; запасные варианты — выше). Адрес сайта пользователи почти не видят — его пока не меняем.
 - [ ] Скриншоты: `mobile/store/screenshots/` (7 шт., 6.9", 1320×2868) — загрузить в раздел iPhone 6.9".

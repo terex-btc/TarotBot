@@ -41,10 +41,10 @@ npm run ios:open     # відкрити в Xcode → вибрати симуля
 
 ## Підписки (RevenueCat)
 
-1. **App Store Connect** → створити застосунок з Bundle ID `app.lunara.tarot` (або свій — тоді змінити в `capacitor.config.json`).
+1. **App Store Connect** → створити застосунок з Bundle ID `com.luckytarot.app` (або свій — тоді змінити в `capacitor.config.json`).
 2. Subscriptions → група «Lunara PRO» → два продукти:
-   - `lunara_pro_weekly` — тиждень, intro offer: 3 дні безкоштовно;
-   - `lunara_pro_yearly` — рік.
+   - `luckytarot_pro_weekly` — тиждень, intro offer: 3 дні безкоштовно;
+   - `luckytarot_pro_yearly` — рік.
 3. **RevenueCat** → проєкт → iOS app → підключити App Store Connect (In-App Purchase Key).
    - Entitlement `pro`, Offering `default` з обома продуктами.
    - Скопіювати публічний iOS-ключ (`appl_...`) у `www/js/config.js` → `REVENUECAT_IOS_KEY`.
