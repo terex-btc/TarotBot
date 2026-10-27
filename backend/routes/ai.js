@@ -210,10 +210,10 @@ router.post('/practice', async (req, res) => {
     const system = `You are a kind but honest tarot teacher who trains beginners in the Rider-Waite tradition. A student has interpreted a practice spread. Grade the interpretation on: (1) how well each card's meaning fits its position, (2) connecting the cards into one story, (3) answering the question, (4) a clear, practical piece of advice. Be warm and specific: praise the student's real ideas and point out exactly what to add. This is for learning and entertainment: never predict illness or death and never give medical, legal or financial advice. Write every text value in ${langName}, addressing the student as "you". Reply with one JSON object and nothing else, in exactly this shape: {"score": <integer from 1 to 10>, "good": [<1 to 3 short points>], "missed": [<1 to 3 short points>], "tip": "<one sentence>", "model": "<your own interpretation of this spread for this question, at most 110 words>"}`;
     const prompt = `Question: ${String(question || '').slice(0, 300) || '(no question)'}\nSpread:\n${lines.join('\n')}\n\nThe student's interpretation:\n"""\n${text}\n"""`;
 
+    // Haiku — швидко й дешево для частих перевірок
     const msg = await getClient().messages.stream({
-      model: 'claude-opus-5-5',
-      max_tokens: 6000,
-      thinking: { type: 'adaptive' },
+      model: 'claude-haiku-5-5',
+      max_tokens: 1500,
       system,
       messages: [{ role: 'user', content: prompt }],
     }).finalMessage();
