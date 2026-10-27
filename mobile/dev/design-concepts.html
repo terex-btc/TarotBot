@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Lunara — концепты дизайна</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Fraunces:opsz,wght@9..144,400;9..144,600&family=IBM+Plex+Mono:wght@400;500&family=Nunito:wght@500;700;800;900&family=Manrope:wght@500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Fraunces:opsz,wght@9..144,400;9..144,600&family=IBM+Plex+Mono:wght@400;500&family=Nunito:wght@500;700;800;900&family=Manrope:wght@500;700&family=Cinzel:wght@500;700&family=Playfair+Display:ital,wght@0,600;1,500&display=swap" rel="stylesheet">
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { background: #101014; color: #e9e6f2; font-family: Manrope, system-ui, sans-serif; padding: 28px 16px 60px; }
@@ -116,12 +116,139 @@
   .c-tabs span { width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; color: #6f5f94; }
   .c-tabs span.on { background: #3a2a5c; color: #fff; }
   .c-tabs svg { width: 21px; height: 21px; }
+
+  /* ══ Спільне для D/E/F — золото ══ */
+  :root { --gold: linear-gradient(135deg, #fff4c2 0%, #f1cf6b 22%, #b8862b 48%, #f6dc8a 70%, #a8741f 100%); }
+  .gold-text { background: var(--gold); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .group-h { max-width: 1180px; margin: 54px auto 22px; }
+  .group-h h2 { font-size: 20px; font-weight: 700; }
+  .group-h p { color: #9c98ad; margin-top: 6px; font-size: 14px; }
+  .home-ico { display: flex; align-items: center; gap: 12px; margin-top: 12px; }
+  .home-ico i { flex: none; width: 58px; height: 58px; border-radius: 14px; display: grid; place-items: center; box-shadow: 0 6px 16px rgba(0,0,0,.45); }
+  .home-ico i svg { width: 34px; height: 34px; }
+  .home-ico span { font-size: 12.5px; color: #c9c4d8; line-height: 1.35; }
+  .home-ico span b { display: block; font-size: 14px; color: #fff; }
+
+  /* ══ D — Рідке золото ══ */
+  .d { background: radial-gradient(90% 50% at 50% 38%, #2a1f0c 0%, #0b0906 55%, #050404 100%); color: #f3e7c8; font-family: Manrope, sans-serif; }
+  .d-dust { position: absolute; inset: 0; opacity: .8; background-image:
+      radial-gradient(1.6px 1.6px at 14% 20%, #f6dc8a 50%, transparent 51%), radial-gradient(1px 1px at 80% 14%, #f6dc8a 50%, transparent 51%),
+      radial-gradient(1.2px 1.2px at 66% 30%, #fff4c2 50%, transparent 51%), radial-gradient(1px 1px at 24% 46%, #f6dc8a 50%, transparent 51%),
+      radial-gradient(1.8px 1.8px at 88% 52%, #f1cf6b 50%, transparent 51%), radial-gradient(1px 1px at 8% 62%, #fff4c2 50%, transparent 51%),
+      radial-gradient(1.3px 1.3px at 40% 9%, #f1cf6b 50%, transparent 51%), radial-gradient(1px 1px at 92% 36%, #fff4c2 50%, transparent 51%); }
+  .d-in { position: relative; padding: 52px 24px 0; text-align: center; }
+  .d-top { display: flex; justify-content: space-between; align-items: center; }
+  .d-brand { font-family: Cinzel, serif; font-weight: 700; font-size: 13px; letter-spacing: .34em; }
+  .d-pro { font-family: Cinzel, serif; font-weight: 700; font-size: 10.5px; letter-spacing: .2em; color: #1a1205; background: var(--gold); padding: 5px 10px 4px; border-radius: 999px; }
+  .d-date { margin-top: 16px; font-size: 11px; letter-spacing: .3em; text-transform: uppercase; color: #a8925f; }
+  .d h1 { font-family: 'Playfair Display', serif; font-weight: 600; font-size: 36px; line-height: 1.08; margin-top: 8px; }
+  .d h1 .gold-text { font-style: italic; }
+  .d-stage { position: relative; height: 256px; display: grid; place-items: center; margin-top: 10px; }
+  .d-halo { position: absolute; width: 270px; height: 270px; border-radius: 50%;
+    background: radial-gradient(circle, rgba(241,207,107,.35) 0%, rgba(241,207,107,.08) 45%, transparent 68%); }
+  .d-halo::after { content: ''; position: absolute; inset: 0; border-radius: 50%;
+    background: repeating-conic-gradient(from 0deg, rgba(246,220,138,.5) 0deg .5deg, transparent .5deg 10deg);
+    -webkit-mask: radial-gradient(circle, transparent 40%, #000 42%, transparent 70%); mask: radial-gradient(circle, transparent 40%, #000 42%, transparent 70%); }
+  .d-arch { position: relative; width: 148px; height: 236px; padding: 5px; border-radius: 80px 80px 10px 10px; background: var(--gold); box-shadow: 0 0 40px rgba(241,207,107,.45); }
+  .d-arch img { border-radius: 75px 75px 6px 6px; }
+  .d-cap { font-family: Cinzel, serif; font-weight: 700; font-size: 15px; letter-spacing: .26em; margin-top: 10px; }
+  .d-kw { font-family: 'Playfair Display', serif; font-style: italic; color: #bba67a; font-size: 15px; margin-top: 2px; }
+  .d-btn { margin: 16px auto 0; width: 240px; padding: 13px 0; border-radius: 999px; background: var(--gold); color: #1a1205; font-weight: 700; font-size: 14.5px;
+    box-shadow: 0 8px 26px rgba(241,207,107,.35), inset 0 1px 0 rgba(255,255,255,.6); }
+  .d-tiles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 16px; }
+  .d-tiles div { border-radius: 18px; padding: 12px 4px 10px; font-size: 12.5px; font-weight: 700; color: #e9d9ae;
+    background: linear-gradient(180deg, rgba(246,220,138,.1), rgba(246,220,138,.03)); border: 1px solid rgba(241,207,107,.35); }
+  .d-tiles svg { display: block; width: 24px; height: 24px; margin: 0 auto 6px; color: #f1cf6b; }
+  .d-tabs { position: absolute; left: 0; right: 0; bottom: 0; height: 72px; display: flex; justify-content: space-around; align-items: center; padding-bottom: 10px;
+    background: linear-gradient(180deg, transparent, #050404 45%); border-top: 1px solid rgba(241,207,107,.22); }
+  .d-tabs span { display: grid; justify-items: center; gap: 4px; font-size: 9.5px; letter-spacing: .14em; color: #7a6a48; }
+  .d-tabs span.on { color: #f1cf6b; }
+  .d-tabs svg { width: 22px; height: 22px; }
+
+  /* ══ E — Космічне золото ══ */
+  .e { background: #070617; color: #ece6ff; font-family: Manrope, sans-serif; }
+  .e-neb { position: absolute; inset: 0; background:
+      radial-gradient(60% 34% at 85% 8%, rgba(120,70,220,.55), transparent 70%),
+      radial-gradient(55% 30% at 5% 42%, rgba(210,70,160,.32), transparent 70%),
+      radial-gradient(70% 36% at 60% 70%, rgba(50,90,220,.35), transparent 70%); }
+  .e-stars { position: absolute; inset: 0; background-image:
+      radial-gradient(1px 1px at 12% 10%, #fff 50%, transparent 51%), radial-gradient(1.4px 1.4px at 30% 26%, #ffe9a8 50%, transparent 51%),
+      radial-gradient(1px 1px at 58% 14%, #fff 50%, transparent 51%), radial-gradient(1px 1px at 76% 34%, #fff 50%, transparent 51%),
+      radial-gradient(1.5px 1.5px at 18% 56%, #ffe9a8 50%, transparent 51%), radial-gradient(1px 1px at 90% 64%, #fff 50%, transparent 51%),
+      radial-gradient(1px 1px at 44% 44%, #fff 50%, transparent 51%), radial-gradient(1.2px 1.2px at 66% 88%, #fff 50%, transparent 51%); }
+  .e-planet { position: absolute; top: 46px; right: -34px; width: 120px; height: 120px; }
+  .e-planet::before { content: ''; position: absolute; inset: 22px; border-radius: 50%;
+    background: radial-gradient(circle at 34% 30%, #fff6cf, #f1cf6b 30%, #a8741f 70%, #4a3009); box-shadow: 0 0 40px rgba(241,207,107,.45); }
+  .e-planet::after { content: ''; position: absolute; left: -8px; right: -8px; top: 52px; height: 18px; border-radius: 50%; border: 2px solid rgba(246,220,138,.8); transform: rotate(-18deg); }
+  .e-in { position: relative; padding: 52px 20px 0; }
+  .e-top { display: flex; align-items: center; gap: 11px; }
+  .e-ava { width: 42px; height: 42px; border-radius: 50%; display: grid; place-items: center; font-weight: 800; color: #1a1205; background: var(--gold); }
+  .e-top small { display: block; font-size: 12px; color: #a59cd0; }
+  .e-top b { font-size: 16.5px; }
+  .e h1 { font-family: 'Playfair Display', serif; font-weight: 600; font-size: 33px; line-height: 1.1; margin-top: 18px; max-width: 270px; }
+  .e h1 i { font-weight: 500; }
+  .e-hero { position: relative; display: flex; align-items: center; gap: 18px; margin-top: 18px; }
+  .e-wheel { position: relative; flex: none; width: 150px; height: 150px; display: grid; place-items: center; }
+  .e-wheel::before { content: ''; position: absolute; inset: 0; border-radius: 50%; border: 1.5px solid rgba(241,207,107,.7);
+    background: repeating-conic-gradient(from 0deg, rgba(241,207,107,.55) 0deg .7deg, transparent .7deg 30deg);
+    -webkit-mask: radial-gradient(circle, transparent 62%, #000 63%); mask: radial-gradient(circle, transparent 62%, #000 63%); }
+  .e-wheel::after { content: ''; position: absolute; inset: 14px; border-radius: 50%; border: 1px solid rgba(241,207,107,.35); }
+  .e-wheel .e-card { position: relative; width: 74px; height: 124px; border-radius: 8px; overflow: hidden; border: 2px solid #f1cf6b; box-shadow: 0 0 26px rgba(241,207,107,.5); z-index: 1; }
+  .e-hero small { font-size: 11px; letter-spacing: .2em; text-transform: uppercase; color: #f1cf6b; }
+  .e-hero b { display: block; font-family: 'Playfair Display', serif; font-size: 24px; margin: 3px 0 6px; }
+  .e-hero p { font-size: 13px; line-height: 1.45; color: #c8bfe8; }
+  .e-meters { margin-top: 18px; padding: 14px 16px; border-radius: 22px; background: rgba(20,16,48,.6); border: 1px solid rgba(241,207,107,.3); }
+  .e-meters .h { display: flex; justify-content: space-between; font-size: 11px; letter-spacing: .18em; text-transform: uppercase; color: #a59cd0; margin-bottom: 8px; }
+  .e-m { display: grid; grid-template-columns: 62px 1fr 26px; align-items: center; gap: 10px; font-size: 13.5px; font-weight: 700; padding: 4px 0; }
+  .e-m em { font-style: normal; text-align: right; color: #f1cf6b; }
+  .e-bar { height: 7px; border-radius: 99px; background: rgba(255,255,255,.1); overflow: hidden; }
+  .e-bar i { display: block; height: 100%; border-radius: 99px; background: var(--gold); box-shadow: 0 0 10px rgba(241,207,107,.6); }
+  .e-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 12px; }
+  .e-grid div { display: flex; align-items: center; gap: 10px; padding: 12px; border-radius: 18px; font-size: 13.5px; font-weight: 700;
+    background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.1); }
+  .e-grid svg { flex: none; width: 22px; height: 22px; color: #f1cf6b; }
+  .e-tabs { position: absolute; left: 14px; right: 14px; bottom: 16px; height: 60px; border-radius: 999px; display: flex; justify-content: space-around; align-items: center;
+    background: rgba(16,12,40,.85); border: 1px solid rgba(241,207,107,.3); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
+  .e-tabs span { width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; color: #8d84b8; }
+  .e-tabs span.on { background: var(--gold); color: #1a1205; }
+  .e-tabs svg { width: 21px; height: 21px; }
+
+  /* ══ F — Смарагд і золото ══ */
+  .f { background: radial-gradient(100% 60% at 50% 30%, #0f3a2c 0%, #082219 55%, #04120d 100%); color: #efe6cc; font-family: Manrope, sans-serif; }
+  .f-guil { position: absolute; left: 50%; top: 168px; width: 420px; height: 420px; transform: translateX(-50%); border-radius: 50%; opacity: .55;
+    background: repeating-radial-gradient(circle, rgba(241,207,107,.35) 0 1px, transparent 1px 9px),
+                repeating-conic-gradient(from 0deg, rgba(241,207,107,.3) 0deg .4deg, transparent .4deg 6deg);
+    -webkit-mask: radial-gradient(circle, #000 25%, transparent 66%); mask: radial-gradient(circle, #000 25%, transparent 66%); }
+  .f-in { position: relative; padding: 52px 24px 0; }
+  .f-top { display: flex; justify-content: space-between; align-items: center; font-family: Cinzel, serif; font-weight: 700; font-size: 12.5px; letter-spacing: .3em; }
+  .f-pro { font-size: 10px; letter-spacing: .2em; border: 1px solid #f1cf6b; color: #f1cf6b; padding: 4px 9px 3px; border-radius: 4px; }
+  .f h1 { font-family: 'Playfair Display', serif; font-weight: 600; font-size: 34px; line-height: 1.08; margin-top: 18px; }
+  .f h1 i { font-weight: 500; }
+  .f-stage { position: relative; display: grid; place-items: center; height: 250px; margin-top: 8px; }
+  .f-card { position: relative; width: 138px; height: 228px; padding: 6px; border-radius: 12px; background: var(--gold); box-shadow: 0 16px 40px rgba(0,0,0,.5), 0 0 30px rgba(241,207,107,.3); transform: rotate(3deg); }
+  .f-card img { border-radius: 7px; }
+  .f-seal { position: absolute; right: 62px; bottom: 6px; width: 62px; height: 62px; border-radius: 50%; display: grid; place-items: center; text-align: center;
+    font-family: Cinzel, serif; font-weight: 700; font-size: 8.5px; letter-spacing: .1em; line-height: 1.25; color: #3b2606; background: var(--gold);
+    box-shadow: 0 6px 16px rgba(0,0,0,.45), inset 0 0 0 3px rgba(255,255,255,.35), inset 0 0 0 5px rgba(120,80,20,.35); transform: rotate(-12deg); }
+  .f-ribbon { text-align: center; font-family: Cinzel, serif; font-weight: 700; font-size: 13px; letter-spacing: .24em; margin-top: 8px; }
+  .f-ribbon small { display: block; font-family: 'Playfair Display', serif; font-style: italic; font-weight: 500; letter-spacing: 0; font-size: 15px; color: #c8b98d; margin-top: 2px; }
+  .f-list { margin-top: 12px; border-top: 1px solid rgba(241,207,107,.3); }
+  .f-list div { display: flex; align-items: center; gap: 14px; padding: 11px 2px; border-bottom: 1px solid rgba(241,207,107,.18); }
+  .f-list svg { flex: none; width: 22px; height: 22px; color: #f1cf6b; }
+  .f-list b { display: block; font-size: 15px; }
+  .f-list small { font-size: 12px; color: #9fb2a6; }
+  .f-list .arr { margin-left: auto; color: #f1cf6b; }
+  .f-tabs { position: absolute; left: 0; right: 0; bottom: 0; height: 70px; display: flex; justify-content: space-around; align-items: center; padding-bottom: 10px;
+    background: #04120d; border-top: 1px solid rgba(241,207,107,.3); }
+  .f-tabs span { display: grid; justify-items: center; gap: 4px; font-size: 9.5px; letter-spacing: .14em; color: #6f8a7c; }
+  .f-tabs span.on { color: #f1cf6b; }
+  .f-tabs svg { width: 22px; height: 22px; }
 </style>
 </head>
 <body>
 <div class="intro">
-  <h1>Lunara — три направления нового дизайна</h1>
-  <p>Главный экран в каждом стиле. Карта дня — настоящая из колоды. Выбери направление — переделаю под него всё приложение.</p>
+  <h1>Lunara — направления нового дизайна</h1>
+  <p>Главный экран в каждом стиле. Карта дня — настоящая из колоды. Выбери направление — переделаю под него всё приложение. Новые «золотые» стили D, E, F — ниже.</p>
 </div>
 
 <div class="row">
@@ -215,6 +342,119 @@
       </nav>
     </div></div>
     <div class="label"><b>C · Пастельный космос</b><span>Мягкие градиенты, стеклянные карточки, светящиеся шары. Нежно и «мило». Массовый стиль для молодой женской аудитории, как у Nebula и Moonly.</span></div>
+  </div>
+</div>
+
+<div class="group-h">
+  <h2>Новые: космос + золото + удача</h2>
+  <p>Три «дорогих» стиля про счастье и деньги. Карты — тоже настоящие: Солнце (счастье), Мир (исполнение желаний) и Колесо Фортуны (удача). Названия на макетах — варианты, их можно менять местами.</p>
+</div>
+
+<div class="row">
+  <!-- D -->
+  <div class="concept">
+    <div class="phone d"><div class="scr">
+      <div class="d-dust"></div>
+      <div class="d-in">
+        <div class="d-top"><span class="d-brand gold-text">HAPPY TAROT</span><span class="d-pro">PRO</span></div>
+        <div class="d-date">Tuesday · October 27</div>
+        <h1>Find your <span class="gold-text">happy</span>,<br>Emma</h1>
+        <div class="d-stage">
+          <div class="d-halo"></div>
+          <div class="d-arch"><img class="card-img" src="/assets/cards/card_19.jpg" alt=""></div>
+        </div>
+        <div class="d-cap gold-text">XIX · THE SUN</div>
+        <div class="d-kw">joy · success · abundance</div>
+        <div class="d-btn">Reveal today's luck ✦</div>
+        <div class="d-tiles">
+          <div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 20s-7-4.4-9.2-8.6C1.2 8.2 3 4.8 6.4 4.6c2-.1 3.6 1 4.6 2.6 1-1.6 2.6-2.7 4.6-2.6 3.4.2 5.2 3.6 3.6 6.8C19 15.6 12 20 12 20z"/></svg>Love</div>
+          <div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="5.5"/><path d="M12 9.3v5.4"/></svg>Money</div>
+          <div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="8.5"/><path d="M8 12.3l2.6 2.6 5.6-5.6"/></svg>Yes / No</div>
+        </div>
+      </div>
+      <nav class="d-tabs">
+        <span class="on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M5 19l2-2M17 7l2-2"/></svg>TODAY</span>
+        <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="5" y="3" width="10" height="16" rx="1"/><path d="M9 5.5l9 2.4-3.6 13.5-6.2-1.7"/></svg>SPREADS</span>
+        <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M2 12C6 6 18 6 22 12C18 18 6 18 2 12Z"/><circle cx="12" cy="12" r="3"/></svg>ORACLE</span>
+        <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/></svg>MOON</span>
+        <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg>ME</span>
+      </nav>
+    </div></div>
+    <div class="label"><b>D · Жидкое золото</b><span>Чёрный бархат и «металлическое» золото с переливом: кнопки, рамка-арка, надписи. Ощущение люкса, как у ювелирного бренда. Главный экран говорит о счастье и удаче, а не о «гадании». Лучше всех продаёт подписку.</span></div>
+    <div class="home-ico">
+      <i style="background:radial-gradient(circle at 50% 40%,#2a1f0c,#050404)"><svg viewBox="0 0 24 24"><defs><linearGradient id="g1" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff4c2"/><stop offset=".5" stop-color="#d4a73c"/><stop offset="1" stop-color="#f6dc8a"/></linearGradient></defs><circle cx="12" cy="12" r="4.2" fill="url(#g1)"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M5.3 18.7l2.1-2.1M16.6 7.4l2.1-2.1" stroke="url(#g1)" stroke-width="1.5" stroke-linecap="round"/></svg></i>
+      <span><b>Happy Tarot</b>так будет выглядеть иконка на экране iPhone</span>
+    </div>
+  </div>
+
+  <!-- E -->
+  <div class="concept">
+    <div class="phone e"><div class="scr">
+      <div class="e-neb"></div><div class="e-stars"></div><div class="e-planet"></div>
+      <div class="e-in">
+        <div class="e-top"><span class="e-ava">E</span><span><small>Good evening</small><b>Emma · Taurus</b></span></div>
+        <h1>The stars are <i class="gold-text">on your side</i> today</h1>
+        <div class="e-hero">
+          <div class="e-wheel"><div class="e-card"><img class="card-img" src="/assets/cards/card_21.jpg" alt=""></div></div>
+          <div><small>Card of the day</small><b>The World</b><p>A wish is ready to come true. Say it out loud tonight.</p></div>
+        </div>
+        <div class="e-meters">
+          <div class="h"><span>Your day</span><span>Oct 27</span></div>
+          <div class="e-m">Love<span class="e-bar"><i style="width:80%"></i></span><em>8</em></div>
+          <div class="e-m">Money<span class="e-bar"><i style="width:70%"></i></span><em>7</em></div>
+          <div class="e-m">Luck<span class="e-bar"><i style="width:90%"></i></span><em>9</em></div>
+        </div>
+        <div class="e-grid">
+          <div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="8.5"/><path d="M8 12.3l2.6 2.6 5.6-5.6"/></svg>Yes or No</div>
+          <div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 12C6 6 18 6 22 12C18 18 6 18 2 12Z"/><circle cx="12" cy="12" r="3"/></svg>Ask Oracle</div>
+        </div>
+      </div>
+      <nav class="e-tabs">
+        <span class="on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 11l8-7 8 7v9H4z"/></svg></span>
+        <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="5" y="3" width="10" height="16" rx="2"/><path d="M15 6l4 1-3.5 13"/></svg></span>
+        <span><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C12.8 8 16 11.2 22 12C16 12.8 12.8 16 12 22C11.2 16 8 12.8 2 12C8 11.2 11.2 8 12 2Z"/></svg></span>
+        <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/></svg></span>
+        <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg></span>
+      </nav>
+    </div></div>
+    <div class="label"><b>E · Космическое золото</b><span>Глубокий космос с туманностями, золотая планета и зодиакальное кольцо вокруг карты. Новая фишка — шкалы дня «Любовь · Деньги · Удача» (каждый день новые). Самый «космический» и яркий вариант.</span></div>
+    <div class="home-ico">
+      <i style="background:radial-gradient(circle at 70% 20%,#5a34b8,#0b0920 70%)"><svg viewBox="0 0 24 24"><defs><linearGradient id="g2" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff4c2"/><stop offset=".5" stop-color="#d4a73c"/><stop offset="1" stop-color="#f6dc8a"/></linearGradient></defs><circle cx="12" cy="12" r="5" fill="url(#g2)"/><ellipse cx="12" cy="12" rx="10" ry="3" fill="none" stroke="url(#g2)" stroke-width="1.3" transform="rotate(-18 12 12)"/></svg></i>
+      <span><b>Lunara</b>или любое название из списка</span>
+    </div>
+  </div>
+
+  <!-- F -->
+  <div class="concept">
+    <div class="phone f"><div class="scr">
+      <div class="f-guil"></div>
+      <div class="f-in">
+        <div class="f-top"><span class="gold-text">LUCKY TAROT</span><span class="f-pro">PRO</span></div>
+        <h1>Luck is on its way,<br><i class="gold-text">Emma</i></h1>
+        <div class="f-stage">
+          <div class="f-card"><img class="card-img" src="/assets/cards/card_10.jpg" alt=""></div>
+          <div class="f-seal">LUCKY<br>DAY</div>
+        </div>
+        <div class="f-ribbon gold-text">X · WHEEL OF FORTUNE</div>
+        <div class="f-ribbon"><small>a lucky turn is coming your way</small></div>
+        <div class="f-list">
+          <div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="5.5"/><path d="M12 9.3v5.4"/></svg><span><b>Money &amp; Success</b><small>3 cards for your finances</small></span><span class="arr">›</span></div>
+          <div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 20s-7-4.4-9.2-8.6C1.2 8.2 3 4.8 6.4 4.6c2-.1 3.6 1 4.6 2.6 1-1.6 2.6-2.7 4.6-2.6 3.4.2 5.2 3.6 3.6 6.8C19 15.6 12 20 12 20z"/></svg><span><b>Love</b><small>What do they feel?</small></span><span class="arr">›</span></div>
+        </div>
+      </div>
+      <nav class="f-tabs">
+        <span class="on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M5 19l2-2M17 7l2-2"/></svg>TODAY</span>
+        <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="5" y="3" width="10" height="16" rx="1"/><path d="M9 5.5l9 2.4-3.6 13.5-6.2-1.7"/></svg>SPREADS</span>
+        <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M2 12C6 6 18 6 22 12C18 18 6 18 2 12Z"/><circle cx="12" cy="12" r="3"/></svg>ORACLE</span>
+        <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/></svg>MOON</span>
+        <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg>ME</span>
+      </nav>
+    </div></div>
+    <div class="label"><b>F · Изумруд и золото</b><span>Тёмно-зелёный, «денежный» цвет (как доллар) и золото. За картой узор, как на банкноте, и печать «Lucky day». Новая фишка — расклад «Деньги и успех». Самый «финансовый» вариант, редкий среди таро-приложений.</span></div>
+    <div class="home-ico">
+      <i style="background:radial-gradient(circle at 50% 35%,#13503c,#04120d)"><svg viewBox="0 0 24 24"><defs><linearGradient id="g3" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff4c2"/><stop offset=".5" stop-color="#d4a73c"/><stop offset="1" stop-color="#f6dc8a"/></linearGradient></defs><circle cx="12" cy="12" r="9" fill="none" stroke="url(#g3)" stroke-width="1.4"/><path d="M12 5.5l1.7 4.6 4.8.2-3.8 3 1.3 4.7-4-2.7-4 2.7 1.3-4.7-3.8-3 4.8-.2z" fill="url(#g3)"/></svg></i>
+      <span><b>Lucky Tarot</b>так будет выглядеть иконка на экране iPhone</span>
+    </div>
   </div>
 </div>
 </body>
