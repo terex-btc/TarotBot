@@ -203,16 +203,21 @@ export const purchases = {
     try {
       const { current } = await P.getOfferings();
       const pkgs = current?.availablePackages || [];
+      // Пробний період і пільгова ціна — лише для нових підписників; хто вже користувався, бачить звичайну ціну
+      let elig = {};
+      try { elig = await P.checkTrialOrIntroductoryPriceEligibility({ productIdentifiers: CONFIG.PLANS.map(p => p.productId) }); } catch (_) {}
       return CONFIG.PLANS.map(plan => {
         const pkg = pkgs.find(p => p.product?.identifier === plan.productId);
         if (!pkg) return null;
-        const intro = pkg.product.introPrice;
-        const trialDays = intro && intro.price === 0 ? daysOf(intro.periodNumberOfUnits, intro.periodUnit) : 0;
+        const intro = elig[plan.productId]?.status === 1 ? null : pkg.product.introPrice;   // 1 = INELIGIBLE
+        const days = intro ? daysOf(intro.periodNumberOfUnits, intro.periodUnit) : 0;
         return {
           planId: plan.id, productId: plan.productId,
           priceString: pkg.product.priceString,
           price: pkg.product.price, currency: pkg.product.currencyCode,
-          trialDays, pkg,
+          trialDays: intro && intro.price === 0 ? days : 0,
+          intro: intro && intro.price > 0 ? { price: intro.price, priceString: intro.priceString, days, cycles: intro.cycles || 1 } : null,
+          pkg,
         };
       }).filter(Boolean);
     } catch (e) { console.warn('[purchases] offerings', e); return null; }

@@ -54,6 +54,7 @@ export async function showPaywall({ source = 'unknown', onClose, force = false }
       store: s || null,
       price: s?.priceString || p.fallbackPrice,
       trialDays: s ? s.trialDays : (p.trialDays || 0),
+      intro: s ? s.intro : (p.fallbackIntro || null),
       perWeek: s && p.period === 'year' ? perWeek(s.price, s.currency) : p.fallbackPerWeek,
     };
   });
@@ -96,13 +97,16 @@ export async function showPaywall({ source = 'unknown', onClose, force = false }
             <span class="radio"></span>
             <span class="pw-plan-main">
               <span class="pw-plan-name">${t(p.period === 'year' ? 'planYearly' : 'planWeekly')}</span>
-              <span class="pw-plan-desc">${p.trialDays
+              <span class="pw-plan-desc">${p.intro
+                ? t('planIntroThen', { weeks: introWeeks(p), intro: p.intro.priceString, price: p.price, period: t('per_' + p.period) })
+                : p.trialDays
                 ? t('planTrialThen', { days: p.trialDays, price: p.price, period: t('per_' + p.period) })
                 : p.perWeek ? t('planPerWeek', { price: p.perWeek }) : t('cancelAnytime')}</span>
             </span>
             <span class="pw-plan-price"><b>${p.price}</b><small>${t('per_' + p.period)}</small></span>
             ${p.period === 'year' && save > 0 ? `<span class="pw-badge">${t('savePct', { pct: save })}</span>` : ''}
             ${p.trialDays ? `<span class="pw-badge trial">${t('freeTrialBadge')}</span>` : ''}
+            ${p.intro && introPct(p) > 0 ? `<span class="pw-badge trial">${t('introBadge', { pct: introPct(p) })}</span>` : ''}
           </button>`).join('')}
         </div>
         <div class="pw-timeline" id="pw-tl"></div>
@@ -130,16 +134,18 @@ export async function showPaywall({ source = 'unknown', onClose, force = false }
   const terms = layer.querySelector('#pw-terms');
   const tl = layer.querySelector('#pw-tl');
   const renderCta = () => {
-    cta.innerHTML = `<span>${selected.trialDays ? t('startTrial') : t('continue')}</span>`;
-    // Як працює пробний період — щоб не боятися натиснути
-    const d = selected.trialDays;
-    tl.innerHTML = d ? `<h3 class="pw-tl-h">${t('pwTlTitle')}</h3>
-      <div class="pw-tl-step on"><i>${icons.check}</i><span><b>${t('pwTlToday')}</b><small>${t('pwTlToday_s')}</small></span></div>
-      ${canRemind && d > 1 ? `<div class="pw-tl-step"><i>${icons.bell}</i><span><b>${t('pwTlIn', { n: d - 1 })}</b><small>${t('pwTlRemind_s')}</small></span></div>` : ''}
-      <div class="pw-tl-step"><i>${icons.crown}</i><span><b>${t('pwTlIn', { n: d })}</b><small>${t('pwTlCharge_s', { price: selected.price, period: t('per_' + selected.period) })}</small></span></div>` : '';
-    terms.textContent = selected.trialDays
-      ? t('termsTrial', { days: selected.trialDays, price: selected.price, period: t('per_' + selected.period) })
-      : t('termsPlain', { price: selected.price, period: t('per_' + selected.period) });
+    const per = { price: selected.price, period: t('per_' + selected.period) };
+    const intro = selected.intro;
+    cta.innerHTML = `<span>${intro ? t('startIntro', { price: intro.priceString }) : selected.trialDays ? t('startTrial') : t('continue')}</span>`;
+    // Як працює пробний період / пільговий тиждень — щоб не боятися натиснути
+    const d = offerDays(selected);
+    tl.innerHTML = d ? `<h3 class="pw-tl-h">${t(intro ? 'pwTlTitleIntro' : 'pwTlTitle')}</h3>
+      <div class="pw-tl-step on"><i>${icons.check}</i><span><b>${t('pwTlToday')}</b><small>${intro ? t('pwTlTodayIntro_s', { intro: intro.priceString }) : t('pwTlToday_s')}</small></span></div>
+      ${canRemind && d > 1 ? `<div class="pw-tl-step"><i>${icons.bell}</i><span><b>${t('pwTlIn', { n: d - 1 })}</b><small>${t(intro ? 'pwTlRemindIntro_s' : 'pwTlRemind_s')}</small></span></div>` : ''}
+      <div class="pw-tl-step"><i>${icons.crown}</i><span><b>${t('pwTlIn', { n: d })}</b><small>${t(intro ? 'pwTlChargeIntro_s' : 'pwTlCharge_s', per)}</small></span></div>` : '';
+    terms.textContent = intro ? t('termsIntro', { weeks: introWeeks(selected), intro: intro.priceString, ...per })
+      : selected.trialDays ? t('termsTrial', { days: selected.trialDays, ...per })
+      : t('termsPlain', per);
   };
   renderCta();
 
@@ -167,12 +173,13 @@ export async function showPaywall({ source = 'unknown', onClose, force = false }
     cta.innerHTML = `<span class="dots"><i></i><i></i><i></i></span>`;
     const res = await purchases.purchase(selected.store);
     if (res.ok) {
-      track(selected.trialDays ? 'trial_start' : 'purchase', selected.productId);
-      if (selected.trialDays > 1 && canRemind) {
+      track(selected.intro ? 'intro_start' : selected.trialDays ? 'trial_start' : 'purchase', selected.productId);
+      const d = offerDays(selected);
+      if (d > 1 && canRemind) {
         notifications.replaceRange(REMINDER_ID, REMINDER_ID, [{
-          id: REMINDER_ID, title: t('trialRemTitle'),
+          id: REMINDER_ID, title: t(selected.intro ? 'introRemTitle' : 'trialRemTitle'),
           body: t('trialRemBody', { price: selected.price, period: t('per_' + selected.period) }),
-          at: new Date(Date.now() + (selected.trialDays - 1) * 86400000),
+          at: new Date(Date.now() + (d - 1) * 86400000),
         }]);
       }
       await activate();
@@ -228,6 +235,15 @@ function celebrate(layer) {
   burst.className = 'celebrate';
   burst.innerHTML = `<div class="celebrate-card">${icons.crown}<h2 class="serif">${t('welcomePro')}</h2><p>${t('welcomeProSub')}</p></div>`;
   layer.appendChild(burst);
+}
+
+// Скільки днів діє пробний період або пільгова ціна
+const offerDays = p => p.intro ? p.intro.days * p.intro.cycles : p.trialDays || 0;
+const introWeeks = p => Math.max(1, Math.round(offerDays(p) / 7));
+// Знижка першого періоду відносно звичайної ціни
+function introPct(p) {
+  const full = p.store?.price ?? parseFloat(String(p.price).replace(/[^\d.]/g, ''));
+  return full && p.intro ? Math.round((1 - p.intro.price / full) * 100) : 0;
 }
 
 function perWeek(price, currency) {

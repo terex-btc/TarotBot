@@ -17,7 +17,8 @@ export const CONFIG = {
   // Продукти в App Store Connect (ідентифікатори мають збігатися з RevenueCat)
   // fallbackPrice — тільки для перегляду в браузері/Telegram, на iOS ціна береться з App Store
   PLANS: [
-    { id: 'weekly', productId: 'luckytarot_pro_weekly', period: 'week', fallbackPrice: '$6.99', trialDays: 3 },
+    // Перший тиждень за пільговою ціною (Introductory offer «Pay as you go» в App Store Connect)
+    { id: 'weekly', productId: 'luckytarot_pro_weekly', period: 'week', fallbackPrice: '$6.99', fallbackIntro: { price: 2.79, priceString: '$2.79', days: 7, cycles: 1 } },
     { id: 'yearly', productId: 'luckytarot_pro_yearly', period: 'year', fallbackPrice: '$39.99', fallbackPerWeek: '$0.77' },
   ],
   DEFAULT_PLAN: 'weekly',
