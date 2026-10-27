@@ -296,6 +296,13 @@ Tracking: **No** — данные не используются для слеж�
 ## 8. Заметки для проверяющего Apple (App Review Information → Notes)
 
 ```
+What makes Lunara different from a typical tarot app:
+- The Oracle: a conversational AI reader that answers the user's own questions with their zodiac sign in mind and keeps the conversation history on the device.
+- Cosmic Weather: exact astronomical dates of Mercury, Venus and Mars retrogrades and of solar and lunar eclipses (calculated in advance for 2026–2030). Active events are shown at the top of the Today screen, noted in readings, woven into the daily horoscope and marked in the Moon calendar; optional local notifications announce them.
+- A daily ritual in one place: Card of the Day, a horoscope and the Moon phase, personalized with the user's zodiac sign, chosen focus and today's sky.
+- A reading journal: every spread is saved with notes, mood and a "came true" mark, so users can look back at what actually happened.
+- Native experience: local notifications, haptics, sharing, and in-app purchases through StoreKit. All screens and content are bundled in the app; it is not a website wrapper.
+
 Lunara does not require a login. On first launch the app creates an anonymous account on our server, and onboarding asks for a first name and birth date (used only for the zodiac sign and numerology).
 
 Subscriptions (Lunara PRO, weekly with a 3-day free trial and yearly) are sold through StoreKit and validated with RevenueCat. The paywall appears after onboarding and after the first reading; it can also be opened from Profile.
