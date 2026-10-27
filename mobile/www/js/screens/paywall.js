@@ -1,17 +1,42 @@
 // ══ Paywall (правила App Store 3.1.2: ціна, період, автопродовження, Terms, Restore) ══
-import { t } from '../i18n.js';
+import { t, getLang } from '../i18n.js';
 import { state, track, refreshPremium, emit } from '../state.js';
 import { api } from '../api.js';
 import { CONFIG } from '../config.js';
-import { purchases, haptic, openUrl, legalUrl, isNative } from '../platform.js';
-import { openFull, openSheet, closeLayer, toast, delay } from '../ui.js';
+import { purchases, haptic, openUrl, legalUrl, isNative, notifications } from '../platform.js';
+import { openFull, openSheet, closeLayer, toast, delay, esc } from '../ui.js';
 import { cardBack, starsField, sparkle, icons } from '../art.js';
+import { CATALOG } from '../catalog.js';
 
 const FEATURES = [
   ['pwF_daily', true], ['pwF_horo', true], ['pwF_moon', true],
-  ['pwF_spreads', false], ['pwF_ai', false], ['pwF_oracle', false],
+  ['pwF_yesno', false], ['pwF_spreads', false], ['pwF_ai', false], ['pwF_oracle', false], ['pwF_trainer', false],
   ['pwF_compat', false], ['pwF_deep', false], ['pwF_future', false],
 ];
+
+// Що отримує людина — показуємо до тарифів; рядок, через який відкрили пейвол, підсвічуємо
+const BENEFITS = [
+  { k: 'spreads', icon: 'grid', c: 'gold' }, { k: 'ai', icon: 'crystal', c: 'violet' }, { k: 'oracle', icon: 'eye', c: 'pink' },
+  { k: 'learn', icon: 'learn', c: 'green' }, { k: 'more', icon: 'heart', c: 'blue' },
+];
+const CLASSIC_TITLES = { yes_no: 'spYnTitle', three_card: 'sp3Title', love: 'spLoveTitle', month: 'spMonthTitle', year: 'spYearTitle', celtic: 'spCelticTitle' };
+const REMINDER_ID = 3001;   // нагадування про кінець пробного періоду
+
+// Заголовок і підсвічена перевага — під те, що людина хотіла відкрити
+function pitch(source) {
+  if (source.startsWith('spread_')) {
+    const id = source.slice(7);
+    const c = CATALOG.find(x => x.id === id);
+    const name = c ? (c.name[getLang()] || c.name.en) : CLASSIC_TITLES[id] ? t(CLASSIC_TITLES[id]) : '';
+    return { title: name ? t('pwT_spread', { spread: name }) : t('pwT_spreads'), hl: 'spreads' };
+  }
+  if (['lesson', 'trainer', 'deck_read'].includes(source)) return { title: t('pwT_learn'), hl: 'learn' };
+  if (source === 'oracle') return { title: t('pwT_oracle'), hl: 'oracle' };
+  if (['daily_ai', 'after_first_reading'].includes(source)) return { title: t('pwT_ai'), hl: 'ai' };
+  if (['compat', 'personal_year', 'card_reversed', 'card_back'].includes(source)) return { title: t('pwT_more'), hl: 'more' };
+  const name = state.user?.firstName;
+  return { title: name ? t('pwT_name', { name }) : t('pwT_default'), hl: '' };
+}
 
 let _open = false;
 
@@ -37,6 +62,9 @@ export async function showPaywall({ source = 'unknown', onClose, force = false }
   const save = weekly && yearly ? savePercent(weekly, yearly) : 0;
   let selected = plans.find(p => p.id === CONFIG.DEFAULT_PLAN) || plans[0];
   let closed = false;
+  const { title, hl } = pitch(source);
+  // Обіцяємо нагадування лише там, де справді можемо його поставити
+  const canRemind = notifications.supported && await notifications.granted();
 
   const layer = openFull(`<div class="paywall">
       ${starsField(60, 21)}
@@ -45,7 +73,7 @@ export async function showPaywall({ source = 'unknown', onClose, force = false }
         <button class="btn-text pw-restore" id="pw-restore">${t('restore')}</button>
       </div>
       <div class="pw-scroll scroll">
-        <div class="pw-hero">
+        <div class="pw-hero small">
           <div class="pw-fan">
             <div class="pw-c c1">${cardBack({ glow: false })}</div>
             <div class="pw-c c2">${cardBack()}</div>
@@ -53,8 +81,15 @@ export async function showPaywall({ source = 'unknown', onClose, force = false }
           </div>
           ${sparkle('gold pw-s1')}${sparkle('pw-s2')}
         </div>
-        <h1 class="serif pw-title">${t('pwTitle')}</h1>
+        <h1 class="serif pw-title">${esc(title)}</h1>
         <p class="pw-sub">${t('pwSub')}</p>
+
+        <div class="pw-benefits">${BENEFITS.map(b => `
+          <div class="pw-ben${b.k === hl ? ' hl' : ''}">
+            <span class="pw-ben-ico ${b.c}">${icons[b.icon] || sparkle()}</span>
+            <span><b>${t('pwB_' + b.k)}</b><small>${t('pwB_' + b.k + '_s')}</small></span>
+          </div>`).join('')}
+        </div>
 
         <div class="pw-plans">${plans.map(p => `
           <button class="pw-plan${p === selected ? ' on' : ''}" data-plan="${p.id}">
@@ -70,8 +105,10 @@ export async function showPaywall({ source = 'unknown', onClose, force = false }
             ${p.trialDays ? `<span class="pw-badge trial">${t('freeTrialBadge')}</span>` : ''}
           </button>`).join('')}
         </div>
+        <div class="pw-timeline" id="pw-tl"></div>
+
         <div class="pw-table">
-          <div class="pw-row pw-head"><span>${t('pwWhatYouGet')}</span><span class="pw-free">${t('free')}</span><span class="pw-pro"><b>PRO</b></span></div>
+          <div class="pw-row pw-head"><span>${t('pwCompare')}</span><span class="pw-free">${t('free')}</span><span class="pw-pro"><b>PRO</b></span></div>
           ${FEATURES.map(([k, free]) => `<div class="pw-row"><span>${t(k)}</span>
             <span class="pw-free">${free ? icons.check : `<span class="pw-lock">${icons.lock}</span>`}</span>
             <span class="pw-pro">${icons.check}</span></div>`).join('')}
@@ -79,6 +116,7 @@ export async function showPaywall({ source = 'unknown', onClose, force = false }
 
       </div>
       <div class="pw-foot">
+        <p class="pw-trust"><span>${icons.check}${t('pwTrust')}</span><span>${icons.lock}${t('pwSecure')}</span></p>
         <button class="btn-primary btn-glow" id="pw-cta"></button>
         <p class="pw-terms" id="pw-terms"></p>
         <p class="pw-links"><a id="pw-tos">${t('termsOfUse')}</a> · <a id="pw-privacy">${t('privacyPolicy')}</a></p>
@@ -90,8 +128,15 @@ export async function showPaywall({ source = 'unknown', onClose, force = false }
 
   const cta = layer.querySelector('#pw-cta');
   const terms = layer.querySelector('#pw-terms');
+  const tl = layer.querySelector('#pw-tl');
   const renderCta = () => {
     cta.innerHTML = `<span>${selected.trialDays ? t('startTrial') : t('continue')}</span>`;
+    // Як працює пробний період — щоб не боятися натиснути
+    const d = selected.trialDays;
+    tl.innerHTML = d ? `<h3 class="pw-tl-h">${t('pwTlTitle')}</h3>
+      <div class="pw-tl-step on"><i>${icons.check}</i><span><b>${t('pwTlToday')}</b><small>${t('pwTlToday_s')}</small></span></div>
+      ${canRemind && d > 1 ? `<div class="pw-tl-step"><i>${icons.bell}</i><span><b>${t('pwTlIn', { n: d - 1 })}</b><small>${t('pwTlRemind_s')}</small></span></div>` : ''}
+      <div class="pw-tl-step"><i>${icons.crown}</i><span><b>${t('pwTlIn', { n: d })}</b><small>${t('pwTlCharge_s', { price: selected.price, period: t('per_' + selected.period) })}</small></span></div>` : '';
     terms.textContent = selected.trialDays
       ? t('termsTrial', { days: selected.trialDays, price: selected.price, period: t('per_' + selected.period) })
       : t('termsPlain', { price: selected.price, period: t('per_' + selected.period) });
@@ -123,6 +168,13 @@ export async function showPaywall({ source = 'unknown', onClose, force = false }
     const res = await purchases.purchase(selected.store);
     if (res.ok) {
       track(selected.trialDays ? 'trial_start' : 'purchase', selected.productId);
+      if (selected.trialDays > 1 && canRemind) {
+        notifications.replaceRange(REMINDER_ID, REMINDER_ID, [{
+          id: REMINDER_ID, title: t('trialRemTitle'),
+          body: t('trialRemBody', { price: selected.price, period: t('per_' + selected.period) }),
+          at: new Date(Date.now() + (selected.trialDays - 1) * 86400000),
+        }]);
+      }
       await activate();
       celebrate(layer);
       await delay(1600);

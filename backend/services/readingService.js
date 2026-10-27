@@ -42,7 +42,7 @@ const SPREAD_TYPES = {
   },
   yes_no: {
     name: { ua: 'Так чи ні', ru: 'Да или нет', en: 'Yes or No' },
-    count: 1, premium: false,
+    count: 1, premium: true,
     positions: [{ ua: 'Відповідь', ru: 'Ответ', en: 'Answer' }]
   },
   celtic: {

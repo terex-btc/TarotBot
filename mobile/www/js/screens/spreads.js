@@ -17,7 +17,7 @@ import { CATEGORIES, CATALOG, spreadCat } from '../catalog.js';
 
 const P = (en, ru, ua) => ({ en, ru, ua });
 const CLASSICS = [
-  { id: 'yes_no', count: 1, free: true, rows: [1], title: 'spYnTitle', desc: 'spYnDesc', long: 'spYnLong', q: ['spYnQ1', 'spYnQ2', 'spYnQ3'],
+  { id: 'yes_no', count: 1, rows: [1], title: 'spYnTitle', desc: 'spYnDesc', long: 'spYnLong', q: ['spYnQ1', 'spYnQ2', 'spYnQ3'],
     positions: [P('Answer', 'Ответ', 'Відповідь')] },
   { id: 'three_card', count: 3, rows: [3], title: 'sp3Title', desc: 'sp3Desc', long: 'sp3Long', q: ['sp3Q1', 'sp3Q2', 'sp3Q3'],
     positions: [P('Past', 'Прошлое', 'Минуле'), P('Present', 'Настоящее', 'Теперішнє'), P('Future', 'Будущее', 'Майбутнє')] },
@@ -113,8 +113,9 @@ function heroYesNo() {
       <span class="sc-text">
         <span class="sc-title serif">${t(sp.title)}</span>
         <span class="sc-desc">${t(sp.desc)}</span>
-        <span class="sc-meta"><b class="free-tag">${t('freeTag')}</b><span>· ${t('nCards', { n: 1 })}</span><span>· ${sparkle()} AI</span></span>
+        <span class="sc-meta"><span>${t('nCards', { n: 1 })}</span><span>· ${sparkle()} AI</span></span>
       </span>
+      ${state.isPremium ? '' : '<span class="sc-lock">PRO</span>'}
     </button>`;
 }
 

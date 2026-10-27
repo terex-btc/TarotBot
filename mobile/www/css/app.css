@@ -1332,3 +1332,47 @@ button.pro-pill { animation: pulse 2.6s ease-in-out infinite; }
 .tr-tip p { margin-top: 6px; font-size: 15px; line-height: 1.45; }
 .trainer .ai-box { margin-top: 18px; }
 .tr-again { margin-top: 18px; opacity: .9; }
+
+/* ══ Пейвол: що отримуєш, як працює пробний період ══════════════════════ */
+.pw-hero.small { height: 118px; }
+.pw-hero.small .pw-fan { transform: translateX(-50%) scale(.68); }
+.pw-benefits { display: flex; flex-direction: column; gap: 8px; margin: 0 0 24px; }
+.pw-ben { display: flex; align-items: center; gap: 14px; padding: 11px 14px; border-radius: var(--r-md); background: rgba(255, 255, 255, .045); border: 1px solid var(--line);
+  transition: border-color .3s, background .3s; }
+.pw-ben.hl { background: rgba(255, 201, 77, .1); border-color: rgba(255, 201, 77, .55); box-shadow: 0 0 0 3px rgba(255, 201, 77, .08); }
+.pw-ben > span:last-child { display: flex; flex-direction: column; gap: 1px; text-align: left; }
+.pw-ben b { font-size: 16px; font-weight: 800; }
+.pw-ben small { font-size: 13.5px; color: var(--text2); line-height: 1.3; }
+.pw-ben-ico { flex: none; display: grid; place-items: center; width: 40px; height: 40px; border-radius: 13px; }
+.pw-ben-ico .ico, .pw-ben-ico .sparkle { width: 21px; height: 21px; }
+.pw-ben-ico.gold { background: rgba(255, 201, 77, .16); color: var(--gold); }
+.pw-ben-ico.violet { background: rgba(143, 107, 255, .2); color: #b9a3ff; }
+.pw-ben-ico.pink { background: rgba(255, 45, 143, .16); color: #ff8cc3; }
+.pw-ben-ico.green { background: rgba(43, 212, 125, .15); color: #6fe3a6; }
+.pw-ben-ico.blue { background: rgba(110, 200, 255, .15); color: #8fd3ff; }
+.pw-timeline:empty { display: none; }
+.pw-timeline { position: relative; margin: 0 0 26px; padding: 16px 16px 6px; border-radius: var(--r-lg); background: var(--surface); border: 1px solid var(--line); text-align: left; }
+.pw-tl-h { margin: 0 0 12px; font-size: 13px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; color: var(--text3); }
+.pw-tl-step { position: relative; display: flex; gap: 14px; padding-bottom: 14px; }
+.pw-tl-step:not(:last-child)::before { content: ''; position: absolute; left: 15px; top: 32px; bottom: 2px; width: 2px; background: var(--line2); }
+.pw-tl-step i { flex: none; display: grid; place-items: center; width: 32px; height: 32px; border-radius: 50%; background: rgba(255, 255, 255, .08); color: var(--lav2); }
+.pw-tl-step.on i { background: var(--green); color: #0d2a1b; }
+.pw-tl-step i .ico { width: 17px; height: 17px; }
+.pw-tl-step > span { display: flex; flex-direction: column; gap: 1px; padding-top: 4px; }
+.pw-tl-step b { font-size: 15.5px; }
+.pw-tl-step small { font-size: 13.5px; color: var(--text2); line-height: 1.35; }
+.pw-trust { display: flex; justify-content: center; gap: 16px; margin-bottom: 10px; font-size: 13px; font-weight: 700; color: var(--text2); }
+.pw-trust span { display: inline-flex; align-items: center; gap: 5px; }
+.pw-trust .ico { width: 15px; height: 15px; color: var(--green); }
+/* компактніше — щоб тарифи починались на першому екрані */
+.pw-hero.small { height: 96px; }
+.pw-hero.small .pw-fan { transform: translateX(-50%) scale(.56); }
+.pw-hero.small + .pw-title { font-size: 29px; }
+.paywall .pw-sub { margin-bottom: 16px; }
+.pw-benefits { gap: 2px; margin-bottom: 18px; }
+.pw-ben { padding: 7px 10px; gap: 12px; background: none; border-color: transparent; }
+.pw-ben-ico { width: 36px; height: 36px; border-radius: 12px; }
+.pw-ben b { font-size: 15.5px; }
+.pw-ben small { font-size: 13px; }
+.pw-trust { gap: 12px; }
+.pw-trust span { white-space: nowrap; }
