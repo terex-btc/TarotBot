@@ -311,7 +311,7 @@ async function openTrainer() {
       question: st.question, answer: st.answer.trim(), lang: L, userId: state.userId,
     });
     if (res.error === 'premium_required') { box.querySelector('#tr-wait')?.remove(); go.disabled = false; showPaywall({ source: 'trainer' }); return; }
-    if (!res.ok) { ask(t(res.error === 'offline' ? 'errOffline' : 'trainerOff')); return; }
+    if (!res.ok) { ask(t({ offline: 'errOffline', daily_limit: 'aiDailyLimit', ai_busy: 'aiBusy', rate_limit: 'aiBusy' }[res.error] || 'trainerOff')); return; }
     track('trainer_scored', String(res.score));
     haptic('success');
     result(res);

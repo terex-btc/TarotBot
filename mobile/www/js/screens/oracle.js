@@ -104,7 +104,7 @@ async function send() {
   } else {
     history.pop();
     if (res.error === 'premium_required') showPaywall({ source: 'oracle' });
-    chat.insertAdjacentHTML('beforeend', `<div class="msg system">${t(res.error === 'rate_limit' ? 'oracleRateLimit' : res.error === 'offline' ? 'errOffline' : 'oracleError')}</div>`);
+    chat.insertAdjacentHTML('beforeend', `<div class="msg system">${t({ rate_limit: 'oracleRateLimit', daily_limit: 'aiDailyLimit', ai_busy: 'aiBusy', offline: 'errOffline' }[res.error] || 'oracleError')}</div>`);
   }
   scrollDown();
   busy = false;
