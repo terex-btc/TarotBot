@@ -36,6 +36,12 @@ class RateLimiter {
 
 const limiter = new RateLimiter();
 
+// Порівняння секретів за сталий час (без витоку через час відповіді)
+function safeEqual(a, b) {
+  const x = Buffer.from(String(a || '')), y = Buffer.from(String(b || ''));
+  return x.length > 0 && x.length === y.length && crypto.timingSafeEqual(x, y);
+}
+
 /**
  * Фабрика rate-limit middleware.
  * @param {number} limit   — макс. запитів
@@ -172,7 +178,7 @@ function verifyTelegramAuth(req, res, next) {
       .update(dataCheckString)
       .digest('hex');
 
-    if (expectedHash !== hash) {
+    if (!safeEqual(expectedHash, hash)) {
       return res.status(401).json({ ok: false, error: 'invalid_auth' });
     }
 
@@ -202,7 +208,11 @@ function verifyTelegramAuth(req, res, next) {
 // Якщо telegramUserId не заповнений (dev або бот не налаштований) — пропускаємо.
 
 function ownerOnly(req, res, next) {
-  if (!req.telegramUserId) return next(); // dev-режим або перевірка вимкнена
+  if (!req.telegramUserId) {
+    // Пропускаємо лише в dev без BOT_TOKEN; підписаний запит без id власника — відмова
+    if (!process.env.BOT_TOKEN && !req.isAppUser) return next();
+    return res.status(403).json({ ok: false, error: 'forbidden' });
+  }
   if (req.telegramUserId !== req.params.userId) {
     return res.status(403).json({ ok: false, error: 'forbidden' });
   }
@@ -244,6 +254,6 @@ const limits = {
 };
 
 module.exports = {
-  rateLimit, verifyTelegramAuth, ownerOnly, validateUserId, limits,
+  rateLimit, verifyTelegramAuth, ownerOnly, validateUserId, limits, safeEqual,
   isAppUserId, appUserIdFromDevice, signAppToken, verifyAppToken, isLunaraFreePro,
 };

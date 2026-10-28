@@ -28,7 +28,8 @@ router.get('/:userId', validateUserId, ownerOnly, async (req, res) => {
     const limit = Math.min(100, Math.max(1, parseInt(req.query.limit, 10) || 10));
     res.json({ ok: true, readings: await getUserReadings(req.params.userId, limit) });
   } catch (e) {
-    res.status(500).json({ ok: false, error: e.message });
+    console.error('[readings]', e.message);
+    res.status(500).json({ ok: false, error: 'server_error' });
   }
 });
 
@@ -80,7 +81,8 @@ router.post('/:userId', validateUserId, ownerOnly, async (req, res) => {
       { salt: freshDraw ? `${Date.now()}` : '' });
     res.json({ ok: true, reading });
   } catch (e) {
-    res.status(500).json({ ok: false, error: e.message });
+    console.error('[readings]', e.message);
+    res.status(500).json({ ok: false, error: 'server_error' });
   }
 });
 
@@ -100,7 +102,8 @@ router.patch('/:userId/:readingId', validateUserId, ownerOnly, async (req, res) 
     if (!reading) return res.status(404).json({ ok: false, error: 'not_found' });
     res.json({ ok: true, reading });
   } catch (e) {
-    res.status(500).json({ ok: false, error: e.message });
+    console.error('[readings]', e.message);
+    res.status(500).json({ ok: false, error: 'server_error' });
   }
 });
 

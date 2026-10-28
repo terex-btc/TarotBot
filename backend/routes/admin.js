@@ -13,18 +13,22 @@ function bumpActivity() {
   _activityLastAt = Date.now();
 }
 
+const { safeEqual, rateLimit } = require('../middleware/security');
+const adminLimit = rateLimit(60, 60_000, 'ip');   // підбір ключа — не більше 60 спроб/хв з IP
+
 function auth(req, res, next) {
   const key = req.query.key || req.headers['x-admin-key'];
-  if (!ADMIN_KEY || key !== ADMIN_KEY) {
+  if (!safeEqual(key, ADMIN_KEY)) {
     return res.status(401).json({ ok: false, error: 'Unauthorized' });
   }
   next();
 }
 
 // GET /admin — HTML-панель
+router.use(adminLimit);
 router.get('/', (req, res) => {
   const key = req.query.key || '';
-  if (!ADMIN_KEY || key !== ADMIN_KEY) {
+  if (!safeEqual(key, ADMIN_KEY)) {
     return res.send(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Admin</title>
     <style>body{background:#0a0a0f;color:#fff;font-family:sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;margin:0}
     form{display:flex;flex-direction:column;gap:12px;width:280px}

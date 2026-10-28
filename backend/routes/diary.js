@@ -13,7 +13,7 @@ router.get('/:userId', validateUserId, ownerOnly, async (req, res) => {
       [req.params.userId]
     );
     res.json({ ok: true, entries: rows });
-  } catch (e) { res.status(500).json({ ok: false, error: e.message }); }
+  } catch (e) { console.error('[api]', e.message); res.status(500).json({ ok: false, error: 'server_error' }); }
 });
 
 // POST /api/diary/:userId
@@ -28,7 +28,7 @@ router.post('/:userId', validateUserId, ownerOnly, async (req, res) => {
       [req.params.userId, text.slice(0, 1000), moonEmoji || '🌙', moonName || '', entryDate]
     );
     res.json({ ok: true, entry: rows[0] });
-  } catch (e) { res.status(500).json({ ok: false, error: e.message }); }
+  } catch (e) { console.error('[api]', e.message); res.status(500).json({ ok: false, error: 'server_error' }); }
 });
 
 // DELETE /api/diary/:userId/:id
@@ -39,7 +39,7 @@ router.delete('/:userId/:id', validateUserId, ownerOnly, async (req, res) => {
       [req.params.userId, req.params.id]
     );
     res.json({ ok: true });
-  } catch (e) { res.status(500).json({ ok: false, error: e.message }); }
+  } catch (e) { console.error('[api]', e.message); res.status(500).json({ ok: false, error: 'server_error' }); }
 });
 
 module.exports = router;

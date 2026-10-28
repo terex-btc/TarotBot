@@ -4,7 +4,7 @@ const router  = express.Router();
 const { pool } = require('../db');
 const { calcLifePath, getZodiac, getMoonPhase, calcPersonalYear, calcDayNumber } = require('../services/algorithmService');
 const { bumpActivity } = require('./admin');
-const { validateUserId, ownerOnly, limits, isLunaraFreePro } = require('../middleware/security');
+const { validateUserId, ownerOnly, limits, isLunaraFreePro, safeEqual } = require('../middleware/security');
 const { isAdmin } = require('../config/admins');
 
 // ── Хелпери ───────────────────────────────────────────────────────────────────
@@ -91,17 +91,17 @@ router.post('/init', limits.init, async (req, res) => {
 });
 
 // POST /api/users/:userId/premium
-router.post('/:userId/premium', async (req, res) => {
+router.post('/:userId/premium', limits.init, validateUserId, async (req, res) => {
   try {
     const { adminKey } = req.body;
-    if (adminKey !== process.env.ADMIN_KEY) return res.status(403).json({ ok: false, error: 'Forbidden' });
+    if (!safeEqual(adminKey, process.env.ADMIN_KEY)) return res.status(403).json({ ok: false, error: 'Forbidden' });
     const { rows } = await pool.query(
       `UPDATE users SET is_premium=true, updated_at=NOW() WHERE user_id=$1 RETURNING *`,
       [req.params.userId]
     );
     if (!rows.length) return res.status(404).json({ ok: false, error: 'User not found' });
     res.json({ ok: true, user: rowToUser(rows[0], isLunaraFreePro(req)) });
-  } catch (e) { res.status(500).json({ ok: false, error: e.message }); }
+  } catch (e) { console.error('[api]', e.message); res.status(500).json({ ok: false, error: 'server_error' }); }
 });
 
 // GET /api/users/:userId/premium-status
@@ -147,7 +147,7 @@ router.get('/:userId/ref', validateUserId, ownerOnly, async (req, res) => {
     if (!rows.length) return res.status(404).json({ ok: false, error: 'User not found' });
     const u = rows[0];
     res.json({ ok: true, refBonus: u.ref_bonus || 0, premiumExpiry: u.premium_expiry, isPremium: isPremiumActive(u) });
-  } catch (e) { res.status(500).json({ ok: false, error: e.message }); }
+  } catch (e) { console.error('[api]', e.message); res.status(500).json({ ok: false, error: 'server_error' }); }
 });
 
 // PATCH /api/users/:userId — оновити ім'я та/або дату народження
@@ -193,7 +193,7 @@ router.get('/:userId', validateUserId, ownerOnly, async (req, res) => {
     const { rows } = await pool.query(`SELECT * FROM users WHERE user_id=$1`, [req.params.userId]);
     if (!rows.length) return res.status(404).json({ ok: false, error: 'User not found' });
     res.json({ ok: true, user: rowToUser(rows[0], isLunaraFreePro(req)) });
-  } catch (e) { res.status(500).json({ ok: false, error: e.message }); }
+  } catch (e) { console.error('[api]', e.message); res.status(500).json({ ok: false, error: 'server_error' }); }
 });
 
 // DELETE /api/users/:userId/self — GDPR self-delete

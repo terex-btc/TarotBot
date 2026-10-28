@@ -8,7 +8,7 @@ const { pool } = require('../db');
 const { getMoonPhase } = require('../services/algorithmService');
 const { fallbackHoroscope } = require('../services/horoscopeFallback');
 const {
-  limits, verifyTelegramAuth, isAppUserId, appUserIdFromDevice, signAppToken,
+  limits, verifyTelegramAuth, isAppUserId, appUserIdFromDevice, signAppToken, safeEqual,
 } = require('../middleware/security');
 
 const ENTITLEMENT_ID = process.env.REVENUECAT_ENTITLEMENT_ID || 'pro';
@@ -163,7 +163,7 @@ async function applyEntitlement(userId, expiryMs, active, meta) {
 router.post('/revenuecat', async (req, res) => {
   const secret = process.env.REVENUECAT_WEBHOOK_AUTH;
   const auth = req.headers.authorization || '';
-  if (!secret || (auth !== secret && auth !== `Bearer ${secret}`)) {
+  if (!secret || !(safeEqual(auth, secret) || safeEqual(auth, `Bearer ${secret}`))) {
     return res.status(401).json({ ok: false, error: 'unauthorized' });
   }
   const event = req.body?.event;

@@ -31,7 +31,7 @@ router.get('/today/:userId', validateUserId, async (req, res) => {
     let spells = getSpellsByMoonPhase(moon.energy, 8);
     if (!premiumOk) spells = spells.map(s => ({ ...s, locked: s.premium }));
     res.json({ ok: true, moon, spells });
-  } catch (e) { res.status(500).json({ ok: false, error: e.message }); }
+  } catch (e) { console.error('[api]', e.message); res.status(500).json({ ok: false, error: 'server_error' }); }
 });
 
 // GET /api/spells/category/:categoryId?userId=...
@@ -43,7 +43,7 @@ router.get('/category/:categoryId', validateUidParam, async (req, res) => {
     const spells = getSpellsByCategory(req.params.categoryId, true)
       .map(s => ({ ...s, locked: !premiumOk && s.premium }));
     res.json({ ok: true, spells });
-  } catch (e) { res.status(500).json({ ok: false, error: e.message }); }
+  } catch (e) { console.error('[api]', e.message); res.status(500).json({ ok: false, error: 'server_error' }); }
 });
 
 // GET /api/spells/:id?userId=...
@@ -90,7 +90,7 @@ router.get('/:id', validateUidParam, async (req, res) => {
     }
 
     return res.status(403).json({ ok: false, error: 'premium_required' });
-  } catch (e) { res.status(500).json({ ok: false, error: e.message }); }
+  } catch (e) { console.error('[api]', e.message); res.status(500).json({ ok: false, error: 'server_error' }); }
 });
 
 // GET /api/spells/dreams/list — всі символи
@@ -112,7 +112,7 @@ router.get('/dreams/interpret', validateUidParam, async (req, res) => {
       return res.json({ ok: true, found: true, symbol: result.symbol, positive: result.positive, card_hint: result.card_hint, preview: result.meaning.slice(0, 60) + '...', locked: true });
     }
     res.json({ ok: true, found: true, locked: false, ...result });
-  } catch (e) { res.status(500).json({ ok: false, error: e.message }); }
+  } catch (e) { console.error('[api]', e.message); res.status(500).json({ ok: false, error: 'server_error' }); }
 });
 
 module.exports = router;

@@ -52,7 +52,7 @@ router.post('/invoice/spread', async (req, res) => {
     res.json({ ok: true, link });
   } catch (e) {
     console.error('[Payments] Spread invoice error:', e.message);
-    res.status(500).json({ ok: false, error: e.message });
+    res.status(500).json({ ok: false, error: 'server_error' });
   }
 });
 
@@ -80,7 +80,7 @@ router.post('/invoice', async (req, res) => {
     res.json({ ok: true, link });
   } catch (e) {
     console.error('[Payments] Error creating invoice:', e.message);
-    res.status(500).json({ ok: false, error: e.message });
+    res.status(500).json({ ok: false, error: 'server_error' });
   }
 });
 
@@ -112,33 +112,8 @@ router.post('/invoice/spell', async (req, res) => {
     res.json({ ok: true, link });
   } catch (e) {
     console.error('[Payments] Spell invoice error:', e.message);
-    res.status(500).json({ ok: false, error: e.message });
+    res.status(500).json({ ok: false, error: 'server_error' });
   }
-});
-
-// POST /api/payments/grant-spell — видати доступ до заговору після оплати
-router.post('/grant-spell', async (req, res) => {
-  const { userId, spellId } = req.body;
-  if (!userId || !spellId) return res.status(400).json({ ok: false, error: 'userId and spellId required' });
-  try {
-    await pool.query(
-      `INSERT INTO spell_purchases (user_id, spell_id, purchased_at)
-       VALUES ($1, $2, NOW()) ON CONFLICT (user_id, spell_id) DO NOTHING`,
-      [userId, spellId]
-    );
-    res.json({ ok: true });
-  } catch (e) { res.status(500).json({ ok: false, error: e.message }); }
-});
-
-// GET /api/payments/my-spells/:userId — які заговори куплені
-router.get('/my-spells/:userId', async (req, res) => {
-  try {
-    const result = await pool.query(
-      'SELECT spell_id FROM spell_purchases WHERE user_id = $1',
-      [req.params.userId]
-    );
-    res.json({ ok: true, spells: result.rows.map(r => r.spell_id) });
-  } catch (e) { res.status(500).json({ ok: false, error: e.message }); }
 });
 
 // GET /api/payments/plans
