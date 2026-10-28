@@ -120,6 +120,7 @@ async function send() {
       ? { id: res.card.id, isReversed: !!res.card.isReversed } : null;
     history.push({ role: 'assistant', content: res.reply, ...(drawn ? { card: drawn } : {}) });
     storage.set(KEY(), JSON.stringify(history.slice(-30)));
+    addClearButton();
     chat.insertAdjacentHTML('beforeend', `<div class="msg oracle">${cardChip(drawn)}<span class="msg-ic">${sparkle()}</span><span class="txt"></span></div>`);
     const node = chat.lastElementChild.querySelector('.txt');
     await typeText(node, res.reply, { speed: 10 });
@@ -131,6 +132,14 @@ async function send() {
   }
   scrollDown();
   busy = false;
+}
+
+// Кнопка «Очистити чат» з’являється після першої відповіді (без перемальовування екрана)
+function addClearButton() {
+  if (root.querySelector('#chat-clear')) return;
+  root.querySelector('.oracle-head').insertAdjacentHTML('beforeend',
+    `<button class="icon-btn soft" id="chat-clear" aria-label="${t('clearChat')}">${icons.trash}</button>`);
+  root.querySelector('#chat-clear').addEventListener('click', confirmClear);
 }
 
 function confirmClear() {
