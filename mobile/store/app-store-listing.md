@@ -99,7 +99,7 @@ YOUR READING JOURNAL
 LUCKY TAROT PRO
 Unlock every spread, unlimited AI readings, the Oracle chat, reversed meanings, all lessons, custom card backs and every new feature.
 • Weekly: $6.99 per week; new subscribers pay $2.79 for the first week
-• Yearly: $39.99 per year
+• Yearly: $69.99 per year
 Prices are in US dollars and may vary by country.
 
 Payment is charged to your Apple ID at confirmation of purchase. Your subscription renews automatically unless it is canceled at least 24 hours before the end of the current period. Your account is charged for renewal within 24 hours before the end of the current period. You can manage or cancel your subscription in your App Store account settings.
@@ -121,7 +121,7 @@ Lucky Tarot is for entertainment and self-reflection. It does not replace profes
 | Product ID | `luckytarot_pro_weekly` | `luckytarot_pro_yearly` |
 | Reference Name | PRO Weekly | PRO Yearly |
 | Duration | 1 week | 1 year |
-| Price | $6.99 | $39.99 |
+| Price | $6.99 | $69.99 |
 | Introductory offer | Pay as you go: $2.79 за 1 неделю, 1 период (только новые подписчики). Если цены $2.79 нет в списке — ближайшая к ней | — |
 | Display Name | Lucky Tarot PRO Weekly | Lucky Tarot PRO Yearly |
 | Description (≤45) | Every spread, AI readings and the Oracle | Every spread, AI readings and the Oracle |
