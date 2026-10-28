@@ -15,7 +15,7 @@
 | Primary category | **Lifestyle** |
 | Secondary category | **Entertainment** |
 | Price | Free (деньги — через подписки внутри приложения) |
-| Copyright | `2026 <твоё имя, как в Apple ID>` |
+| Copyright | `2026 Maksym Tereshchenko` |
 | Privacy Policy URL | https://lunara-tarot.up.railway.app/app/legal/privacy.html |
 | Terms of Use (EULA) | https://lunara-tarot.up.railway.app/app/legal/terms.html — вставить в конец описания (уже есть ниже) |
 | Support URL | https://lunara-tarot.up.railway.app/app/legal/support.html |
@@ -181,7 +181,7 @@ Contact Information: твоё имя, телефон и рабочая почт�
 
 - [x] **Почта поддержки:** tarotsupports@gmail.com — вписана в приложение (Профиль → «Написать в поддержку»), на страницу поддержки, в terms и privacy.
 - [x] **Support URL.** Страница поддержки готова: `https://lunara-tarot.up.railway.app/app/legal/support.html` (English), почта вписана.
-- [ ] **Условия и политика конфиденциальности — сейчас шаблоны.** На страницах `terms.html` и `privacy.html` стоят пустые поля [DATE], [COMPANY NAME], [ADDRESS], [JURISDICTION] и пометка «Template». Почта уже вписана. Нужны: имя продавца (как в Apple Developer) и страна — я заполню.
+- [x] **Условия и политика конфиденциальности** заполнены: продавец Maksym Tereshchenko (Украина), дата 28.10.2026, право Украины.
 - [ ] **Ключ Claude (ANTHROPIC_API_KEY) на Railway.** Без него Оракул и ИИ-толкования выдают ошибку — проверяющий Apple это увидит и отклонит приложение.
 - [ ] **Выключить бесплатный PRO** (`LUNARA_FREE_PRO`) хотя бы для iOS — иначе пейвол не показывается и проверяющий не сможет протестировать покупку.
 - [ ] **Проверить, свободно ли название** «Lucky Tarot: Love & Money» при создании приложения в App Store Connect (поиск 27.10.2026 точных совпадений не нашёл; запасные варианты — выше). Адрес сайта пользователи почти не видят — его пока не меняем.
