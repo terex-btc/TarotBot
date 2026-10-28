@@ -15,23 +15,23 @@ import { readingSkyLines } from '../sky.js';
 import { readingDone, afterReadingClosed } from '../moments.js';
 import { CATEGORIES, CATALOG, spreadCat } from '../catalog.js';
 
-const P = (en, ru, ua) => ({ en, ru, ua });
+const P = en => ({ en });
 const CLASSICS = [
   { id: 'yes_no', count: 1, rows: [1], title: 'spYnTitle', desc: 'spYnDesc', long: 'spYnLong', q: ['spYnQ1', 'spYnQ2', 'spYnQ3'],
-    positions: [P('Answer', 'Ответ', 'Відповідь')] },
+    positions: [P('Answer')] },
   { id: 'three_card', count: 3, rows: [3], title: 'sp3Title', desc: 'sp3Desc', long: 'sp3Long', q: ['sp3Q1', 'sp3Q2', 'sp3Q3'],
-    positions: [P('Past', 'Прошлое', 'Минуле'), P('Present', 'Настоящее', 'Теперішнє'), P('Future', 'Будущее', 'Майбутнє')] },
+    positions: [P('Past'), P('Present'), P('Future')] },
   { id: 'love', count: 4, rows: [2, 2], title: 'spLoveTitle', desc: 'spLoveDesc', long: 'spLoveLong', q: ['spLoveQ1', 'spLoveQ2', 'spLoveQ3'],
-    positions: [P('Your feelings', 'Ваше состояние', 'Ваш стан'), P('Partner', 'Партнёр', 'Партнер'), P('Connection', 'Связь', 'Зв’язок'), P('Potential', 'Потенциал', 'Потенціал')] },
+    positions: [P('Your feelings'), P('Partner'), P('Connection'), P('Potential')] },
   { id: 'month', count: 4, rows: [2, 2], title: 'spMonthTitle', desc: 'spMonthDesc', long: 'spMonthLong', q: ['spMonthQ1', 'spMonthQ2'],
-    positions: [P('Overall energy', 'Общая энергия', 'Загальна енергія'), P('Main challenge', 'Вызов месяца', 'Виклик місяця'), P('Opportunities', 'Возможности', 'Можливості'), P('Outcome', 'Итог', 'Підсумок')] },
+    positions: [P('Overall energy'), P('Main challenge'), P('Opportunities'), P('Outcome')] },
   { id: 'year', count: 6, rows: [3, 3], title: 'spYearTitle', desc: 'spYearDesc', long: 'spYearLong', q: ['spYearQ1', 'spYearQ2'],
-    positions: [P('Theme of the year', 'Тема года', 'Тема року'), P('Challenges', 'Вызовы', 'Виклики'), P('Opportunities', 'Возможности', 'Можливості'),
-      P('Love', 'Любовь', 'Кохання'), P('Career', 'Карьера', 'Кар’єра'), P('Outcome', 'Результат', 'Результат')] },
+    positions: [P('Theme of the year'), P('Challenges'), P('Opportunities'),
+      P('Love'), P('Career'), P('Outcome')] },
   { id: 'celtic', count: 10, title: 'spCelticTitle', desc: 'spCelticDesc', long: 'spCelticLong', q: ['spCelticQ1', 'spCelticQ2'],
-    positions: [P('Situation', 'Ситуация', 'Ситуація'), P('Challenge', 'Вызов', 'Виклик'), P('Foundation', 'Корень', 'Корінь'),
-      P('Recent past', 'Недавнее прошлое', 'Нещодавнє минуле'), P('Crown', 'Цель', 'Мета'), P('Near future', 'Ближайшее будущее', 'Найближче майбутнє'),
-      P('Self', 'Ты', 'Ти'), P('Environment', 'Окружение', 'Оточення'), P('Hopes and fears', 'Надежды и страхи', 'Надії та страхи'), P('Final outcome', 'Итог', 'Підсумок')] },
+    positions: [P('Situation'), P('Challenge'), P('Foundation'),
+      P('Recent past'), P('Crown'), P('Near future'),
+      P('Self'), P('Environment'), P('Hopes and fears'), P('Final outcome')] },
 ];
 
 // Тематичні розклади з каталогу (data/spreads.json) — у тому ж форматі, що й класичні

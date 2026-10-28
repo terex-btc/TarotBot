@@ -7,7 +7,7 @@ import { icons } from '../art.js';
 import { showPaywall } from './paywall.js';
 import { loadDetails, cardDetail, yesNo, tx } from '../reading.js';
 
-export const cardName = c => (getLang() === 'ru' ? c.nameRu : getLang() === 'ua' ? c.nameUa : c.name) || c.name;
+export const cardName = c => c.name;
 export const cardKeywords = (c, reversed = c.isReversed) => {
   const src = reversed ? c.reversed : c.upright;
   return String(src?.[getLang()] || src?.en || '').split(/,\s*/).filter(Boolean).slice(0, 6);
@@ -42,7 +42,7 @@ function renderGrid() {
   const grid = root.querySelector('#lib-grid');
   const cards = (state.cards || []).filter(c =>
     (filter === 'all' || cardSuit(c) === filter) &&
-    (!query || [c.name, c.nameRu, c.nameUa].some(n => String(n || '').toLowerCase().includes(query))));
+    (!query || String(c.name || '').toLowerCase().includes(query)));
   if (!state.cards) { grid.innerHTML = `<p class="muted center">${t('errOffline')}</p>`; return; }
   if (!cards.length) { grid.innerHTML = `<p class="muted center">${t('nothingFound')}</p>`; return; }
   grid.innerHTML = cards.map(c => `

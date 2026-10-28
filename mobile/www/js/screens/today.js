@@ -356,8 +356,8 @@ async function dailyAi(box, reading, card) {
   box.innerHTML = spinner(t('aiThinking'));
   const res = await api('POST', '/ai/interpret', {
     cards: [card],
-    positions: [{ en: 'Card of the day', ru: 'Карта дня', ua: 'Карта дня' }],
-    spreadName: { en: 'Card of the day', ru: 'Карта дня', ua: 'Карта дня' },
+    positions: [{ en: 'Card of the day' }],
+    spreadName: { en: 'Card of the day' },
     question: '',
     userAstro: userAstro(),
     lang: getLang(),

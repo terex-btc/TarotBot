@@ -183,7 +183,7 @@ function openReadMyDeck() {
     const used = new Set(st.picks.map(p => p.id));
     const draw = () => {
       const list = cards.filter(c => !used.has(c.id) && (filter === 'all' || cardSuit(c) === filter) &&
-        (!query || [c.name, c.nameRu, c.nameUa].some(n => String(n || '').toLowerCase().includes(query))));
+        (!query || String(c.name || '').toLowerCase().includes(query)));
       grid.innerHTML = list.map(c => `<button class="lib-card" data-id="${c.id}">
         <span class="lib-img${reversed ? ' rev' : ''}">${cardImg(c)}</span><span class="lib-name">${esc(cardName(c))}</span></button>`).join('')
         || `<p class="muted center">${t('nothingFound')}</p>`;

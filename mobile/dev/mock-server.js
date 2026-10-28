@@ -97,7 +97,8 @@ app.post('/api/ai/interpret', (req, res) => {
 });
 app.post('/api/ai/chat', (req, res) => {
   if (!premium) return res.status(402).json({ ok: false, error: 'premium_required' });
-  setTimeout(() => res.json({ ok: true, reply: (AI[req.body.lang] || AI.en).split('\n')[0] }), 1100);
+  const id = Math.floor(Math.random() * CARDS.length);   // як на сервері: Оракул тягне карту
+  setTimeout(() => res.json({ ok: true, reply: `${CARDS[id].name} answers you tonight. ` + AI.en.split('\n')[0], card: { id, isReversed: false } }), 1100);
 });
 // Тренажер тлумачення — заглушка AI-вчителя
 app.post('/api/ai/practice', (req, res) => {

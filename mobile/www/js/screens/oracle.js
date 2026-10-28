@@ -1,12 +1,13 @@
 // ══ Вкладка «Запитати»: AI-Оракул ═══════════════════════════════════════════
 import { t, getLang } from '../i18n.js';
-import { state, track, onStateChange } from '../state.js';
+import { state, track, onStateChange, loadCards } from '../state.js';
 import { api } from '../api.js';
 import { haptic, storage } from '../platform.js';
 import { esc, typeText, openSheet, closeLayer, toast } from '../ui.js';
 import { sparkle, starsField, icons } from '../art.js';
 import { showPaywall } from './paywall.js';
 import { userAstro } from './today.js';
+import { cardImg, cardName, openCardDetail } from './library.js';
 
 let root, history = [], busy = false;
 const KEY = () => `lunara_chat_${state.userId}`;
@@ -15,6 +16,8 @@ export function mountOracle(el) {
   root = el;
   try { history = JSON.parse(storage.get(KEY()) || '[]'); } catch (_) { history = []; }
   render();
+  // Карти потрібні, щоб показати в історії, яку карту витягнув Оракул
+  if (history.some(m => m.card) && !state.cards) loadCards().then(render);
   onStateChange(w => { if (w === 'lang') render(); });
 }
 
@@ -37,7 +40,7 @@ function render() {
         <div class="msg oracle intro">${t('oracleIntro', { name })}</div>
         <div class="suggest" id="suggest">${suggestions().map(k =>
           `<button class="chip btn-chip" data-q="${esc(t(k))}">${t(k)}</button>`).join('')}</div>
-        ${history.map(m => bubble(m.role === 'user' ? 'user' : 'oracle', m.content)).join('')}
+        ${history.map(m => bubble(m.role === 'user' ? 'user' : 'oracle', m.content, m.card)).join('')}
       </div>
       <form class="composer" id="composer">
         <textarea id="chat-in" rows="1" maxlength="400" placeholder="${t('oraclePlaceholder')}"></textarea>
@@ -58,12 +61,29 @@ function render() {
   });
   if (history.length) root.querySelector('#suggest').classList.add('hide');
   root.querySelector('#chat-clear')?.addEventListener('click', confirmClear);
+  root.querySelector('#chat').addEventListener('click', e => {
+    const b = e.target.closest('.msg-card');
+    const c = b && state.cards?.[Number(b.dataset.id)];
+    if (c) { haptic('light'); openCardDetail({ ...c, isReversed: b.dataset.rev === '1' }); }
+  });
   scrollDown();
 }
 
-function bubble(kind, text) {
-  return `<div class="msg ${kind}">${kind === 'oracle' ? `<span class="msg-ic">${sparkle()}</span>` : ''}${esc(text).replace(/\n/g, '<br>')}</div>`;
+function bubble(kind, text, card) {
+  return `<div class="msg ${kind}">${cardChip(card)}${kind === 'oracle' ? `<span class="msg-ic">${sparkle()}</span>` : ''}${esc(text).replace(/\n/g, '<br>')}</div>`;
 }
+
+// Карта, через яку відповів Оракул (сервер тягне її на кожне питання)
+function cardChip(card) {
+  const c = card && state.cards?.[card.id];
+  if (!c) return '';
+  return `<button class="msg-card" data-id="${c.id}" data-rev="${card.isReversed ? 1 : 0}">
+      <span class="mc-img${card.isReversed ? ' rev' : ''}">${cardImg(c)}</span>
+      <span><small>${t('oracleDrew')}</small><b class="serif">${esc(cardName(c))}${card.isReversed ? ` · ${t('reversedShort')}` : ''}</b></span>
+    </button>`;
+}
+// Показуємо карту лише тоді, коли Оракул справді відповів через неї (а не на сторонню тему)
+const mentions = (reply, c) => reply.toLowerCase().includes(c.name.replace(/^The /, '').toLowerCase());
 
 function scrollDown() {
   const c = root.querySelector('#chat');
@@ -95,9 +115,12 @@ async function send() {
   root.querySelector('#typing')?.remove();
 
   if (res.ok && res.reply) {
-    history.push({ role: 'assistant', content: res.reply });
+    const cards = res.card ? await loadCards() : [];
+    const drawn = res.card && cards[res.card.id] && mentions(res.reply, cards[res.card.id])
+      ? { id: res.card.id, isReversed: !!res.card.isReversed } : null;
+    history.push({ role: 'assistant', content: res.reply, ...(drawn ? { card: drawn } : {}) });
     storage.set(KEY(), JSON.stringify(history.slice(-30)));
-    chat.insertAdjacentHTML('beforeend', `<div class="msg oracle"><span class="msg-ic">${sparkle()}</span><span class="txt"></span></div>`);
+    chat.insertAdjacentHTML('beforeend', `<div class="msg oracle">${cardChip(drawn)}<span class="msg-ic">${sparkle()}</span><span class="txt"></span></div>`);
     const node = chat.lastElementChild.querySelector('.txt');
     await typeText(node, res.reply, { speed: 10 });
     haptic('success');

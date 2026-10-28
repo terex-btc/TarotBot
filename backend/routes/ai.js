@@ -308,7 +308,17 @@ router.post('/chat', async (req, res) => {
       userAstro.moonPhase?.name,
     ].filter(Boolean).join(', ') : '';
 
-    const systemPrompt = `You are the Oracle — a wise, warm tarot and astrology guide. Answer briefly (2–5 sentences), with a touch of mysticism but concretely. You may refer to tarot cards, the stars, the user's zodiac sign and the phase of the Moon. Address the user as "you" (informal "ты"/"ти" in Russian and Ukrainian). Write in ${LANG_NAME[l]}.${astroInfo ? ` The user's astrology: ${astroInfo}.` : ''}\n\n${AI_RULES}`;
+    // Оракул відповідає «через карту»: на кожне питання чесно тягнемо одну карту з колоди
+    const cardId = Math.floor(Math.random() * MAJOR_ARCANA.length);
+    const drawn = MAJOR_ARCANA[cardId];
+    const reversed = Math.random() < 0.25;
+    const meaning = (reversed ? drawn.reversed?.en : drawn.upright?.en) || '';
+    const systemPrompt = `You are the Oracle — a wise, warm tarot reader and astrology guide. You always answer as a tarot reader, through the cards: speak with a touch of mysticism but concretely, in 2–5 sentences. You may also refer to the stars, the user's zodiac sign and the phase of the Moon. Address the user as "you" (informal "ты"/"ти" in Russian and Ukrainian). Write in ${LANG_NAME[l]}.${astroInfo ? ` The user's astrology: ${astroInfo}.` : ''}
+
+For the user's latest message you have just drawn one card from the Rider-Waite deck: ${drawn.name}${reversed ? ' (reversed)' : ''}. Traditional meaning: ${meaning}
+Answer through this card: name it once (translated into the reply language if needed), say what it shows about their question, and finish with one practical piece of advice. If the message is off-topic or about a crisis, do not use the card.
+
+${AI_RULES}`;
 
     // Конвертируем историю сообщений в формат Anthropic
     const apiMessages = messages
@@ -325,7 +335,7 @@ router.post('/chat', async (req, res) => {
       messages: apiMessages,
     });
     const reply = finalMsg.content.find(b => b.type === 'text')?.text || '';
-    res.json({ ok: true, reply });
+    res.json({ ok: true, reply, card: { id: cardId, isReversed: reversed } });
   } catch (e) {
     console.error('[AI] chat error:', e.message);
     res.status(500).json({ ok: false, error: 'ai_error' });

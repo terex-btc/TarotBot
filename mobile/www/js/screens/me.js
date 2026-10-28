@@ -1,5 +1,5 @@
 // ══ Вкладка «Я»: профіль, нумерологія, сумісність, налаштування ═════════════
-import { t, getLang, setLang, locale } from '../i18n.js';
+import { t, getLang, locale } from '../i18n.js';
 import { state, emit, onStateChange, track } from '../state.js';
 import { api, resetSession } from '../api.js';
 import { haptic, isNative, notifications, purchases, openUrl, legalUrl, storage, platform } from '../platform.js';
@@ -91,9 +91,6 @@ function render() {
 
     <h3 class="section-title">${t('settings')}</h3>
     <div class="menu">
-      <div class="menu-item static">${icons.globe}<span>${t('language')}</span>
-        <div class="seg mini" id="me-lang">${['en', 'ru', 'ua'].map(l => `<button class="${l === L ? 'on' : ''}" data-l="${l}">${l === 'ua' ? 'UA' : l.toUpperCase()}</button>`).join('')}</div>
-      </div>
       <label class="menu-item static">${icons.sound}<span>${t('sounds')}<small>${t('soundsSub')}</small></span>
         <input type="checkbox" class="toggle" id="me-sound" ${soundOn() ? 'checked' : ''}></label>
       ${notifications.supported ? `
@@ -130,14 +127,6 @@ function render() {
   $('#me-id').onclick = async () => {
     try { await navigator.clipboard.writeText(state.userId); toast(t('copied')); } catch (_) {}
   };
-  root.querySelectorAll('#me-lang button').forEach(b => b.onclick = () => {
-    if (b.dataset.l === getLang()) return;
-    haptic('select');
-    setLang(b.dataset.l);
-    rescheduleAlerts();
-    api('POST', '/users/init', { userId: state.userId, lang: b.dataset.l });
-    emit('lang');
-  });
   $('#me-sky')?.addEventListener('change', async e => {
     if (e.target.checked && !(await notifications.granted()) && !(await notifications.request())) {
       e.target.checked = false; toast(t('notifDenied')); return;

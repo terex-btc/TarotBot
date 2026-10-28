@@ -1,5 +1,5 @@
 // ══ Онбординг: слайди → анкета → розрахунок → профіль → paywall ═════════════
-import { t, getLang, setLang } from '../i18n.js';
+import { t, getLang } from '../i18n.js';
 import { state, track } from '../state.js';
 import { api } from '../api.js';
 import { haptic, isNative, notifications, telegramUser, startParam } from '../platform.js';
@@ -32,8 +32,6 @@ export function runOnboarding({ onDone }) {
 
   function renderSlides() {
     stage.innerHTML = `<div class="slides">
-        <div class="seg mini onb-lang">${['en', 'ru', 'ua'].map(l =>
-          `<button class="${l === getLang() ? 'on' : ''}" data-l="${l}">${l.toUpperCase()}</button>`).join('')}</div>
         <div class="slides-track">${slides.map((s, i) => `
           <div class="slide${i === 0 ? ' active' : ''}" data-i="${i}">
             <div class="slide-scene">${s.scene()}</div>
@@ -57,12 +55,6 @@ export function runOnboarding({ onDone }) {
       stage.querySelectorAll('.dots i').forEach((d, n) => d.classList.toggle('on', n === idx));
       stage.querySelector('.legal-note').classList.toggle('show', idx === slides.length - 1);
     };
-    stage.querySelectorAll('.onb-lang button').forEach(b => b.onclick = () => {
-      if (b.dataset.l === getLang()) return;
-      haptic('select');
-      setLang(b.dataset.l);
-      renderSlides();
-    });
     stage.querySelector('#onb-next').onclick = () => {
       haptic('light');
       track('onb_slide', idx + 1);
@@ -262,7 +254,7 @@ export function runOnboarding({ onDone }) {
 
 export function fmtTime(h, m) {
   const d = new Date(); d.setHours(h, m, 0, 0);
-  return d.toLocaleTimeString(getLang() === 'en' ? 'en-US' : getLang() === 'ua' ? 'uk-UA' : 'ru-RU', { hour: 'numeric', minute: '2-digit' });
+  return d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
 }
 
 // ── Сцени слайдів ────────────────────────────────────────────────────────────
@@ -293,7 +285,7 @@ function sceneCards() {
 
 function sceneMoon() {
   const L = getLang();
-  const loc = L === 'en' ? 'en-US' : L === 'ua' ? 'uk-UA' : 'ru-RU';
+  const loc = 'en-US';
   const phases = upcomingPhases(new Date(), 4);
   const items = [{ date: new Date(), ...moonAt() }, ...phases];
   return `<div class="scene scene-moon">
