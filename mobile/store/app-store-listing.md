@@ -97,7 +97,7 @@ YOUR READING JOURNAL
 
 
 LUCKY TAROT PRO
-Unlock every spread, unlimited AI readings, the Oracle chat, reversed meanings, all lessons, custom card backs and every new feature.
+Unlock every spread, AI readings for every spread, the Oracle chat, reversed meanings, all lessons, custom card backs and every new feature.
 • Weekly: $6.99 per week; new subscribers pay $2.79 for the first week
 • Yearly: $69.99 per year
 Prices are in US dollars and may vary by country.
