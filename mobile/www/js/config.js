@@ -10,7 +10,7 @@ export const CONFIG = {
   API_ORIGIN: 'https://lunara-tarot.up.railway.app',
 
   // RevenueCat: публічний iOS-ключ (appl_...) з дашборду RevenueCat → API keys
-  REVENUECAT_IOS_KEY: '',
+  REVENUECAT_IOS_KEY: 'appl_KgFgecYzUMrDBJQaZWqIzSxpdGQ',
   REVENUECAT_ANDROID_KEY: '',
   ENTITLEMENT: 'pro',
 

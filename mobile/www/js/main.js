@@ -69,7 +69,8 @@ async function boot() {
   }
 
   track('open_app', startParam || platform);
-  purchases.init(state.userId);
+  // Ціни з App Store — одразу після запуску, щоб пейвол не чекав
+  purchases.init(state.userId).then(ok => { if (ok) purchases.getPlans(); });
 
   // Демо-посилання ?demo=<код> — PRO на 7 днів на цьому пристрої (для показу спонсорам/друзям)
   const demo = new URLSearchParams(location.search).get('demo');

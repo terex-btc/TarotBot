@@ -248,7 +248,7 @@ function introPct(p) {
 
 function perWeek(price, currency) {
   try {
-    return new Intl.NumberFormat(undefined, { style: 'currency', currency }).format(price / 52);
+    return new Intl.NumberFormat('en-US', { style: 'currency', currency }).format(price / 52);
   } catch (_) { return null; }
 }
 

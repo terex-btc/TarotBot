@@ -184,6 +184,8 @@ export async function requestReview() {
 // ── Покупки (App Store / Google Play через RevenueCat) ───────────────────────
 // Поза нативом покупок немає: у Telegram/браузері це прев'ю застосунку.
 let _rcReady = false;
+let _plansPromise = null;
+const withTimeout = (p, ms) => Promise.race([p, new Promise(r => setTimeout(() => r(null), ms))]);
 export const purchases = {
   supported: isNative && !!plugin('Purchases'),
   async init(userId) {
@@ -197,7 +199,12 @@ export const purchases = {
     return _rcReady;
   },
   // → [{ planId, productId, priceString, pricePerWeek, trialDays, pkg }]
-  async getPlans() {
+  // Один запит на запуск: ціни підтягуються заздалегідь, щоб пейвол відкривався одразу
+  getPlans() {
+    if (!_plansPromise) _plansPromise = this._loadPlans().then(r => { if (!r) _plansPromise = null; return r; });
+    return _plansPromise;
+  },
+  async _loadPlans() {
     const P = plugin('Purchases');
     if (!P || !_rcReady) return null;
     try {
@@ -205,7 +212,8 @@ export const purchases = {
       const pkgs = current?.availablePackages || [];
       // Пробний період і пільгова ціна — лише для нових підписників; хто вже користувався, бачить звичайну ціну
       let elig = {};
-      try { elig = await P.checkTrialOrIntroductoryPriceEligibility({ productIdentifiers: CONFIG.PLANS.map(p => p.productId) }); } catch (_) {}
+      // Перевірка App Store інколи триває десятки секунд — не чекаємо довше 4 с (невідомо = показуємо пільгу)
+      try { elig = (await withTimeout(P.checkTrialOrIntroductoryPriceEligibility({ productIdentifiers: CONFIG.PLANS.map(p => p.productId) }), 4000)) || {}; } catch (_) {}
       return CONFIG.PLANS.map(plan => {
         const pkg = pkgs.find(p => p.product?.identifier === plan.productId);
         if (!pkg) return null;
